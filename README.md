@@ -1,6 +1,7 @@
 # GraphSage
 
-The goal of this project is to reproduce the paper "Inductive Representation Learning on Large Graphs"
+The goal of this project is to reproduce the paper "[Inductive Representation
+Learning on Large Graphs](https://arxiv.org/abs/1706.02216)".
 
 ## Folder structure
 
