@@ -26,27 +26,30 @@ Useful for running long experiments for example.
 
 ## Installation
 
-### Create the conda environment by running
-```
+```bash
+# Create the conda environment
 conda env create -f env.yml
+# Add the environment to your jupyter kernels 
+python -m ipykernel install --user --name graphsage 
+# Activate the environment
 conda activate graphsage
-python -m ipykernel install --user --name graphsage
 ```
 
 After installing, every time you want to work with this project run `conda activate graphsage` and after you 
 finish, run `conda deactivate`.
 
-### Package installation
-To install the package go to the root of this directory and run
-```
-conda develop graphsage/
-```
-Now every time you want to run some piece of code you can import it from `graphsage`.
-Alternatively, you can add the `graphsage` package to your python path, by adding these line at the top of 
+### Usage
+To use this package in a python module or notebook, you just have to include the `graphsage` package to your python 
+path,
+by adding these line at the top of 
 your python script or jupyter notebook.
 ```python
 import sys
 sys.path.insert(0, '/path/to/graphsage')
+```
+You'll then be able to import things from the package, such as:
+```python
+from graphsage import datasets, utils
 ```
 
 ### Tests and documentation
