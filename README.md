@@ -11,11 +11,11 @@ Auto-Generated & manual code documentation.
 * `data/`
 Contains data original & intermediate synthetic data.
 
-* `notebooks/`
-All the notebooks, avoid defining functions here.
+* `examples/`
+All the examples, python scripts or notebooks, illustrating the usage of the package.
 
 * `graphsage/`
-Python package containing the main code for this research.
+Python package containing the main code for this project.
 
 * `results/`
 For results, e.g. tables (csv files), and plots (images)
@@ -35,14 +35,12 @@ python -m ipykernel install --user --name graphsage
 conda activate graphsage
 ```
 
-After installing, every time you want to work with this project run `conda activate graphsage` and after you 
-finish, run `conda deactivate`.
-
 ### Usage
-To use this package in a python module or notebook, you just have to include the `graphsage` package to your python 
-path,
-by adding these line at the top of 
-your python script or jupyter notebook.
+After installing, every time you want to work with this project, go the project's root dir and run `conda develop .` 
+This will add the project's root dir to the python path.
+
+To use this package in an external (w.r.t this project) python module or notebook, you'll have to manually include the 
+`graphsage` package to your python path, by adding these line at the top of your python script or jupyter notebook.
 ```python
 import sys
 sys.path.insert(0, '/path/to/graphsage')
