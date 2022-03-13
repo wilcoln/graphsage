@@ -8,11 +8,11 @@ from sklearn.linear_model import LogisticRegression
 # pyg imports
 from torch_cluster import random_walk
 
-# graphsage imports
+# Our own imports
 from graphsage import settings
 from graphsage.layers import SAGE
 from graphsage.datasets import Planetoid
-from graphsage.samplers import NeighborSampler as RawNeighborSampler
+from graphsage.samplers import UniformSampler
 
 EPS = 1e-15
 dataset = 'Cora'
@@ -21,7 +21,7 @@ dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
 data = dataset[0]
 
 
-class NeighborSampler(RawNeighborSampler):
+class NeighborSampler(UniformSampler):
     def sample(self, batch):
         batch = torch.tensor(batch)
         row, col, _ = self.adj_t.coo()

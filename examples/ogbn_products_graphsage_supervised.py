@@ -13,10 +13,10 @@ from ogb.nodeproppred import Evaluator, PygNodePropPredDataset
 from tqdm import tqdm
 
 ic()
-# Our imports
+# Our own imports
 from graphsage import settings
 from graphsage.layers import SAGE
-from graphsage.samplers import NeighborSampler
+from graphsage.samplers import UniformSampler
 
 ic()
 root = osp.join(settings.DATA_DIR, 'products')
@@ -25,10 +25,10 @@ split_idx = dataset.get_idx_split()
 evaluator = Evaluator(name='ogbn-products')
 data = dataset[0]
 train_idx = split_idx['train']
-train_loader = NeighborSampler(data.edge_index, node_idx=train_idx,
+train_loader = UniformSampler(data.edge_index, node_idx=train_idx,
                                sizes=[15, 10, 5], batch_size=1024,
                                shuffle=True, num_workers=12)
-subgraph_loader = NeighborSampler(data.edge_index, node_idx=None, sizes=[-1],
+subgraph_loader = UniformSampler(data.edge_index, node_idx=None, sizes=[-1],
                                   batch_size=4096, shuffle=False,
                                   num_workers=12)
 ic()

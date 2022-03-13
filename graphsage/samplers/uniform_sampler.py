@@ -27,7 +27,7 @@ class Adj(NamedTuple):
         return Adj(adj_t, e_id, self.size)
 
 
-class NeighborSampler(torch.utils.data.DataLoader):
+class UniformSampler(torch.utils.data.DataLoader):
     r"""The neighbor sampler from the `"Inductive Representation Learning on
     Large Graphs" <https://arxiv.org/abs/1706.02216>`_ paper, which allows
     for mini-batch training of GNNs on large-scale graphs where full-batch
