@@ -1,8 +1,8 @@
+# WARNING: Needs at least 2GB of GPU memory to run.
 import os.path as osp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch_geometric.transforms as T
 from sklearn.linear_model import LogisticRegression
 
 # pyg imports
@@ -11,14 +11,14 @@ from torch_cluster import random_walk
 # Our own imports
 from graphsage import settings
 from graphsage.layers import SAGE
-from graphsage.datasets import Planetoid
+from graphsage.datasets import Reddit
 from graphsage.samplers import UniformSampler
 
 device = settings.DEVICE
 EPS = 1e-15
-dataset = 'Cora'
-path = osp.join(settings.DATA_DIR, dataset)
-dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
+
+path = osp.join(settings.DATA_DIR, 'Reddit')
+dataset = Reddit(path)
 data = dataset[0]
 
 
@@ -101,7 +101,7 @@ def train():
 @torch.no_grad()
 def test():
     model.eval()
-    out = model.full_forward(x, edge_index).cpu()
+    out = model.full_forward(x, edge_index)
 
     clf = LogisticRegression()
     clf.fit(out[data.train_mask], data.y[data.train_mask])
