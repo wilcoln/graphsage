@@ -107,8 +107,11 @@ ENV/
 # Data directory
 data/
 
-# Trained models directory
-models/
+# Cache directory
+cache/
+
+# Results directory
+results/
 
 # Ignore folder
 .ignore/
