@@ -1,4 +1,4 @@
 K = 2
-S1 = S2 = 10
 DATASET = 'citation'
 MODEL = 'graphsage_mean'
+SAMPLE_SIZES = [5, 10, 20, 40, 70]

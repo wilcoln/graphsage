@@ -1,9 +1,11 @@
 import copy
 import os.path as osp
+import time
 
 import torch
 import torch.nn.functional as F
 import torch_geometric.transforms as T
+from sklearn.metrics import f1_score
 from tqdm import tqdm
 
 # Our imports
@@ -103,25 +105,60 @@ def train(epoch):
 @torch.no_grad()
 def test():
     model.eval()
+
+    start = time.time()
     y_hat = model.inference(data.x, subgraph_loader).argmax(dim=-1)
+    test_time = time.time() - start
+
     y = data.y.to(y_hat.device)
+    # Compute f1 score:
 
     accs = []
     for mask in [data.train_mask, data.val_mask, data.test_mask]:
         accs.append(int((y_hat[mask] == y[mask]).sum()) / int(mask.sum()))
-    return accs
+
+    f1s = []
+    for mask in [data.train_mask, data.val_mask, data.test_mask]:
+        f1s.append(f1_score(y[mask], y_hat[mask], average='micro'))
+
+    return *accs, *f1s, test_time
 
 
 def run():
     for epoch in range(1, settings.NUM_EPOCHS + 1):
         loss, acc = train(epoch)
         print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train: {acc:.4f}')
-        train_acc, val_acc, test_acc = test()
+        train_acc, val_acc, test_acc, train_f1, val_f1, test_f1, test_time = test()
         print(f'Epoch: {epoch:02d}, Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
               f'Test: {test_acc:.4f}')
 
     return {
         'train_acc': train_acc,
         'val_acc': val_acc,
-        'test_acc': test_acc
+        'test_acc': test_acc,
+        'train_f1': train_f1,
+        'val_f1': val_f1,
+        'test_f1': test_f1,
+        'test_time': test_time,
     }
+
+
+class SampleSizeRunner:
+    def __init__(self, sample_size):
+        self.sample_size = sample_size
+
+    def run(self):
+        global train_loader, subgraph_loader, data, kwargs
+        train_loader = UniformLoader(data, input_nodes=data.train_mask,
+                                     num_neighbors=[self.sample_size, self.sample_size], shuffle=True, **kwargs)
+        subgraph_loader = UniformLoader(copy.copy(data), input_nodes=None,
+                                        num_neighbors=[self.sample_size, self.sample_size], shuffle=False, **kwargs)
+
+        # No need to maintain these features during evaluation:
+        del subgraph_loader.data.x, subgraph_loader.data.y
+        # Add global node index information.
+        subgraph_loader.data.num_nodes = data.num_nodes
+        subgraph_loader.data.n_id = torch.arange(data.num_nodes)
+        return run()
+
+
