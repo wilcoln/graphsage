@@ -1,0 +1,2 @@
+BATCH_SIZE = 512
+DATASET = 'reddit'

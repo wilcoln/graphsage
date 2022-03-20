@@ -113,5 +113,8 @@ cache/
 # Results directory
 results/
 
-# Ignore folder
+# Wilfried's stuff
 .ignore/
+scripts/gpush.sh
+.gd/
+

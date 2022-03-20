@@ -112,9 +112,16 @@ def test():
     return accs
 
 
-for epoch in range(1, 11):
-    loss, acc = train(epoch)
-    print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train: {acc:.4f}')
-    train_acc, val_acc, test_acc = test()
-    print(f'Epoch: {epoch:02d}, Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
-          f'Test: {test_acc:.4f}')
+def run():
+    for epoch in range(1, settings.NUM_EPOCHS + 1):
+        loss, acc = train(epoch)
+        print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train: {acc:.4f}')
+        train_acc, val_acc, test_acc = test()
+        print(f'Epoch: {epoch:02d}, Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
+              f'Test: {test_acc:.4f}')
+
+    return {
+        'train_acc': train_acc,
+        'val_acc': val_acc,
+        'test_acc': test_acc
+    }

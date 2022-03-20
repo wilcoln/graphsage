@@ -6,6 +6,7 @@ import torch_geometric.transforms as T
 from sklearn.linear_model import LogisticRegression
 
 # pyg imports
+from sklearn.metrics import f1_score
 from torch_cluster import random_walk
 
 # Our own imports
@@ -106,14 +107,27 @@ def test():
     clf = LogisticRegression()
     clf.fit(out[data.train_mask], data.y[data.train_mask])
 
+    pred = clf.predict(out[data.test_mask])
+    test_f1 = f1_score(data.y[data.test_mask], pred, average='micro')
+    pred = clf.predict(out[data.val_mask])
+    val_f1 = f1_score(data.y[data.val_mask], pred, average='micro')
+
     val_acc = clf.score(out[data.val_mask], data.y[data.val_mask])
     test_acc = clf.score(out[data.test_mask], data.y[data.test_mask])
 
-    return val_acc, test_acc
+    return val_f1, val_acc, test_f1, test_acc
 
 
-for epoch in range(1, 11):
-    loss = train()
-    val_acc, test_acc = test()
-    print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, '
-          f'Val: {val_acc:.4f}, Test: {test_acc:.4f}')
+def run():
+    for epoch in range(1, settings.NUM_EPOCHS + 1):
+        loss = train()
+        val_f1, val_acc, test_f1, test_acc = test()
+        # print epoch and results
+        print(f'Epoch: {epoch:02d}, Loss: {loss:.4f}, Val F1: {val_f1:.4f}, Test F1: {test_f1:.4f}')
+
+    return {
+        'val_f1': val_f1,
+        'val_acc': val_acc,
+        'test_f1': test_f1,
+        'test_acc': test_acc
+    }
