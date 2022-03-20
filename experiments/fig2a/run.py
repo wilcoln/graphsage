@@ -28,29 +28,29 @@ with open(results_path, 'w') as f:
 
 # Use results to plot train and test time for each model in a bar plot
 # Plot the results
-for model in results:
-    x = results.keys()
-    _x = np.arange(len(results))
-    width = 0.3  # the width of the bars
+x = results.keys()
+_x = np.arange(len(results))
+width = 0.3  # the width of the bars
 
-    fig, ax = plt.subplots()
+fig, ax = plt.subplots()
 
-    rects1 = ax.bar(_x - width / 2, [results[model]['train_time'] for model in results], width, label='Train time')
-    rects2 = ax.bar(_x + width / 2, [results[model]['test_time'] for model in results], width, label='Test time')
+rects1 = ax.bar(_x - width / 2, [results[model]['train_time'] for model in results], width, label='Train time')
+rects2 = ax.bar(_x + width / 2, [results[model]['test_time'] for model in results], width, label='Test time')
 
-    # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel('Time (seconds)')
-    plt.yscale('log')
-    ax.set_xlabel('Models')
-    ax.set_title('Training (per batch) and Testing Time')
-    ax.set_xticks(_x)
-    ax.set_xticklabels(x)
-    ax.legend(loc='upper left')
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_ylabel('Time (seconds)')
+plt.yscale('log')
+ax.set_xlabel('Models')
+ax.set_title('Training (per batch) and Testing Time')
+ax.set_xticks(_x)
+ax.set_xticklabels(x)
+ax.legend(loc='upper left')
 
-    ax.bar_label(rects1, padding=3)
-    ax.bar_label(rects2, padding=3)
+ax.bar_label(rects1, padding=3)
+ax.bar_label(rects2, padding=3)
 
-    fig.tight_layout()
+fig.tight_layout()
+
 
 # Save the plot in results directory
 plt.savefig(osp.join(graphsage_settings.RESULTS_DIR, 'fig2a.png'))
