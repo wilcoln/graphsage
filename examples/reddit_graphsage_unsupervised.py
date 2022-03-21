@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric.transforms as T
 from icecream import ic
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
 
 # pyg imports
 from sklearn.metrics import f1_score
@@ -116,7 +116,7 @@ def test(out):
         out, _, _ = out.split(out.size(0) // 3, dim=0)
 
     out = out.cpu()
-    clf = LogisticRegression()
+    clf = SGDClassifier(loss="log", penalty="l2")
     clf.fit(out[data.train_mask], data.y[data.train_mask])
 
     # compute test and val f1 score
@@ -167,5 +167,3 @@ for epoch in range(1, 11):
     with open(results_path, 'w') as f:
         json.dump(results, f)
     print(f'Saved results to {results_path}')
-
-

@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric.transforms as T
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
 
 # pyg imports
 from sklearn.metrics import f1_score
@@ -104,7 +104,7 @@ def test():
     model.eval()
     out = model.full_forward(x, edge_index).cpu()
 
-    clf = LogisticRegression()
+    clf = SGDClassifier(loss="log", penalty="l2")
     clf.fit(out[data.train_mask], data.y[data.train_mask])
 
     pred = clf.predict(out[data.test_mask])
