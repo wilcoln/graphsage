@@ -1,13 +1,13 @@
-import os.path as osp
 import json
+import os.path as osp
 from collections import defaultdict
 
 import numpy as np
 from matplotlib import pyplot as plt
 
-from graphsage import settings as graphsage_settings
-from experiments.fig2a import settings as fig2a_settings
 from experiments.fig2a import runners
+from experiments.fig2a import settings as fig2a_settings
+from graphsage import settings as graphsage_settings
 
 # Initialize the results dictionary
 results = defaultdict(lambda: defaultdict(dict))

@@ -1,6 +1,6 @@
-import time
 import copy
 import os.path as osp
+import time
 
 import torch
 import torch.nn.functional as F
@@ -9,10 +9,9 @@ from tqdm import tqdm
 
 # Our imports
 from graphsage import settings
-from graphsage.datasets import Reddit, Planetoid
+from graphsage.datasets import Planetoid
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformLoader
-
 
 device = settings.DEVICE
 

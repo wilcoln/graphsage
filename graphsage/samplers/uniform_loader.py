@@ -3,7 +3,6 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 from torch import Tensor
-
 from torch_geometric.data import Data, HeteroData
 from torch_geometric.loader.base import BaseDataLoader
 from torch_geometric.loader.utils import (edge_type_to_str, filter_data,
@@ -197,6 +196,7 @@ class NeighborLoader(BaseDataLoader):
             :class:`torch.utils.data.DataLoader`, such as :obj:`batch_size`,
             :obj:`shuffle`, :obj:`drop_last` or :obj:`num_workers`.
     """
+
     def __init__(
             self,
             data: Union[Data, HeteroData],

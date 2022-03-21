@@ -1,17 +1,17 @@
 import os.path as osp
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+# pyg imports
 import torch_geometric.transforms as T
 from sklearn.linear_model import SGDClassifier
-
-# pyg imports
 from torch_cluster import random_walk
 
 # Our own imports
 from graphsage import settings
-from graphsage.layers import SAGE
 from graphsage.datasets import Planetoid
+from graphsage.layers import SAGE
 from graphsage.samplers import UniformSampler
 
 device = settings.DEVICE

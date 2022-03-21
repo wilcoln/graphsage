@@ -4,10 +4,9 @@ import os.path as osp
 import numpy as np
 import scipy.sparse as sp
 import torch
-from torch_sparse import coalesce
-
 from torch_geometric.data import (Data, InMemoryDataset, download_url,
                                   extract_zip)
+from torch_sparse import coalesce
 
 
 class Reddit(InMemoryDataset):

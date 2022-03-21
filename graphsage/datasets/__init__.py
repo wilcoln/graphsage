@@ -1,4 +1,4 @@
-from .planetoid import Planetoid
-from .reddit import Reddit
 from .flickr import Flickr
+from .planetoid import Planetoid
 from .ppi import PPI
+from .reddit import Reddit

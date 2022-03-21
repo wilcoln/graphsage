@@ -6,7 +6,6 @@ from typing import Callable, List, Optional
 import numpy as np
 import scipy.sparse as sp
 import torch
-
 from torch_geometric.data import Data, InMemoryDataset, download_url
 
 

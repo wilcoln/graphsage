@@ -1,14 +1,14 @@
-import os.path as osp
 import json
+import os.path as osp
 from collections import defaultdict
 
 import numpy as np
 from icecream import ic
 from matplotlib import pyplot as plt
 
-from graphsage import settings as graphsage_settings
-from experiments.fig2b import settings as fig2b_settings
 from experiments.fig2b import runners
+from experiments.fig2b import settings as fig2b_settings
+from graphsage import settings as graphsage_settings
 
 # Initialize the results dictionary
 results = defaultdict(dict)

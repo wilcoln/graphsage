@@ -8,8 +8,8 @@ from tqdm import tqdm
 
 # Our imports
 from graphsage import settings
-from graphsage.layers import SAGE
 from graphsage.datasets import Planetoid
+from graphsage.layers import SAGE
 from graphsage.samplers import UniformLoader
 
 device = settings.DEVICE

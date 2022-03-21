@@ -3,25 +3,17 @@ import os.path as osp
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch_geometric.transforms as T
-from icecream import ic
-from sklearn.preprocessing import LabelEncoder
-from torch_geometric.loader import DataLoader
-from torch_geometric.data import Batch
-
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
-
 from torch_cluster import random_walk
-
-# Our own imports
+from torch_geometric.loader import DataLoader
 from tqdm import tqdm
 
+# Our own imports
 from graphsage import settings
-from graphsage.layers import SAGE
 from graphsage.datasets import PPI
+from graphsage.layers import SAGE
 from graphsage.samplers import UniformSampler
-
 
 device = settings.DEVICE
 EPS = 1e-15
@@ -35,6 +27,7 @@ val_loader = DataLoader(val_dataset, batch_size=2, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=2, shuffle=False)
 
 train_data_list = [data for data in train_dataset]
+
 
 class NeighborSampler(UniformSampler):
     def sample(self, batch):
@@ -51,14 +44,14 @@ class NeighborSampler(UniformSampler):
 
         batch = torch.cat([batch, pos_batch, neg_batch], dim=0)
         return super().sample(batch)
-    
-    
+
+
 train_loader_list = []
 
 for curr_graph in train_data_list:
-  _train_loader = NeighborSampler(curr_graph.edge_index, sizes=[10, 10], batch_size=256, shuffle=True,
-                                  num_nodes=curr_graph.num_nodes)
-  train_loader_list.append(_train_loader)
+    _train_loader = NeighborSampler(curr_graph.edge_index, sizes=[10, 10], batch_size=256, shuffle=True,
+                                    num_nodes=curr_graph.num_nodes)
+    train_loader_list.append(_train_loader)
 
 
 class GraphSAGE(nn.Module):
@@ -88,8 +81,10 @@ class GraphSAGE(nn.Module):
         return x
 
 
-model = GraphSAGE(train_dataset.num_features, 121, train_dataset.num_classes).to(device) # hidden channels = 21 to make it match with data.y's shape which is [#, 121]
+model = GraphSAGE(train_dataset.num_features, 121, train_dataset.num_classes).to(
+    device)  # hidden channels = 21 to make it match with data.y's shape which is [#, 121]
 optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
+
 
 def train():
     model.train()
@@ -97,24 +92,26 @@ def train():
     total_loss = 0
     total_num_nodes = 0
 
-    for i in tqdm(range(len(train_loader_list))): # loop over all 20 train loaders
-      total_num_nodes += train_data_list[i].num_nodes # add up current train loaders # of nodes to total_num_nodes
-      x, edge_index = train_data_list[i].x.to(device), train_data_list[i].edge_index.to(device) # update the value for x and edge index for the current data
-      for batch_size, n_id, adjs in train_loader_list[i]: # train over the current graph
-        # `adjs` holds a list of `(edge_index, e_id, size)` tuples.
-        adjs = [adj.to(device) for adj in adjs]
-        optimizer.zero_grad() # set the gradients to zero
+    for i in tqdm(range(len(train_loader_list))):  # loop over all 20 train loaders
+        # add up current train loaders # of nodes to total_num_nodes
+        total_num_nodes += train_data_list[i].num_nodes
+        # update the value for x and edge index for the current data
+        x, edge_index = train_data_list[i].x.to(device), train_data_list[i].edge_index.to(device)
+        for batch_size, n_id, adjs in train_loader_list[i]:  # train over the current graph
+            # `adjs` holds a list of `(edge_index, e_id, size)` tuples.
+            adjs = [adj.to(device) for adj in adjs]
+            optimizer.zero_grad()  # set the gradients to zero
 
-        out = model(x[n_id], adjs)
-        out, pos_out, neg_out = out.split(out.size(0) // 3, dim=0)
+            out = model(x[n_id], adjs)
+            out, pos_out, neg_out = out.split(out.size(0) // 3, dim=0)
 
-        pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
-        neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
-        loss = -pos_loss - neg_loss
-        loss.backward()
-        optimizer.step()
+            pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
+            neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
+            loss = -pos_loss - neg_loss
+            loss.backward()
+            optimizer.step()
 
-        total_loss += float(loss) * out.size(0) 
+            total_loss += float(loss) * out.size(0)
 
     return total_loss / total_num_nodes
 
@@ -127,7 +124,6 @@ def _loader_to_embeddings_and_labels(model, loader):
         out = model.full_forward(x, edge_index)
         xs.append(out)
     return torch.cat(xs, dim=0).cpu(), torch.cat(ys, dim=0).cpu()
-
 
 
 @torch.no_grad()

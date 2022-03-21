@@ -1,9 +1,10 @@
-import os.path as osp
 import json
+import os.path as osp
 from collections import defaultdict
-from graphsage import settings as graphsage_settings
-from experiments.table1 import settings as table1_settings
+
 from experiments.table1 import runners
+from experiments.table1 import settings as table1_settings
+from graphsage import settings as graphsage_settings
 
 # Initialize the results dictionary
 results = defaultdict(lambda: defaultdict(dict))

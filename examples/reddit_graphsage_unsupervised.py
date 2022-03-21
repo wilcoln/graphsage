@@ -1,23 +1,21 @@
 # WARNING: Needs at least 2GB of GPU memory to run.
 import json
 import os.path as osp
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric.transforms as T
-from icecream import ic
 from sklearn.linear_model import SGDClassifier
-
 # pyg imports
 from sklearn.metrics import f1_score
 from torch_cluster import random_walk
-
-# Our own imports
 from tqdm import tqdm
 
+# Our own imports
 from graphsage import settings
-from graphsage.layers import SAGE
 from graphsage.datasets import Reddit
+from graphsage.layers import SAGE
 from graphsage.samplers import UniformSampler
 
 device = settings.DEVICE

@@ -3,14 +3,12 @@ import os.path as osp
 import torch
 import torch.nn.functional as F
 from sklearn.metrics import f1_score
-
 from torch_geometric.loader import DataLoader
 
 # Our imports
 from graphsage import settings
 from graphsage.datasets import PPI
 from graphsage.layers import SAGE
-
 
 device = settings.DEVICE
 

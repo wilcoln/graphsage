@@ -11,7 +11,6 @@ from graphsage.datasets import Reddit
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformLoader
 
-
 device = settings.DEVICE
 
 path = osp.join(settings.DATA_DIR, 'Reddit')
