@@ -4,15 +4,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric.transforms as T
+from icecream import ic
+from sklearn.preprocessing import LabelEncoder
 from torch_geometric.loader import DataLoader
 from torch_geometric.data import Batch
 
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 
 from torch_cluster import random_walk
 
 # Our own imports
+from tqdm import tqdm
+
 from graphsage import settings
 from graphsage.layers import SAGE
 from graphsage.datasets import PPI
@@ -52,8 +56,9 @@ class NeighborSampler(UniformSampler):
 train_loader_list = []
 
 for curr_graph in train_data_list:
-  train_loader = NeighborSampler(curr_graph.edge_index, sizes=[10, 10], batch_size=256, shuffle=True, num_nodes=curr_graph.num_nodes)
-  train_loader_list.append(train_loader)
+  _train_loader = NeighborSampler(curr_graph.edge_index, sizes=[10, 10], batch_size=256, shuffle=True,
+                                  num_nodes=curr_graph.num_nodes)
+  train_loader_list.append(_train_loader)
 
 
 class GraphSAGE(nn.Module):
@@ -92,7 +97,7 @@ def train():
     total_loss = 0
     total_num_nodes = 0
 
-    for i in range(len(train_loader_list)): # loop over all 20 train loaders
+    for i in tqdm(range(len(train_loader_list))): # loop over all 20 train loaders
       total_num_nodes += train_data_list[i].num_nodes # add up current train loaders # of nodes to total_num_nodes
       x, edge_index = train_data_list[i].x.to(device), train_data_list[i].edge_index.to(device) # update the value for x and edge index for the current data
       for batch_size, n_id, adjs in train_loader_list[i]: # train over the current graph
@@ -113,24 +118,46 @@ def train():
 
     return total_loss / total_num_nodes
 
+
+def _loader_to_embeddings_and_labels(model, loader):
+    xs, ys = [], []
+    for data in loader:
+        ys.append(torch.argmax(data.y, dim=1))
+        x, edge_index = data.x.to(device), data.edge_index.to(device)
+        out = model.full_forward(x, edge_index)
+        xs.append(out)
+    return torch.cat(xs, dim=0).cpu(), torch.cat(ys, dim=0).cpu()
+
+
+
 @torch.no_grad()
-def test(loader):
+def test(train_loader, val_loader, test_loader):
     model.eval()
 
-    ys, preds = [], []
-    for data in loader:
-        ys.append(data.y)
-        x, edge_index = data.x.to(device), data.edge_index.to(device)
-        out = model.full_forward(x, edge_index).cpu()
-        preds.append((out > 0).float().cpu())
+    # Create classifier
+    clf = SGDClassifier(loss="log", penalty="l2")
 
-    y, pred = torch.cat(ys, dim=0).numpy(), torch.cat(preds, dim=0).numpy()
-    return f1_score(y, pred, average='micro') if pred.sum() > 0 else 0
+    # Train classifier on train data
+    train_embeddings, train_labels = _loader_to_embeddings_and_labels(model, train_loader)
+    clf.fit(train_embeddings, train_labels)
+    train_predictions = clf.predict(train_embeddings)
+    train_f1 = f1_score(train_labels, train_predictions, average='micro')
+
+    # Evaluate on validation set
+    val_embeddings, val_labels = _loader_to_embeddings_and_labels(model, val_loader)
+    val_predictions = clf.predict(val_embeddings)
+    val_f1 = f1_score(val_labels, val_predictions, average='micro')
+
+    # Evaluate on validation set
+    test_embeddings, test_labels = _loader_to_embeddings_and_labels(model, test_loader)
+    test_predictions = clf.predict(test_embeddings)
+    test_f1 = f1_score(test_labels, test_predictions, average='micro')
+
+    return train_f1, val_f1, test_f1
 
 
-for epoch in range(1, 11):
+for epoch in range(1, settings.NUM_EPOCHS + 1):
     loss = train()
-    val_f1 = test(val_loader)
-    test_f1 = test(test_loader)
-    print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, Val: {val_f1:.4f}, '
-          f'Test: {test_f1:.4f}')
+    train_f1, val_f1, test_f1 = test(train_loader, val_loader, test_loader)
+    print('Epoch: {:03d}, Loss: {:.4f}, Train F1: {:.4f}, Val F1: {:.4f}, Test F1: {:.4f}'
+          .format(epoch, loss, train_f1, val_f1, test_f1))
