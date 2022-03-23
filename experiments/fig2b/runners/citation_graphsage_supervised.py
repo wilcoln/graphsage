@@ -55,7 +55,6 @@ class GraphSAGE(torch.nn.Module):
     @torch.no_grad()
     def inference(self, x_all, subgraph_loader):
         pbar = tqdm(total=len(subgraph_loader.dataset) * len(self.convs))
-        pbar.set_description('Evaluating')
 
         # Compute representations of nodes layer by layer, using *all*
         # available edges. This leads to faster computation in contrast to
@@ -78,14 +77,11 @@ model = GraphSAGE(dataset.num_features, 256, dataset.num_classes).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 
-def train(epoch):
+def train():
     model.train()
 
-    pbar = tqdm(total=int(len(train_loader.dataset)))
-    pbar.set_description(f'Epoch {epoch:02d}')
-
-    total_loss = total_correct = total_examples = 0
-    for batch in train_loader:
+    total_loss = total_examples = 0
+    for batch in tqdm(train_loader):
         optimizer.zero_grad()
         y = batch.y[:batch.batch_size]
         y_hat = model(batch.x, batch.edge_index.to(device))[:batch.batch_size]
@@ -94,12 +90,9 @@ def train(epoch):
         optimizer.step()
 
         total_loss += float(loss) * batch.batch_size
-        total_correct += int((y_hat.argmax(dim=-1) == y).sum())
         total_examples += batch.batch_size
-        pbar.update(batch.batch_size)
-    pbar.close()
 
-    return total_loss / total_examples, total_correct / total_examples
+    return total_loss / total_examples
 
 
 @torch.no_grad()
@@ -111,12 +104,13 @@ def test():
     test_time = time.time() - start
 
     y = data.y.to(y_hat.device)
-    # Compute f1 score:
 
+    # Compute accuracy:
     accs = []
     for mask in [data.train_mask, data.val_mask, data.test_mask]:
         accs.append(int((y_hat[mask] == y[mask]).sum()) / int(mask.sum()))
 
+    # Compute f1 score:
     f1s = []
     for mask in [data.train_mask, data.val_mask, data.test_mask]:
         f1s.append(f1_score(y[mask], y_hat[mask], average='micro'))
@@ -126,11 +120,9 @@ def test():
 
 def run():
     for epoch in range(1, settings.NUM_EPOCHS + 1):
-        loss, acc = train(epoch)
-        print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train: {acc:.4f}')
+        loss = train()
         train_acc, val_acc, test_acc, train_f1, val_f1, test_f1, test_time = test()
-        print(f'Epoch: {epoch:02d}, Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
-              f'Test: {test_acc:.4f}')
+        print(f'Epoch: {epoch:02d}, Loss: {loss:.4f}, Train: {train_acc:.4f}, Val: {val_acc:.4f}, Test: {test_acc:.4f}')
 
     return {
         'train_acc': train_acc,

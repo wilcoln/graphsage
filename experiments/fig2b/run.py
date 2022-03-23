@@ -50,6 +50,8 @@ ax2.set_ylabel('Runtime', color=color)  # we already handled the x-label with ax
 ax2.plot(xss, data2, color=color, marker='o', linestyle='--', label='Runtime')
 ax2.tick_params(axis='y', labelcolor=color)
 
+fig.legend(loc='lower right')
+
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
 
 
