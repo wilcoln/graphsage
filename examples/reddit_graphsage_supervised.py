@@ -16,8 +16,7 @@ device = settings.DEVICE
 path = osp.join(settings.DATA_DIR, 'Reddit')
 dataset = Reddit(path)
 
-# Already send node features/labels to GPU for faster access during sampling:
-data = dataset[0].to(device, 'x', 'y')
+data = dataset[0]
 
 kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
 train_loader = UniformLoader(data, input_nodes=data.train_mask,
@@ -83,8 +82,8 @@ def train(epoch):
     total_loss = total_correct = total_examples = 0
     for batch in train_loader:
         optimizer.zero_grad()
-        y = batch.y[:batch.batch_size]
-        y_hat = model(batch.x, batch.edge_index.to(device))[:batch.batch_size]
+        y = batch.y[:batch.batch_size].to(device)
+        y_hat = model(batch.x.to(device), batch.edge_index.to(device))[:batch.batch_size]
         loss = F.cross_entropy(y_hat, y)
         loss.backward()
         optimizer.step()
@@ -110,7 +109,7 @@ def test():
     return accs
 
 
-for epoch in range(1, 11):
+for epoch in range(1, settings.NUM_EPOCHS + 1):
     loss, acc = train(epoch)
     print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train: {acc:.4f}')
     train_acc, val_acc, test_acc = test()

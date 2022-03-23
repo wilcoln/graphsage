@@ -22,8 +22,7 @@ dataset = 'Cora'
 path = osp.join(settings.DATA_DIR, dataset)
 dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
 
-# Already send node features/labels to GPU for faster access during sampling:
-data = dataset[0].to(device, 'x', 'y')
+data = dataset[0]
 
 kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
 train_loader = UniformLoader(data, input_nodes=data.train_mask,
@@ -91,8 +90,8 @@ def train(epoch):
     for batch in train_loader:
         start = time.time()
         optimizer.zero_grad()
-        y = batch.y[:batch.batch_size]
-        y_hat = model(batch.x, batch.edge_index.to(device))[:batch.batch_size]
+        y = batch.y[:batch.batch_size].to(device)
+        y_hat = model(batch.x.to(device), batch.edge_index.to(device))[:batch.batch_size]
         loss = F.cross_entropy(y_hat, y)
         loss.backward()
         optimizer.step()
