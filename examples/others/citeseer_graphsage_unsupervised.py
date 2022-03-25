@@ -11,7 +11,7 @@ from torch_cluster import random_walk
 # Our own imports
 from graphsage import settings
 from graphsage.datasets import Planetoid
-from graphsage.layers import SAGE
+from graphsage.layers import SAGE, SAGEConv
 from graphsage.samplers import UniformSampler
 
 device = settings.DEVICE
@@ -50,7 +50,8 @@ class GraphSAGE(nn.Module):
         self.convs = nn.ModuleList()
         for i in range(num_layers):
             in_channels = in_channels if i == 0 else hidden_channels
-            self.convs.append(SAGE(in_channels, hidden_channels))
+            # aggregator_type = ['mean', 'max', 'gcn', 'lstm']
+            self.convs.append(SAGEConv(in_channels, hidden_channels, aggregator_type='mean'))
 
     def forward(self, x, adjs):
         for i, (edge_index, _, size) in enumerate(adjs):
