@@ -13,12 +13,9 @@ from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformSampler
+from extensions.GraphSAINT.graphsaint import *
 
 device = settings.DEVICE
-###!!! TO BE DELETED
-torch.set_num_threads(2)
-SAINT_SAMPLER = settings.SAINT_SAMPLER
-SAINT_SAMPLER_ARGS = settings.SAINT_SAMPLER_ARGS
 EPS = 1e-15
 dataset = 'Cora'
 path = osp.join(settings.DATA_DIR, dataset)
@@ -43,12 +40,8 @@ class NeighborSampler(UniformSampler):
         return super().sample(batch)
 
 
-train_loader = GraphSAINTRandomWalkSampler(data, batch_size=256, walk_length=2,
-                                     num_steps=5, sample_coverage=100,
-                                     save_dir=dataset.processed_dir)
-
-# NeighborSampler(data.edge_index, sizes=[10, 10], batch_size=256,
-                            #    shuffle=True, num_nodes=data.num_nodes)
+train_loader = NeighborSampler(data.edge_index, sizes=[10, 10], batch_size=256,
+                               shuffle=True, num_nodes=data.num_nodes)
 
 
 class GraphSAGE(nn.Module):
@@ -87,8 +80,6 @@ def train():
     model.train()
 
     total_loss = 0
-    train_loader.keys()
-    train_loader.data
     for batch_size, n_id, adjs in train_loader:
         # `adjs` holds a list of `(edge_index, e_id, size)` tuples.
         adjs = [adj.to(device) for adj in adjs]

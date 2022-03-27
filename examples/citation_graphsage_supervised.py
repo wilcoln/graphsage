@@ -12,7 +12,8 @@ from graphsage.datasets import Planetoid
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformLoader
 
-device = settings.DEVICE
+device = 'cpu'#settings.DEVICE
+torch.set_num_threads(2)
 EPS = 1e-15
 dataset = 'Cora'
 path = osp.join(settings.DATA_DIR, dataset)
@@ -21,7 +22,7 @@ dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
 # Already send node features/labels to GPU for faster access during sampling:
 data = dataset[0].to(device, 'x', 'y')
 
-kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
+kwargs = {'batch_size': settings.BATCH_SIZE}#, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
 train_loader = UniformLoader(data, input_nodes=data.train_mask,
                              num_neighbors=[25, 10], shuffle=True, **kwargs)
 
@@ -70,10 +71,45 @@ class GraphSAGE(torch.nn.Module):
             x_all = torch.cat(xs, dim=0)
         pbar.close()
         return x_all
+    # x_all = data.x
+    # self = model
+    def inference(self, x_all, subgraph_loader):
+        pbar = tqdm(total=len(subgraph_loader.dataset) * len(self.convs))
+        pbar.set_description('Evaluating')
+
+        # Compute representations of nodes layer by layer, using *all*
+        # available edges. This leads to faster computation in contrast to
+        # immediately computing the final representations of each batch:
+        self = model
+        conv = self.convs[0]
+        x_all = data.x
+        i = 0
+        for i, conv in enumerate(self.convs):
+            xs = []
+            for batch in subgraph_loader:
+                # print(batch)
+                # batch.batch_size
+                # break
+                # subgraph_loader[0]
+                # batch = next(subgraph_loader)
+                x = x_all[batch.n_id.to(x_all.device)].to(device)
+                x = conv(x, batch.edge_index.to(device))
+                x.shape
+                batch.batch_size
+                if i < len(self.convs) - 1:
+                    x = x.relu_()
+                xs.append(x[:batch.batch_size].cpu())
+                # pbar.update(batch.batch_size)
+            x_all = torch.cat(xs, dim=0)
+            x_all.shape
+        pbar.close()
+        return x_all
 
 
 model = GraphSAGE(dataset.num_features, 256, dataset.num_classes).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+
 
 
 def train(epoch):
