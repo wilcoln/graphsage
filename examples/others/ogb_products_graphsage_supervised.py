@@ -1,37 +1,48 @@
-# Reaches around 0.7870 ± 0.0036 test accuracy.
-
 import os.path as osp
 
-from icecream import ic
-
-ic()
 import torch
 import torch.nn.functional as F
+from torch_cluster import random_walk
 
-ic()  # These imports are too slow.
 from ogb.nodeproppred import Evaluator, PygNodePropPredDataset
 from tqdm import tqdm
 
-ic()
 # Our own imports
 from graphsage import settings
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformSampler
 
-ic()
 root = osp.join(settings.DATA_DIR, 'products')
 dataset = PygNodePropPredDataset('ogbn-products', root)
 split_idx = dataset.get_idx_split()
 evaluator = Evaluator(name='ogbn-products')
 data = dataset[0]
+
 train_idx = split_idx['train']
-train_loader = UniformSampler(data.edge_index, node_idx=train_idx,
-                              sizes=[15, 10, 5], batch_size=1024,
-                              shuffle=True, num_workers=12)
-subgraph_loader = UniformSampler(data.edge_index, node_idx=None, sizes=[-1],
-                                 batch_size=4096, shuffle=False,
-                                 num_workers=12)
-ic()
+
+
+class NeighborSampler(UniformSampler):
+    def sample(self, batch):
+        batch = torch.tensor(batch)
+        row, col, _ = self.adj_t.coo()
+
+        # For each node in `batch`, we sample a direct neighbor (as positive
+        # example) and a random node (as negative example):
+        pos_batch = random_walk(row, col, batch, walk_length=1,
+                                coalesced=False)[:, 1]
+
+        neg_batch = torch.randint(0, self.adj_t.size(1), (batch.numel(),),
+                                  dtype=torch.long)
+
+        batch = torch.cat([batch, pos_batch, neg_batch], dim=0)
+        return super().sample(batch)
+
+
+train_loader = NeighborSampler(data.edge_index, node_idx=train_idx,
+                               sizes=[15, 10, 5], batch_size=1024,
+                               shuffle=True)
+subgraph_loader = NeighborSampler(data.edge_index, node_idx=None, sizes=[-1],
+                                  batch_size=4096, shuffle=False)
 
 
 class GraphSAGE(torch.nn.Module):
@@ -94,12 +105,10 @@ class GraphSAGE(torch.nn.Module):
         return x_all
 
 
-ic()
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = settings.DEVICE
 model = GraphSAGE(dataset.num_features, 256, dataset.num_classes, num_layers=3)
 model = model.to(device)
 
-ic()
 x = data.x.to(device)
 y = data.y.squeeze().to(device)
 
@@ -158,32 +167,25 @@ def test():
     return train_acc, val_acc, test_acc
 
 
-ic()
 test_accs = []
-for run in range(1, 11):
-    print('')
-    print(f'Run {run:02d}:')
-    print('')
 
-    model.reset_parameters()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.003)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.003)
 
-    best_val_acc = final_test_acc = 0
-    for epoch in range(1, 21):
-        loss, acc = train(epoch)
-        print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train: {acc:.4f}')
+best_val_acc = final_test_acc = 0
 
-        if epoch > 5:
-            train_acc, val_acc, test_acc = test()
-            print(f'Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
-                  f'Test: {test_acc:.4f}')
+for epoch in range(0, 5):
+    loss, acc = train(epoch)
+    print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train: {acc:.4f}')
+    train_acc, val_acc, test_acc = test()
+    print(f'Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
+          f'Test: {test_acc:.4f}')
 
-            if val_acc > best_val_acc:
-                best_val_acc = val_acc
-                final_test_acc = test_acc
-    test_accs.append(final_test_acc)
+    if val_acc > best_val_acc:
+        best_val_acc = val_acc
+        final_test_acc = test_acc
 
-ic()
+test_accs.append(final_test_acc)
+
 test_acc = torch.tensor(test_accs)
 print('============================')
 print(f'Final Test: {test_acc.mean():.4f} ± {test_acc.std():.4f}')
