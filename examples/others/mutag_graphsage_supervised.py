@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch_geometric.nn import global_mean_pool
 
 from graphsage import settings
-from graphsage.layers import SAGE, SAGEConv
+from graphsage.layers import SAGE
 
 dataset = TUDataset(root='data/TUDataset', name='MUTAG')
 dataset = dataset.shuffle()
@@ -22,9 +22,9 @@ class GraphSAGE(torch.nn.Module):
     def __init__(self, hidden_channels):
         super(GraphSAGE, self).__init__()
         torch.manual_seed(12345)
-        self.conv1 = SAGEConv(dataset.num_node_features, hidden_channels, aggregator_type='mean')
-        self.conv2 = SAGEConv(hidden_channels, hidden_channels, aggregator_type='mean')
-        self.conv3 = SAGEConv(hidden_channels, hidden_channels, aggregator_type='mean')
+        self.conv1 = SAGE(dataset.num_node_features, hidden_channels)
+        self.conv2 = SAGE(hidden_channels, hidden_channels)
+        self.conv3 = SAGE(hidden_channels, hidden_channels)
         self.lin = Linear(hidden_channels, dataset.num_classes)
 
     def forward(self, x, edge_index, batch):
