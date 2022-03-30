@@ -9,7 +9,7 @@ from torch_geometric.nn import global_mean_pool
 # Our own imports
 from graphsage import settings
 from graphsage.datasets import Flickr
-from graphsage.layers import SAGE, SAGEConv
+from graphsage.layers import SAGE
 from graphsage.samplers import ShaDowKHopSampler
 
 

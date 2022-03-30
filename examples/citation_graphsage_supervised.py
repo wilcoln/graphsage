@@ -9,7 +9,7 @@ from tqdm import tqdm
 # Our imports
 from graphsage import settings
 from graphsage.datasets import Planetoid
-from graphsage.layers import SAGE, SAGEConv, SAGEConv
+from graphsage.layers import SAGE, SAGEConv
 from graphsage.samplers import UniformLoader
 
 device = settings.DEVICE

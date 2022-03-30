@@ -12,7 +12,7 @@ from tqdm import tqdm
 # Our own imports
 from graphsage import settings
 from graphsage.datasets import PPI
-from graphsage.layers import SAGE, SAGEConv
+from graphsage.layers import SAGE
 from graphsage.samplers import UniformSampler
 
 device = settings.DEVICE

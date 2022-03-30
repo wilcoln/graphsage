@@ -8,7 +8,7 @@ from torch_geometric.loader import DataLoader
 # Our imports
 from graphsage import settings
 from graphsage.datasets import PPI
-from graphsage.layers import SAGE, SAGEConv
+from graphsage.layers import SAGE
 
 device = settings.DEVICE
 
