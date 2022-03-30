@@ -35,7 +35,7 @@ class Reddit(InMemoryDataset):
               - #features
               - #classes
             * - 232,965
-              - 114,615,892
+              - settings.NUM_EPOCHS + 14,615,892
               - 602
               - 41
     """

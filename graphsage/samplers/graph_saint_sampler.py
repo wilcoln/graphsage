@@ -183,7 +183,7 @@ class GraphSAINTEdgeSampler(GraphSAINTSampler):
         prob = (1. / deg_in[row]) + (1. / deg_out[col])
 
         # Parallel multinomial sampling (without replacement)
-        # https://github.com/pytorch/pytorch/issues/11931#issuecomment-625882503
+        # https://github.com/pytorch/pytorch/issues/settings.NUM_EPOCHS + 1931#issuecomment-625882503
         rand = torch.rand(batch_size, self.E).log() / (prob + 1e-10)
         edge_sample = rand.topk(self.batch_size, dim=-1).indices
 

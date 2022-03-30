@@ -70,7 +70,7 @@ def test(loader):
      return correct / len(loader.dataset)  # Derive ratio of correct predictions.
 
 
-for epoch in range(1, 11):
+for epoch in range(1, settings.NUM_EPOCHS + 1):
     train()
     train_acc = test(train_loader)
     test_acc = test(test_loader)
