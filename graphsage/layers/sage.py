@@ -17,20 +17,29 @@ class SAGE(MessagePassing):
             derive the size from the first input(s) to the forward method.
             A tuple corresponds to the sizes of source and target
             dimensionalities.
-        aggregator (str): ['mean', 'max', 'gcn', 'lstm'], mean by default
+        aggregator (str): ['mean', 'max', 'gcn', 'lstm', 'bilstm', 'sum'], mean by default
         out_channels (int): Size of each output sample.
         root_weight (bool, optional): If set to :obj:`False`, the layer will
             not add transformed root node features to the output.
             (default: :obj:`True`)
         bias (bool, optional): If set to :obj:`False`, the layer will not learn
             an additive bias. (default: :obj:`True`)
+        **kwargs (optional): Additional arguments of
+            :class:`torch_geometric.nn.conv.MessagePassing`.
+            For eg: to inherit the aggregation function implementation from
+            `torch_geometric.nn.conv.MessagePassing`, set (aggr = 'func_name')
+            where func_name is in ['mean', 'sum', 'add', 'min', 'max', 'mul'];
+            additionally, set the flow direction of message passing by passing
+            the flow argument as either (flow = 'source_to_target') or
+            (flow = 'target_to_source')
     """
+
     def __init__(self, in_channels: Union[int, Tuple[int, int]],
                  out_channels: int, aggregator: str = 'mean',
                  normalize: bool = False, root_weight: bool = True,
-                 bias: bool = True):
+                 bias: bool = True, **kwargs):
 
-        super(SAGE, self).__init__()
+        super(SAGE, self).__init__(**kwargs)
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -39,13 +48,14 @@ class SAGE(MessagePassing):
         self.aggregator = aggregator
         self.bias = bias
 
-        assert self.aggregator in ['mean', 'max', 'lstm', 'gcn', 'sum', 'bilstm']
+        assert self.aggregator in ['mean', 'max', 'lstm', 'gcn', 'sum', 'bilstm', None]
 
         if isinstance(in_channels, int):
             in_channels = (in_channels, in_channels)
 
         if self.aggregator == 'gcn':
-            # GCN does not require self root node, but just the neighbours
+            # Convolutional aggregator does not concatenate the root node
+            # i.e it doesn't concatenate the nodes previous layer
             self.root_weight = False
 
         if self.aggregator == 'lstm':
@@ -81,9 +91,12 @@ class SAGE(MessagePassing):
         if isinstance(x, Tensor):
             x: OptPairTensor = (x, x)
 
+        # propagate_type: (x: OptPairTensor)
+        # propagate internally calls message_and_aggregate()
         out = self.propagate(edge_index, x=x, size=size)
         out = self.lin_l(out)
 
+        # updates node embeddings 
         x_r = x[1]  # x[1] -- root
         if self.root_weight and x_r is not None:
             out += self.lin_r(x_r)  # root doesn't get added for GCN
@@ -96,7 +109,7 @@ class SAGE(MessagePassing):
     def message_and_aggregate(self, adj_t: SparseTensor,
                               x: OptPairTensor, edge_index_j, edge_index_i) -> Tensor:
         """
-        Performs both message passing and aggregation of messages from neighbours using the aggregator_type
+        Performs both message passing and aggregation of messages from neighbours using the aggregator
         """
         adj_t = adj_t.set_value(None, layout=None)
         if self.aggregator == 'mean' or self.aggregator == 'gcn':
