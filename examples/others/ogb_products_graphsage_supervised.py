@@ -52,10 +52,11 @@ class GraphSAGE(torch.nn.Module):
         self.num_layers = num_layers
 
         self.convs = torch.nn.ModuleList()
-        self.convs.append(SAGE(in_channels, hidden_channels))
+        # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
+        self.convs.append(SAGE(in_channels, hidden_channels, aggregator_type='mean'))
         for _ in range(num_layers - 2):
-            self.convs.append(SAGE(hidden_channels, hidden_channels))
-        self.convs.append(SAGE(hidden_channels, out_channels))
+            self.convs.append(SAGE(hidden_channels, hidden_channels, aggregator_type='mean'))
+        self.convs.append(SAGE(hidden_channels, out_channels, aggregator_type='mean'))
 
     def reset_parameters(self):
         for conv in self.convs:
