@@ -24,12 +24,13 @@ test_loader = ShaDowKHopSampler(data, depth=2, num_neighbors=5,
                                 node_idx=data.test_mask, **kwargs)
 
 
-class GNN(torch.nn.Module):
+class GraphSAGE(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels):
         super().__init__()
-        self.conv1 = SAGE(in_channels, hidden_channels)
-        self.conv2 = SAGE(hidden_channels, hidden_channels)
-        self.conv3 = SAGE(hidden_channels, hidden_channels)
+        # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
+        self.conv1 = SAGE(in_channels, hidden_channels, aggregator_type='mean')
+        self.conv2 = SAGE(hidden_channels, hidden_channels, aggregator_type='mean')
+        self.conv3 = SAGE(hidden_channels, hidden_channels, aggregator_type='mean')
         self.lin = torch.nn.Linear(2 * hidden_channels, out_channels)
 
     def forward(self, x, edge_index, batch, root_n_id):
@@ -48,7 +49,7 @@ class GNN(torch.nn.Module):
 
 
 device = settings.DEVICE
-model = GNN(dataset.num_features, 256, dataset.num_classes).to(device)
+model = GraphSAGE(dataset.num_features, 256, dataset.num_classes).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 

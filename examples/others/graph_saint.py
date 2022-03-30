@@ -30,9 +30,10 @@ class GraphSAINT(torch.nn.Module):
         super().__init__()
         in_channels = dataset.num_node_features
         out_channels = dataset.num_classes
-        self.conv1 = SAGE(in_channels, hidden_channels)
-        self.conv2 = SAGE(hidden_channels, hidden_channels)
-        self.conv3 = SAGE(hidden_channels, hidden_channels)
+        # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
+        self.conv1 = SAGE(in_channels, hidden_channels, aggregator_type='mean')
+        self.conv2 = SAGE(hidden_channels, hidden_channels, aggregator_type='mean')
+        self.conv3 = SAGE(hidden_channels, hidden_channels, aggregator_type='mean')
         self.lin = torch.nn.Linear(3 * hidden_channels, out_channels)
 
     def set_aggr(self, aggr):
