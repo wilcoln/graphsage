@@ -10,12 +10,11 @@ from sklearn.metrics import f1_score
 from torch_cluster import random_walk
 from tqdm import tqdm
 
+from datasets import Reddit
 # Our own imports
 from graphsage import settings
-from graphsage.datasets import Reddit
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformSampler, UniformLoader
-
 
 # Define the device
 device = settings.DEVICE

@@ -5,9 +5,9 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 
-# Our imports
+from datasets import Reddit
+
 from graphsage import settings
-from graphsage.datasets import Reddit
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformLoader
 

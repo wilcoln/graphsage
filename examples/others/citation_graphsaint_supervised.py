@@ -1,4 +1,3 @@
-import argparse
 import os.path as osp
 
 import torch
@@ -6,8 +5,8 @@ import torch.nn.functional as F
 import torch_geometric.transforms as T
 from torch_geometric.utils import degree
 
+from datasets import Planetoid
 from graphsage import settings
-from graphsage.datasets import Planetoid
 from graphsage.layers import SAGE
 from graphsage.samplers import GraphSAINTRandomWalkSampler
 

@@ -2,9 +2,8 @@ import os.path as osp
 
 import torch
 import torch.nn.functional as F
-from torch_cluster import random_walk
-
 from ogb.nodeproppred import Evaluator, PygNodePropPredDataset
+from torch_cluster import random_walk
 from tqdm import tqdm
 
 # Our own imports

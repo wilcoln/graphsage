@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 
-
 from ... import settings
 from ...layers import SAGE
 

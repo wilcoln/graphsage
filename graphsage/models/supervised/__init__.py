@@ -1,2 +1,2 @@
-from .graphsage import *
 from .baselines import *
+from .graphsage import *

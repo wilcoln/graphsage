@@ -9,9 +9,9 @@ from torch_cluster import random_walk
 from torch_geometric.loader import DataLoader
 from tqdm import tqdm
 
+from datasets import PPI
 # Our own imports
 from graphsage import settings
-from graphsage.datasets import PPI
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformSampler
 

@@ -3,17 +3,15 @@ import os.path as osp
 
 import torch
 import torch.nn.functional as F
+import torch_geometric.transforms as T
 from torch.nn import ReLU
+from torch_geometric.nn import Linear, Sequential, to_hetero
 from tqdm import tqdm
 
-import torch_geometric.transforms as T
-from torch_geometric.nn import Linear, Sequential, to_hetero
-
 import settings
+from datasets import OGB_MAG
 from graphsage.layers import SAGE
-from graphsage.datasets import OGB_MAG
 from graphsage.samplers import UniformLoader, HGTLoader
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--use_hgt_loader', action='store_true')

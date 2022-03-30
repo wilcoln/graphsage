@@ -1,15 +1,14 @@
-import copy
 import os.path as osp
 
 import torch
 import torch_geometric.transforms as T
 
-# Our imports
+from datasets import Planetoid
+from experiments.utils import Trainer
+
 from graphsage import settings
-from graphsage.datasets import Planetoid
-from graphsage.samplers import UniformLoader
 from graphsage.models.supervised import GraphSAGE
-from utils import Trainer
+from graphsage.samplers import UniformLoader
 
 device = settings.DEVICE
 dataset = 'Cora'  # 'Cora', 'CiteSeer', 'PubMed'
