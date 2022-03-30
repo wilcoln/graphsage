@@ -6,6 +6,7 @@ from sklearn.metrics import f1_score
 
 from torch_geometric.data import Batch
 
+# Our imports
 from graphsage import settings
 from graphsage.datasets import PPI
 from graphsage.layers import SAGE
@@ -28,12 +29,11 @@ val_loader = DataLoader(val_dataset, batch_size=2, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=2, shuffle=False)
 
 
-class GraphSAGE(torch.nn.Module):
+class ClusterGCN(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, num_layers):
         super().__init__()
         self.convs = torch.nn.ModuleList()
         self.batch_norms = torch.nn.ModuleList()
-        # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
         self.convs.append(SAGE(in_channels, hidden_channels, aggregator_type='mean'))
         self.batch_norms.append(BatchNorm(hidden_channels))
         for _ in range(num_layers - 2):
@@ -51,7 +51,7 @@ class GraphSAGE(torch.nn.Module):
 
 
 device = settings.DEVICE
-model = GraphSAGE(in_channels=train_dataset.num_features, hidden_channels=1024,
+model = ClusterGCN(in_channels=train_dataset.num_features, hidden_channels=1024,
             out_channels=train_dataset.num_classes, num_layers=6).to(device)
 loss_op = torch.nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
