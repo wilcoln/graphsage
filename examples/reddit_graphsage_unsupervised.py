@@ -13,7 +13,7 @@ from tqdm import tqdm
 # Our own imports
 from graphsage import settings
 from graphsage.datasets import Reddit
-from graphsage.layers import SAGE
+from graphsage.layers import SAGE, SAGEConv
 from graphsage.samplers import UniformSampler, UniformLoader
 
 
@@ -64,7 +64,8 @@ class GraphSAGE(nn.Module):
         self.convs = nn.ModuleList()
         for i in range(num_layers):
             in_channels = in_channels if i == 0 else hidden_channels
-            self.convs.append(SAGE(in_channels, hidden_channels))
+            # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
+            self.convs.append(SAGE(in_channels, hidden_channels, aggregator_type='mean'))
 
     def forward(self, x, adjs):
         for i, (edge_index, _, size) in enumerate(adjs):

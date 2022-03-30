@@ -1,24 +1,27 @@
 from typing import Tuple, Union
 
+import torch
 import torch.nn.functional as F
 from torch import Tensor
-from torch_geometric.nn.conv import MessagePassing
-from torch_geometric.nn.dense.linear import Linear
-from torch_geometric.typing import Adj, OptPairTensor, Size
+
 from torch_sparse import SparseTensor, matmul
+
+from torch.nn import LSTM
+
+from torch_geometric.nn.dense.linear import Linear
+from torch_geometric.nn.conv import MessagePassing
+from torch_geometric.typing import Adj, OptPairTensor, Size
+from torch_geometric.utils import to_dense_batch
 
 
 class SAGE(MessagePassing):
-    r"""The GraphSAGE operator from the `"Inductive Representation Learning on
-    Large Graphs" <https://arxiv.org/abs/1706.02216>`_ paper
-    .. math::
-        \mathbf{x}^{\prime}_i = \mathbf{W}_1 \mathbf{x}_i + \mathbf{W}_2 \cdot
-        \mathrm{mean}_{j \in \mathcal{N(i)}} \mathbf{x}_j
+    """
     Args:
         in_channels (int or tuple): Size of each input sample, or :obj:`-1` to
             derive the size from the first input(s) to the forward method.
             A tuple corresponds to the sizes of source and target
             dimensionalities.
+        aggregator_type (str): ['mean', 'max', 'gcn', 'lstm'], mean by default
         out_channels (int): Size of each output sample.
         normalize (bool, optional): If set to :obj:`True`, output features
             will be :math:`\ell_2`-normalized, *i.e.*,
@@ -30,56 +33,69 @@ class SAGE(MessagePassing):
             (default: :obj:`True`)
         bias (bool, optional): If set to :obj:`False`, the layer will not learn
             an additive bias. (default: :obj:`True`)
-        **kwargs (optional): Additional arguments of
-            :class:`torch_geometric.nn.conv.MessagePassing`.
-    Shapes:
-        - **inputs:**
-          node features :math:`(|\mathcal{V}|, F_{in})` or
-          :math:`((|\mathcal{V_s}|, F_{s}), (|\mathcal{V_t}|, F_{t}))`
-          if bipartite,
-          edge indices :math:`(2, |\mathcal{E}|)`
-        - **outputs:** node features :math:`(|\mathcal{V}|, F_{out})` or
-          :math:`(|\mathcal{V_t}|, F_{out})` if bipartite
     """
-
     def __init__(self, in_channels: Union[int, Tuple[int, int]],
-                 out_channels: int, normalize: bool = False,
-                 root_weight: bool = True, bias: bool = True, **kwargs):
-        kwargs.setdefault('aggr', 'mean')
-        super().__init__(**kwargs)
+                 out_channels: int, aggregator_type: str = 'mean', 
+                 normalize: bool = False, root_weight: bool = True, 
+                 bias: bool = True):
+
+        super(SAGE, self).__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.normalize = normalize
         self.root_weight = root_weight
+        self.aggregator_type = aggregator_type
+        self.bias = bias
+        
+        assert self.aggregator_type in ['mean', 'max', 'lstm', 'gcn', 'sum', 'bilstm']
 
         if isinstance(in_channels, int):
             in_channels = (in_channels, in_channels)
 
-        self.lin_l = Linear(in_channels[0], out_channels, bias=bias)
-        if self.root_weight:
-            self.lin_r = Linear(in_channels[1], out_channels, bias=False)
+        if self.aggregator_type == 'gcn':
+          # GCN does not require self root node, but just the neighbours
+          self.root_weight = False 
+
+        if self.aggregator_type == 'lstm':
+          self.lstm = LSTM(in_channels[0], in_channels[0], batch_first=True)
+
+        if self.aggregator_type == 'bilstm':
+          self.bilstm = LSTM(in_channels[0], in_channels[0]//2, bidirectional=True, batch_first=True)
+          self.att = Linear(2 * in_channels[0], 1)
+
+        self.lin_l = Linear(in_channels[0], out_channels, bias=bias) # neighbours
+        if self.root_weight: # Not created for GCN
+            self.lin_r = Linear(in_channels[1], out_channels, bias=False) # root itself
 
         self.reset_parameters()
 
     def reset_parameters(self):
+        """
+        Reinitialises learnable parameters
+        """
         self.lin_l.reset_parameters()
         if self.root_weight:
             self.lin_r.reset_parameters()
+        if self.aggregator_type == 'lstm':
+            self.lstm.reset_parameters()
+        if self.aggregator_type == 'bilstm':
+            self.bilstm.reset_parameters()
 
     def forward(self, x: Union[Tensor, OptPairTensor], edge_index: Adj,
                 size: Size = None) -> Tensor:
-        """"""
+        """
+        Computes GraphSAGE Layer
+        """
         if isinstance(x, Tensor):
             x: OptPairTensor = (x, x)
 
-        # propagate_type: (x: OptPairTensor)
         out = self.propagate(edge_index, x=x, size=size)
         out = self.lin_l(out)
 
-        x_r = x[1]
-        if self.root_weight and x_r is not None:
-            out += self.lin_r(x_r)
+        x_r = x[1] # x[1] -- root
+        if self.root_weight and x_r is not None: 
+            out += self.lin_r(x_r) # root doesn't get added for GCN
 
         if self.normalize:
             out = F.normalize(out, p=2., dim=-1)
@@ -90,6 +106,29 @@ class SAGE(MessagePassing):
         return x_j
 
     def message_and_aggregate(self, adj_t: SparseTensor,
-                              x: OptPairTensor) -> Tensor:
+                              x: OptPairTensor, edge_index_j, edge_index_i) -> Tensor:
+        """
+        Performs both message passing and aggregation of messages from neighbours using the aggregator_type
+        """
         adj_t = adj_t.set_value(None, layout=None)
-        return matmul(adj_t, x[0], reduce=self.aggr)
+        if self.aggregator_type == 'mean' or self.aggregator_type == 'gcn':
+            return matmul(adj_t, x[0], reduce='mean')
+
+        elif self.aggregator_type == 'max':
+            return matmul(adj_t, x[0], reduce='max')
+            # return torch.stack(x[0], dim=-1).max(dim=-1)[0] - alternative implementation of max pool operation
+
+        elif self.aggregator_type == 'sum':
+            return matmul(adj_t, x[0], reduce='sum')
+            
+        elif self.aggregator_type == 'lstm':
+            x_j = x[0][edge_index_j]
+            x, mask = to_dense_batch(x_j, edge_index_i)
+            return self.lstm(x)
+
+        elif self.aggregator_type == 'bilstm':
+            x = torch.stack(x, dim=1)  # [num_nodes, num_layers, num_channels]
+            alpha, _ = self.bilstm(x)
+            alpha = self.att(alpha).squeeze(-1)  # [num_nodes, num_layers]
+            alpha = torch.softmax(alpha, dim=-1)
+            return (x * alpha.unsqueeze(-1)).sum(dim=1)

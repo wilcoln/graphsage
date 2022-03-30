@@ -8,7 +8,7 @@ from torch_geometric.loader import DataLoader
 # Our imports
 from graphsage import settings
 from graphsage.datasets import PPI
-from graphsage.layers import SAGE
+from graphsage.layers import SAGE, SAGEConv
 
 device = settings.DEVICE
 
@@ -25,8 +25,9 @@ class GraphSAGE(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels):
         super().__init__()
         self.convs = torch.nn.ModuleList()
-        self.convs.append(SAGE(in_channels, hidden_channels))
-        self.convs.append(SAGE(hidden_channels, out_channels))
+        # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
+        self.convs.append(SAGE(in_channels, hidden_channels, aggregator_type='mean'))
+        self.convs.append(SAGE(hidden_channels, out_channels, aggregator_type='mean'))
 
     def forward(self, x, edge_index):
         for i, conv in enumerate(self.convs):
