@@ -8,7 +8,7 @@ from tqdm import tqdm
 # Our imports
 from graphsage import settings
 from graphsage.datasets import Reddit
-from graphsage.layers import SAGE
+from graphsage.layers import SAGE, SAGEConv
 from graphsage.samplers import UniformLoader
 
 device = settings.DEVICE

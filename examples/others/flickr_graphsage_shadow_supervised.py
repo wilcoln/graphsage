@@ -2,14 +2,16 @@ import os.path as osp
 
 import torch
 import torch.nn.functional as F
+
 # pyg imports
 from torch_geometric.nn import global_mean_pool
 
 # Our own imports
 from graphsage import settings
 from graphsage.datasets import Flickr
-from graphsage.layers import SAGE
+from graphsage.layers import SAGE, SAGEConv
 from graphsage.samplers import ShaDowKHopSampler
+
 
 path = osp.join(settings.DATA_DIR, 'Flickr')
 dataset = Flickr(path)

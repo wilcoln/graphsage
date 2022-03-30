@@ -11,7 +11,7 @@ from torch_cluster import random_walk
 # Our own imports
 from graphsage import settings
 from graphsage.datasets import Planetoid
-from graphsage.layers import SAGE
+from graphsage.layers import SAGE, SAGEConv
 from graphsage.samplers import UniformSampler
 
 device = settings.DEVICE
