@@ -221,6 +221,7 @@ class NeighborLoader(BaseDataLoader):
         self.directed = directed
         self.transform = transform
         self.neighbor_sampler = neighbor_sampler
+        self.data.n_id = torch.arange(data.num_nodes)
 
         if neighbor_sampler is None:
             input_node_type = get_input_node_type(input_nodes)

@@ -23,9 +23,9 @@ class GraphSAGE(torch.nn.Module):
         super(GraphSAGE, self).__init__()
         torch.manual_seed(12345)
         # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
-        self.conv1 = SAGE(dataset.num_node_features, hidden_channels, aggregator_type='mean')
-        self.conv2 = SAGE(hidden_channels, hidden_channels, aggregator_type='mean')
-        self.conv3 = SAGE(hidden_channels, hidden_channels, aggregator_type='mean')
+        self.conv1 = SAGE(dataset.num_node_features, hidden_channels, aggregator='mean')
+        self.conv2 = SAGE(hidden_channels, hidden_channels, aggregator='mean')
+        self.conv3 = SAGE(hidden_channels, hidden_channels, aggregator='mean')
         self.lin = Linear(hidden_channels, dataset.num_classes)
 
     def forward(self, x, edge_index, batch):

@@ -26,8 +26,8 @@ class GraphSAGE(torch.nn.Module):
         super().__init__()
         self.convs = torch.nn.ModuleList()
         # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
-        self.convs.append(SAGE(in_channels, hidden_channels, aggregator_type='mean'))
-        self.convs.append(SAGE(hidden_channels, out_channels, aggregator_type='mean'))
+        self.convs.append(SAGE(in_channels, hidden_channels, aggregator='mean'))
+        self.convs.append(SAGE(hidden_channels, out_channels, aggregator='mean'))
 
     def forward(self, x, edge_index):
         for i, conv in enumerate(self.convs):

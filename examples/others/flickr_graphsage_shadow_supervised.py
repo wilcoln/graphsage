@@ -30,9 +30,9 @@ class GraphSAGE(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels):
         super().__init__()
         # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
-        self.conv1 = SAGE(in_channels, hidden_channels, aggregator_type='mean')
-        self.conv2 = SAGE(hidden_channels, hidden_channels, aggregator_type='mean')
-        self.conv3 = SAGE(hidden_channels, hidden_channels, aggregator_type='mean')
+        self.conv1 = SAGE(in_channels, hidden_channels, aggregator='mean')
+        self.conv2 = SAGE(hidden_channels, hidden_channels, aggregator='mean')
+        self.conv3 = SAGE(hidden_channels, hidden_channels, aggregator='mean')
         self.lin = torch.nn.Linear(2 * hidden_channels, out_channels)
 
     def forward(self, x, edge_index, batch, root_n_id):

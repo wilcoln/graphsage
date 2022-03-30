@@ -51,7 +51,7 @@ class GraphSAGE(nn.Module):
         for i in range(num_layers):
             in_channels = in_channels if i == 0 else hidden_channels
             # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
-            self.convs.append(SAGE(in_channels, hidden_channels, aggregator_type='mean'))
+            self.convs.append(SAGE(in_channels, hidden_channels, aggregator='mean'))
 
     def forward(self, x, adjs):
         for i, (edge_index, _, size) in enumerate(adjs):
