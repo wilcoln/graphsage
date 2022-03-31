@@ -4,6 +4,7 @@ from sklearn.metrics import f1_score
 from tqdm import tqdm
 import torch.nn.functional as F
 
+import settings
 from .base_trainers import BaseTrainer, SupervisedBaseTrainer
 
 
@@ -62,18 +63,23 @@ class UnsupervisedTrainerForGraphClassification(BaseTrainer):
     def __init__(self,
                  train_loader,
                  val_loader,
+                 sampler,
                  test_loader,
-                 train_loader_list,
-                 train_data_list,
                  *args, **kwargs):
         super(UnsupervisedTrainerForGraphClassification, self).__init__(*args, **kwargs)
 
-        self.train_loader_list = train_loader_list
-        self.train_data_list = train_data_list
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
 
+        self.train_data_list = [data for data in train_loader.dataset]
+
+        self.train_loader_list = []
+
+        for curr_graph in self.train_data_list:
+            _train_loader = sampler(curr_graph.edge_index, sizes=[25, 10], batch_size=settings.BATCH_SIZE, shuffle=True,
+                                           num_nodes=curr_graph.num_nodes)
+            self.train_loader_list.append(_train_loader)
 
     def train(self):
         self.model.train()

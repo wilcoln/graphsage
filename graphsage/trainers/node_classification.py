@@ -5,20 +5,23 @@ from sklearn.metrics import f1_score
 
 from tqdm import tqdm
 
+import settings
 from .base_trainers import SupervisedBaseTrainer, BaseTrainer
 
 
 class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
     def __init__(self,
                  data,
-                 train_loader,
-                 subgraph_loader,
+                 loader,
                  *args, **kwargs):
         super(SupervisedTrainerForNodeClassification, self).__init__(*args, **kwargs)
 
         self.data = data
-        self.train_loader = train_loader
-        self.subgraph_loader = subgraph_loader
+        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
+        self.train_loader = loader(data, input_nodes=data.train_mask,
+                                   num_neighbors=[25, 10], shuffle=False, **kwargs)
+
+        self.subgraph_loader = loader(data, input_nodes=None, num_neighbors=[25, 10], shuffle=False, **kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -73,14 +76,19 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
 class UnsupervisedTrainerForNodeClassification(BaseTrainer):
     def __init__(self,
                  data,
-                 train_loader,
-                 subgraph_loader,
+                 sampler,
+                 loader,
                  *args, **kwargs):
         super(UnsupervisedTrainerForNodeClassification, self).__init__(*args, **kwargs)
 
         self.data = data
-        self.train_loader = train_loader
-        self.subgraph_loader = subgraph_loader
+
+        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
+
+        self.train_loader = sampler(self.data.edge_index, sizes=[25, 10], shuffle=True, num_nodes=data.num_nodes,
+                                           **kwargs)
+
+        self.subgraph_loader = loader(self.data, input_nodes=None, num_neighbors=[25, 10], shuffle=False, **kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -109,6 +117,7 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
     def test(self):
         self.model.eval()
         out = self.model.inference(self.data.x, self.subgraph_loader).cpu()
+        self.data.y = self.data.y.cpu()
 
         clf = SGDClassifier(loss="log", penalty="l2")
         clf.fit(out[self.data.train_mask], self.data.y[self.data.train_mask])

@@ -21,16 +21,6 @@ train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=2, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=2, shuffle=False)
 
-train_data_list = [data for data in train_dataset]
-
-
-train_loader_list = []
-
-for curr_graph in train_data_list:
-    _train_loader = UniformSampler(curr_graph.edge_index, sizes=[25, 10], batch_size=settings.BATCH_SIZE, shuffle=True,
-                                    num_nodes=curr_graph.num_nodes)
-    train_loader_list.append(_train_loader)
-
 
 model = GraphSAGE(
     in_channels=train_dataset.num_node_features,
@@ -43,9 +33,8 @@ model = GraphSAGE(
 UnsupervisedTrainerForGraphClassification(
     model=model,
     num_epochs=settings.NUM_EPOCHS,
+    sampler=UniformSampler,
     train_loader=train_loader,
-    train_loader_list=train_loader_list,
-    train_data_list=train_data_list,
     val_loader=val_loader,
     test_loader=test_loader,
     optimizer=torch.optim.Adam(model.parameters(), lr=0.01),

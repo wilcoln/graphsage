@@ -17,12 +17,6 @@ dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
 # Already send node features/labels to GPU for faster access during sampling:
 data = dataset[0].to(device, 'x', 'y')
 
-kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
-train_loader = UniformLoader(data, input_nodes=data.train_mask,
-                             num_neighbors=[25, 10], shuffle=False, **kwargs)
-
-subgraph_loader = UniformLoader(data, input_nodes=None, num_neighbors=[25, 10], shuffle=False, **kwargs)
-
 model = GraphSAGE(
     in_channels=dataset.num_features,
     hidden_channels=256,
@@ -35,9 +29,8 @@ model = GraphSAGE(
 SupervisedTrainerForNodeClassification(
     model=model,
     data=data,
+    loader=UniformLoader,
     num_epochs=settings.NUM_EPOCHS,
-    train_loader=train_loader,
-    subgraph_loader=subgraph_loader,
     loss_fn=torch.nn.CrossEntropyLoss(),
     optimizer=torch.optim.Adam(model.parameters(), lr=0.01),
     device=device,
