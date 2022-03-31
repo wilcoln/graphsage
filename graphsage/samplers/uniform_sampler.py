@@ -1,6 +1,7 @@
 from typing import Callable, List, NamedTuple, Optional, Tuple, Union
 
 import torch
+from icecream import ic
 from torch import Tensor
 from torch_cluster import random_walk
 from torch_sparse import SparseTensor
@@ -198,6 +199,11 @@ class UniformSampler(torch.utils.data.DataLoader):
         if not isinstance(batch, Tensor):
             batch = torch.tensor(batch)
         row, col, _ = self.adj_t.coo()
+
+        ic(self.adj_t.coo())
+        ic(self.adj_t.size(1))
+        ic(row.shape)
+        ic(col.shape)
 
         # For each node in `batch`, we sample a direct neighbor (as positive
         # example) and a random node (as negative example):

@@ -2,12 +2,11 @@ from collections.abc import Sequence
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
+from icecream import ic
 from torch import Tensor
-from torch_geometric.data import Data, HeteroData
+from torch_geometric.data import Data
 from torch_geometric.loader.base import BaseDataLoader
-from torch_geometric.loader.utils import (edge_type_to_str, filter_data,
-                                          filter_hetero_data, to_csc,
-                                          to_hetero_csc)
+from torch_geometric.loader.utils import filter_data, to_csc
 from torch_geometric.typing import EdgeType, InputNodes
 
 NumNeighbors = Union[List[int], Dict[EdgeType, List[int]]]
@@ -16,45 +15,20 @@ NumNeighbors = Union[List[int], Dict[EdgeType, List[int]]]
 class NeighborSampler:
     def __init__(
             self,
-            data: Union[Data, HeteroData],
+            data: Data,
             num_neighbors: NumNeighbors,
             replace: bool = False,
             directed: bool = True,
-            input_node_type: Optional[str] = None,
+            unsupervised: bool = False,
     ):
         self.data_cls = data.__class__
         self.num_neighbors = num_neighbors
         self.replace = replace
         self.directed = directed
+        self.unsupervised = unsupervised
 
-        if isinstance(data, Data):
-            # Convert the graph data into a suitable format for sampling.
-            self.colptr, self.row, self.perm = to_csc(data, device='cpu')
-            assert isinstance(num_neighbors, (list, tuple))
-
-        elif isinstance(data, HeteroData):
-            # Convert the graph data into a suitable format for sampling.
-            # NOTE: Since C++ cannot take dictionaries with tuples as key as
-            # input, edge type triplets are converted into single strings.
-            out = to_hetero_csc(data, device='cpu')
-            self.colptr_dict, self.row_dict, self.perm_dict = out
-
-            self.node_types, self.edge_types = data.metadata()
-            if isinstance(num_neighbors, (list, tuple)):
-                num_neighbors = {key: num_neighbors for key in self.edge_types}
-            assert isinstance(num_neighbors, dict)
-            self.num_neighbors = {
-                edge_type_to_str(key): value
-                for key, value in num_neighbors.items()
-            }
-
-            self.num_hops = max([len(v) for v in self.num_neighbors.values()])
-
-            assert isinstance(input_node_type, str)
-            self.input_node_type = input_node_type
-
-        else:
-            raise TypeError(f'NeighborLoader found invalid type: {type(data)}')
+        self.colptr, self.row, self.perm = to_csc(data, device='cpu')
+        assert isinstance(num_neighbors, (list, tuple))
 
     def __call__(self, index: Union[List[int], Tensor]):
         if not isinstance(index, torch.LongTensor):
@@ -71,21 +45,6 @@ class NeighborSampler:
                 self.directed,
             )
             return node, row, col, edge, index.numel()
-
-        elif issubclass(self.data_cls, HeteroData):
-            sample_fn = torch.ops.torch_sparse.hetero_neighbor_sample
-            node_dict, row_dict, col_dict, edge_dict = sample_fn(
-                self.node_types,
-                self.edge_types,
-                self.colptr_dict,
-                self.row_dict,
-                {self.input_node_type: index},
-                self.num_neighbors,
-                self.num_hops,
-                self.replace,
-                self.directed,
-            )
-            return node_dict, row_dict, col_dict, edge_dict, index.numel()
 
 
 class NeighborLoader(BaseDataLoader):
@@ -199,13 +158,14 @@ class NeighborLoader(BaseDataLoader):
 
     def __init__(
             self,
-            data: Union[Data, HeteroData],
+            data: Data,
             num_neighbors: NumNeighbors,
             input_nodes: InputNodes = None,
             replace: bool = False,
             directed: bool = True,
             transform: Callable = None,
             neighbor_sampler: Optional[NeighborSampler] = None,
+            unsupervised: bool = False,
             **kwargs,
     ):
         if 'dataset' in kwargs:
@@ -224,27 +184,18 @@ class NeighborLoader(BaseDataLoader):
         self.data.n_id = torch.arange(data.num_nodes)
 
         if neighbor_sampler is None:
-            input_node_type = get_input_node_type(input_nodes)
             self.neighbor_sampler = NeighborSampler(data, num_neighbors,
                                                     replace, directed,
-                                                    input_node_type)
+                                                    unsupervised)
 
         return super().__init__(get_input_node_indices(self.data, input_nodes),
                                 collate_fn=self.neighbor_sampler, **kwargs)
 
-    def transform_fn(self, out: Any) -> Union[Data, HeteroData]:
-        if isinstance(self.data, Data):
-            node, row, col, edge, batch_size = out
-            data = filter_data(self.data, node, row, col, edge,
-                               self.neighbor_sampler.perm)
-            data.batch_size = batch_size
-
-        elif isinstance(self.data, HeteroData):
-            node_dict, row_dict, col_dict, edge_dict, batch_size = out
-            data = filter_hetero_data(self.data, node_dict, row_dict, col_dict,
-                                      edge_dict,
-                                      self.neighbor_sampler.perm_dict)
-            data[self.neighbor_sampler.input_node_type].batch_size = batch_size
+    def transform_fn(self, out: Any) -> Data:
+        node, row, col, edge, batch_size = out
+        data = filter_data(self.data, node, row, col, edge,
+                           self.neighbor_sampler.perm)
+        data.batch_size = batch_size
 
         return data if self.transform is None else self.transform(data)
 
@@ -254,29 +205,10 @@ class NeighborLoader(BaseDataLoader):
 
 ###############################################################################
 
-
-def get_input_node_type(input_nodes: InputNodes) -> Optional[str]:
-    if isinstance(input_nodes, str):
-        return input_nodes
-    if isinstance(input_nodes, (list, tuple)):
-        assert isinstance(input_nodes[0], str)
-        return input_nodes[0]
-    return None
-
-
-def get_input_node_indices(data: Union[Data, HeteroData],
+def get_input_node_indices(data: Data,
                            input_nodes: InputNodes) -> Sequence:
-    if isinstance(data, Data) and input_nodes is None:
+    if input_nodes is None:
         return range(data.num_nodes)
-    if isinstance(data, HeteroData):
-        if isinstance(input_nodes, str):
-            input_nodes = (input_nodes, None)
-        assert isinstance(input_nodes, (list, tuple))
-        assert len(input_nodes) == 2
-        assert isinstance(input_nodes[0], str)
-        if input_nodes[1] is None:
-            return range(data[input_nodes[0]].num_nodes)
-        input_nodes = input_nodes[1]
 
     if isinstance(input_nodes, Tensor):
         if input_nodes.dtype == torch.bool:

@@ -33,7 +33,7 @@ UnsupervisedTrainerForNodeClassification(
     sampler=UniformSampler,
     loader=UniformLoader,
     num_epochs=settings.NUM_EPOCHS,
-    optimizer=torch.optim.Adam(model.parameters(), lr=0.01),
+    optimizer=torch.optim.Adam(model.parameters(), lr=0.0001),
     device=device,
 ).run()
 

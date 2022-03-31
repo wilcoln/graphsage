@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from icecream import ic
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 
@@ -106,6 +107,7 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
             pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
             neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
             loss = -pos_loss - neg_loss
+
             loss.backward()
             self.optimizer.step()
             total_loss += float(loss) * out.size(0)
