@@ -24,7 +24,7 @@ model = GraphSAGE(
 ).to(device)
 
 SupervisedTrainerForGraphClassification(
-    model,
+    model=model,
     loss_fn=torch.nn.BCEWithLogitsLoss(),
     optimizer=torch.optim.Adam(model.parameters(), lr=0.005),
     train_loader=DataLoader(train_dataset, batch_size=1, shuffle=True),

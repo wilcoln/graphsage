@@ -5,35 +5,20 @@ from sklearn.metrics import f1_score
 
 from tqdm import tqdm
 
+from .base_trainers import SupervisedBaseTrainer, BaseTrainer
 
-class SupervisedTrainerForNodeClassification:
+
+class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
     def __init__(self,
-                 model,
-                 optimizer,
-                 loss_fn,
                  data,
                  train_loader,
                  subgraph_loader,
-                 num_epochs,
-                 device):
+                 *args, **kwargs):
+        super(SupervisedTrainerForNodeClassification, self).__init__(*args, **kwargs)
 
-        self.model = model
-        self.optimizer = optimizer
-        self.loss_fn = loss_fn
         self.data = data
         self.train_loader = train_loader
         self.subgraph_loader = subgraph_loader
-        self.num_epochs = num_epochs
-        self.device = device
-        self.train_losses = []
-        self.val_losses = []
-        self.test_losses = []
-        self.train_accuracies = []
-        self.val_accuracies = []
-        self.test_accuracies = []
-        self.train_micro_f1s = []
-        self.val_micro_f1s = []
-        self.test_micro_f1s = []
 
     def train(self, epoch):
         self.model.train()
@@ -85,32 +70,17 @@ class SupervisedTrainerForNodeClassification:
         self.test_accuracies.append(test_acc)
 
 
-class UnsupervisedTrainerForNodeClassification:
+class UnsupervisedTrainerForNodeClassification(BaseTrainer):
     def __init__(self,
-                 model,
-                 optimizer,
                  data,
                  train_loader,
                  subgraph_loader,
-                 num_epochs,
-                 device):
+                 *args, **kwargs):
+        super(UnsupervisedTrainerForNodeClassification, self).__init__(*args, **kwargs)
 
-        self.model = model
-        self.optimizer = optimizer
         self.data = data
         self.train_loader = train_loader
         self.subgraph_loader = subgraph_loader
-        self.num_epochs = num_epochs
-        self.device = device
-        self.train_losses = []
-        self.val_losses = []
-        self.test_losses = []
-        self.train_accuracies = []
-        self.val_accuracies = []
-        self.test_accuracies = []
-        self.train_micro_f1s = []
-        self.val_micro_f1s = []
-        self.test_micro_f1s = []
 
     def train(self, epoch):
         self.model.train()

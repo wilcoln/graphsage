@@ -4,35 +4,20 @@ from sklearn.metrics import f1_score
 from tqdm import tqdm
 import torch.nn.functional as F
 
+from .base_trainers import BaseTrainer, SupervisedBaseTrainer
 
-class SupervisedTrainerForGraphClassification:
+
+class SupervisedTrainerForGraphClassification(SupervisedBaseTrainer):
     def __init__(self,
-                 model,
-                 optimizer,
-                 loss_fn,
                  train_loader,
                  val_loader,
                  test_loader,
-                 num_epochs,
-                 device):
+                 *args, **kwargs):
+        super(SupervisedTrainerForGraphClassification, self).__init__(*args, **kwargs)
 
-        self.model = model
-        self.optimizer = optimizer
-        self.loss_fn = loss_fn
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
-        self.num_epochs = num_epochs
-        self.device = device
-        self.train_losses = []
-        self.val_losses = []
-        self.test_losses = []
-        self.train_accuracies = []
-        self.val_accuracies = []
-        self.test_accuracies = []
-        self.train_micro_f1s = []
-        self.val_micro_f1s = []
-        self.test_micro_f1s = []
 
     def train(self):
         self.model.train()
@@ -73,36 +58,22 @@ class SupervisedTrainerForGraphClassification:
             self.test_micro_f1s.append(test_f1)
 
 
-class UnsupervisedTrainerForGraphClassification:
+class UnsupervisedTrainerForGraphClassification(BaseTrainer):
     def __init__(self,
-                 model,
-                 optimizer,
                  train_loader,
                  val_loader,
                  test_loader,
-                 num_epochs,
                  train_loader_list,
                  train_data_list,
-                 device):
+                 *args, **kwargs):
+        super(UnsupervisedTrainerForGraphClassification, self).__init__(*args, **kwargs)
 
-        self.model = model
-        self.optimizer = optimizer
         self.train_loader_list = train_loader_list
         self.train_data_list = train_data_list
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
-        self.num_epochs = num_epochs
-        self.device = device
-        self.train_losses = []
-        self.val_losses = []
-        self.test_losses = []
-        self.train_accuracies = []
-        self.val_accuracies = []
-        self.test_accuracies = []
-        self.train_micro_f1s = []
-        self.val_micro_f1s = []
-        self.test_micro_f1s = []
+
 
     def train(self):
         self.model.train()
