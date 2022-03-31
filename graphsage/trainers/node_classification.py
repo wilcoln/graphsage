@@ -5,7 +5,7 @@ from sklearn.metrics import f1_score
 
 from tqdm import tqdm
 
-import settings
+from graphsage import settings
 from .base_trainers import SupervisedBaseTrainer, BaseTrainer
 
 

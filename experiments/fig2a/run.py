@@ -1,6 +1,8 @@
 import json
+import os
 import os.path as osp
 from collections import defaultdict
+from datetime import datetime as dt
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -20,10 +22,15 @@ for model in fig2a_settings.MODELS:
     except NotImplementedError:
         print(f'Skipping {model}')
 
-# Save results
+
+# Create folder
+date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
+results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2a', date)
+os.makedirs(results_path)
+
 # Save dictionary to json file
-results_path = osp.join(graphsage_settings.RESULTS_DIR, f'fig2a.json')
-with open(results_path, 'w') as f:
+json_path = osp.join(results_path, f'fig2a.json')
+with open(json_path, 'w') as f:
     json.dump(results, f)
 
 # Use results to plot train and test time for each model in a bar plot
@@ -53,7 +60,10 @@ fig.tight_layout()
 
 
 # Save the plot in results directory
-plt.savefig(osp.join(graphsage_settings.RESULTS_DIR, 'fig2a.png'))
+plt.savefig(osp.join(results_path, 'fig2a.png'))
+
+# Print path to results
+print(f'Results saved to {results_path}')
 
 # Show the plot
 plt.show()

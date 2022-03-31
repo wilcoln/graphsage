@@ -4,7 +4,7 @@ from .reddit_graphsage_supervised import GraphSAGEMeanRunner, GraphSAGEPoolRunne
 runners = {
     # model: runner
     'graphsage_mean': GraphSAGEMeanRunner,
-    'graphsage_pool': GraphSAGEPoolRunner,
+    'graphsage_max': GraphSAGEPoolRunner,
 }
 
 

@@ -1,6 +1,10 @@
 import json
+import os
 import os.path as osp
 from collections import defaultdict
+from datetime import datetime as dt
+
+from icecream import ic
 
 from experiments.table1 import runners
 from experiments.table1 import settings as table1_settings
@@ -12,30 +16,35 @@ results = defaultdict(lambda: defaultdict(dict))
 # Run experiments
 for dataset in table1_settings.DATASETS:
     print(f'Running experiment for dataset {dataset}')
-    for model in table1_settings.MODELS:
-        print(f'Running experiment for model {model}')
-        for training_mode in table1_settings.TRAINING_MODES:
-            print(f'Running experiment for training mode {training_mode}')
+    for training_mode in table1_settings.TRAINING_MODES:
+        print(f'Running experiment for training mode {training_mode}')
+        for model in table1_settings.MODELS:
+            print(f'Running experiment for model {model}')
             try:
-                results[dataset][model][training_mode] = runners.get(dataset, model, training_mode).run()
+                results[dataset][training_mode][model] = runners.get(dataset, training_mode, model).run()
             except NotImplementedError:
-                print(f'Skipping {dataset}, {model}, {training_mode}')
+                print(f'Skipping {dataset}, {training_mode}, {model}')
 
 
 # Add percentage f1 gain relative to raw features baseline
 for dataset in table1_settings.DATASETS:
-    for model in table1_settings.MODELS:
-        for training_mode in table1_settings.TRAINING_MODES:
+    for training_mode in table1_settings.TRAINING_MODES:
+        for model in table1_settings.MODELS:
             try:
-                results[dataset][model][training_mode]['percentage_f1_gain'] = \
-                    (results[dataset][model][training_mode]['test_f1'] -
-                     results[dataset]['raw_features'][training_mode]['test_f1']) / \
-                    results[dataset]['raw_features'][training_mode]['test_f1']
+                results[dataset][training_mode][model]['percentage_f1_gain'] = \
+                    (results[dataset][training_mode][model]['test_f1'] -
+                     results[dataset][training_mode]['raw_features']['test_f1']) / \
+                    results[dataset][training_mode]['raw_features']['test_f1']
             except:
                 pass
 
+# Create folder
+date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
+folder_path = osp.join(graphsage_settings.RESULTS_DIR, 'table1', date)
+os.makedirs(folder_path)
+
 # Save results
-results_path = osp.join(graphsage_settings.RESULTS_DIR, f'table1.json')
+results_path = osp.join(folder_path, 'table1.json')
 with open(results_path, 'w') as f:
     json.dump(results, f)
 

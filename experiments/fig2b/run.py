@@ -1,7 +1,8 @@
 import json
+import os
 import os.path as osp
 from collections import defaultdict
-
+from datetime import datetime as dt
 import numpy as np
 from icecream import ic
 from matplotlib import pyplot as plt
@@ -22,10 +23,14 @@ for sample_size in fig2b_settings.SAMPLE_SIZES:
     except NotImplementedError:
         print(f'Skipping {sample_size}')
 
-# Save results
+# Create folder
+date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
+results_path = osp.join(graphsage_settings.RESULTS_DIR, 'table1', date)
+os.makedirs(results_path)
+
 # Save dictionary to json file
-results_path = osp.join(graphsage_settings.RESULTS_DIR, f'fig2b.json')
-with open(results_path, 'w') as f:
+json_path = osp.join(results_path, f'fig2b.json')
+with open(json_path, 'w') as f:
     json.dump(results, f)
 
 
@@ -56,8 +61,12 @@ fig.tight_layout()  # otherwise the right y-label is slightly clipped
 
 
 # Save the plot in results directory
-plt.savefig(osp.join(graphsage_settings.RESULTS_DIR, 'fig2b.png'))
+plt.savefig(osp.join(results_path, 'fig2b.png'))
+
+# Print path to results
+print(f'Results saved to {results_path}')
 
 
 # Show the plot
 plt.show()
+

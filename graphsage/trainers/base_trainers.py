@@ -6,7 +6,7 @@ from datetime import datetime as dt
 import pandas as pd
 from matplotlib import pyplot as plt
 
-import settings
+from graphsage import settings
 
 
 def capitalize(underscore_string):
@@ -91,6 +91,9 @@ class BaseTrainer:
 
         # Save results
         self.save_results()
+
+        # Return epoch results with highest validation accuracy or f1 score
+        return max(self.results, key=lambda x: max(x.get('val_acc', 0), x.get('val_f1', 0)))
 
     def train(self, epoch) -> float:
         raise NotImplementedError

@@ -1,1 +1,1 @@
-
+HiDDEN_CHANNELS = 256

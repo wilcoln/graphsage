@@ -4,7 +4,7 @@ from sklearn.metrics import f1_score
 from tqdm import tqdm
 import torch.nn.functional as F
 
-import settings
+from graphsage import settings
 from .base_trainers import BaseTrainer, SupervisedBaseTrainer
 
 

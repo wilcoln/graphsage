@@ -3,7 +3,7 @@ DATASET = 'reddit'
 MODELS = [
     'graphsage_gcn',
     'graphsage_mean',
-    'graphsage_pool',
+    'graphsage_max',
     'graphsage_lstm',
     'deepwalk',
 ]
