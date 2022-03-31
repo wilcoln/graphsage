@@ -20,7 +20,7 @@ class SupervisedTrainerForGraphClassification(SupervisedBaseTrainer):
         self.val_loader = val_loader
         self.test_loader = test_loader
 
-    def train(self):
+    def train(self, epoch):
         self.model.train()
 
         total_loss = 0
@@ -46,17 +46,17 @@ class SupervisedTrainerForGraphClassification(SupervisedBaseTrainer):
         y, pred = torch.cat(ys, dim=0).numpy(), torch.cat(preds, dim=0).numpy()
         return f1_score(y, pred, average='micro') if pred.sum() > 0 else 0
 
-    def run(self):
-        for epoch in range(1, self.num_epochs + 1):
-            loss = self.train()
-            val_f1 = self.eval(self.val_loader)
-            test_f1 = self.eval(self.test_loader)
-            print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, Val: {val_f1:.4f}, '
-                  f'Test: {test_f1:.4f}')
+    @torch.no_grad()
+    def test(self):
+        train_f1 = self.eval(self.train_loader)
+        val_f1 = self.eval(self.val_loader)
+        test_f1 = self.eval(self.test_loader)
 
-            self.train_losses.append(loss)
-            self.val_micro_f1s.append(val_f1)
-            self.test_micro_f1s.append(test_f1)
+        return {
+            'train_f1': train_f1,
+            'val_f1': val_f1,
+            'test_f1': test_f1
+        }
 
 
 class UnsupervisedTrainerForGraphClassification(BaseTrainer):
@@ -81,7 +81,7 @@ class UnsupervisedTrainerForGraphClassification(BaseTrainer):
                                            num_nodes=curr_graph.num_nodes)
             self.train_loader_list.append(_train_loader)
 
-    def train(self):
+    def train(self, epoch):
         self.model.train()
 
         total_loss = 0
@@ -144,17 +144,10 @@ class UnsupervisedTrainerForGraphClassification(BaseTrainer):
         test_predictions = clf.predict(test_embeddings)
         test_f1 = f1_score(test_labels, test_predictions, average='micro')
 
-        return train_f1, val_f1, test_f1
+        return {
+            'train_f1': train_f1,
+            'val_f1': val_f1,
+            'test_f1': test_f1
+        }
 
-    def run(self):
-        for epoch in range(1, self.num_epochs + 1):
-            loss = self.train()
-            train_f1, val_f1, test_f1 = self.test()
-            print('Epoch: {:03d}, Loss: {:.4f}, Train F1: {:.4f}, Val F1: {:.4f}, Test F1: {:.4f}'
-                  .format(epoch, loss, train_f1, val_f1, test_f1))
-
-            self.train_losses.append(loss)
-            self.train_micro_f1s.append(train_f1)
-            self.val_micro_f1s.append(val_f1)
-            self.test_micro_f1s.append(test_f1)
 

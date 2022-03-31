@@ -13,7 +13,8 @@ from trainers import UnsupervisedTrainerForGraphClassification
 
 device = settings.DEVICE
 
-path = osp.join(settings.DATA_DIR, 'PPI')
+dataset_name = 'PPI'
+path = osp.join(settings.DATA_DIR, dataset_name)
 train_dataset = PPI(path, split='train')
 val_dataset = PPI(path, split='val')
 test_dataset = PPI(path, split='test')
@@ -31,6 +32,7 @@ model = GraphSAGE(
 ).to(device)
 
 UnsupervisedTrainerForGraphClassification(
+    dataset_name=dataset_name,
     model=model,
     num_epochs=settings.NUM_EPOCHS,
     sampler=UniformSampler,

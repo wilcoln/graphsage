@@ -1,10 +1,9 @@
-from . import citation_graphsage_unsupervised, citation_graphsage_supervised
 
 # Dict of all implemented runners
 runners = {
     # dataset, model, training_mode: runner
-    ('citation', 'graphsage_mean', 'supervised'): citation_graphsage_supervised,
-    ('citation', 'graphsage_mean', 'unsupervised'): citation_graphsage_unsupervised,
+    ('citation', 'graphsage_mean', 'supervised'): None,
+    ('citation', 'graphsage_mean', 'unsupervised'): None,
 }
 
 

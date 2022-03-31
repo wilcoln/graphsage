@@ -57,20 +57,11 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
             int((y_hat[mask] == y[mask]).sum()) / int(mask.sum())
             for mask in [self.data.train_mask, self.data.val_mask, self.data.test_mask]
         ]
-        return accs
-
-    def run(self):
-        for epoch in range(1, self.num_epochs + 1):
-            loss = self.train(epoch)
-            train_acc, val_acc, test_acc = self.test()
-            print(f'Epoch: {epoch:02d}, Loss: {loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, '
-                  f'Test Acc: {test_acc:.4f}')
-
-        # Save results
-        self.train_losses.append(loss)
-        self.train_accuracies.append(train_acc)
-        self.val_accuracies.append(val_acc)
-        self.test_accuracies.append(test_acc)
+        return {
+            'train_acc': accs[0],
+            'val_acc': accs[1],
+            'test_acc': accs[2],
+        }
 
 
 class UnsupervisedTrainerForNodeClassification(BaseTrainer):
@@ -133,19 +124,10 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
         pred = clf.predict(out[self.data.val_mask])
         val_f1 = f1_score(self.data.y[self.data.val_mask], pred, average='micro')
 
-        return val_f1, val_acc, test_f1, test_acc
-
-    def run(self):
-        for epoch in range(1, self.num_epochs + 1):
-            loss = self.train(epoch)
-            val_f1, val_acc, test_f1, test_acc = self.test()
-            # print epoch and results
-            print(f'Epoch: {epoch:02d}, Loss: {loss:.4f}, Val F1: {val_f1:.4f}, Test F1: {test_f1:.4f}')
-
-        # Save results
-        self.train_losses.append(loss)
-        self.val_accuracies.append(val_acc)
-        self.test_accuracies.append(test_acc)
-        self.val_micro_f1s.append(val_f1)
-        self.test_micro_f1s.append(test_f1)
+        return {
+            'val_acc': val_acc,
+            'test_acc': test_acc,
+            'test_f1': test_f1,
+            'val_f1': val_f1,
+        }
 

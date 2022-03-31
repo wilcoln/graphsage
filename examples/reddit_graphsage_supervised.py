@@ -10,7 +10,8 @@ from models.supervised import GraphSAGE
 
 device = settings.DEVICE
 
-path = osp.join(settings.DATA_DIR, 'Reddit')
+dataset_name = 'Reddit'
+path = osp.join(settings.DATA_DIR, dataset_name)
 dataset = Reddit(path)
 
 data = dataset[0]
@@ -25,6 +26,7 @@ model = GraphSAGE(
 
 
 SupervisedTrainerForNodeClassification(
+    dataset_name=dataset_name,
     model=model,
     data=data,
     loader=UniformLoader,
