@@ -1,10 +1,12 @@
-from .reddit_graphsage_supervised import GraphSAGEMeanRunner, GraphSAGEPoolRunner
+from experiments.fig2a.runners import graphsage_runners
 
 # Dict of all implemented runners
 runners = {
     # model: runner
-    'graphsage_mean': GraphSAGEMeanRunner,
-    'graphsage_max': GraphSAGEPoolRunner,
+    'graphsage_mean': graphsage_runners.get('mean'),
+    'graphsage_max': graphsage_runners.get('max'),
+    'graphsage_gcn': graphsage_runners.get('gcn'),
+    'graphsage_lstm': graphsage_runners.get('lstm'),
 }
 
 

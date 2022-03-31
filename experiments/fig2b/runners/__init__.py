@@ -1,4 +1,4 @@
-from .citation_graphsage_supervised import SampleSizeRunner
+from .runners import SampleSizeRunner
 # Dict of all implemented runners
 from ..settings import SAMPLE_SIZES
 
