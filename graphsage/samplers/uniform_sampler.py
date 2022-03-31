@@ -2,6 +2,7 @@ from typing import Callable, List, NamedTuple, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
+from torch_cluster import random_walk
 from torch_sparse import SparseTensor
 
 
@@ -166,7 +167,7 @@ class UniformSampler(torch.utils.data.DataLoader):
         super().__init__(
             node_idx.view(-1).tolist(), collate_fn=self.sample, **kwargs)
 
-    def sample(self, batch):
+    def _sample(self, batch):
         if not isinstance(batch, Tensor):
             batch = torch.tensor(batch)
 
@@ -192,6 +193,22 @@ class UniformSampler(torch.utils.data.DataLoader):
         out = (batch_size, n_id, adjs)
         out = self.transform(*out) if self.transform is not None else out
         return out
+
+    def sample(self, batch):
+        if not isinstance(batch, Tensor):
+            batch = torch.tensor(batch)
+        row, col, _ = self.adj_t.coo()
+
+        # For each node in `batch`, we sample a direct neighbor (as positive
+        # example) and a random node (as negative example):
+        pos_batch = random_walk(row, col, batch, walk_length=1,
+                                coalesced=False)[:, 1]
+
+        neg_batch = torch.randint(0, self.adj_t.size(1), (batch.numel(),),
+                                  dtype=torch.long)
+
+        batch = torch.cat([batch, pos_batch, neg_batch], dim=0)
+        return self._sample(batch)
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(sizes={self.sizes})'

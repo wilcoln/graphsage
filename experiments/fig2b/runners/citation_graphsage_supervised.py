@@ -8,9 +8,8 @@ import torch_geometric.transforms as T
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
-from datasets import Planetoid
-
 from graphsage import settings
+from graphsage.datasets import Planetoid
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformLoader
 

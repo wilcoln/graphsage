@@ -1,15 +1,18 @@
 import torch
 import torch.nn.functional as F
 
-from ... import settings
-from ...layers import SAGE
+from graphsage import settings
+from graphsage.layers import SAGE
 
 device = settings.DEVICE
 
 
 class GraphSAGE(torch.nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels, aggregator, num_layers):
+    def __init__(self, in_channels, hidden_channels, aggregator, num_layers, out_channels=None):
         super().__init__()
+
+        if out_channels is None:
+            out_channels = hidden_channels
 
         self.layers = torch.nn.ModuleList(
             [SAGE(in_channels, hidden_channels, aggregator)] +
@@ -37,6 +40,6 @@ class GraphSAGE(torch.nn.Module):
                 x = layer(x, batch.edge_index.to(device))
                 if i < len(self.layers) - 1:
                     x = x.relu_()
-                xs.append(x[:batch.batch_size].cpu())
+                xs.append(x[:batch.batch_size])
             x_all = torch.cat(xs, dim=0)
         return x_all

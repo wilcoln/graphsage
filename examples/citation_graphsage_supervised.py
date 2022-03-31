@@ -3,12 +3,11 @@ import os.path as osp
 import torch
 import torch_geometric.transforms as T
 
-from datasets import Planetoid
-from experiments.utils import Trainer
-
 from graphsage import settings
+from graphsage.datasets import Planetoid
 from graphsage.models.supervised import GraphSAGE
 from graphsage.samplers import UniformLoader
+from graphsage.trainers import SupervisedTrainerForNodeClassification
 
 device = settings.DEVICE
 dataset = 'Cora'  # 'Cora', 'CiteSeer', 'PubMed'
@@ -33,7 +32,7 @@ model = GraphSAGE(
 ).to(device)
 
 
-Trainer(
+SupervisedTrainerForNodeClassification(
     model=model,
     data=data,
     num_epochs=settings.NUM_EPOCHS,

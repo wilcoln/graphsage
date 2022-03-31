@@ -9,7 +9,7 @@ from torch_geometric.nn import Linear, Sequential, to_hetero
 from tqdm import tqdm
 
 import settings
-from datasets import OGB_MAG
+from graphsage.datasets import OGB_MAG
 from graphsage.layers import SAGE
 from graphsage.samplers import UniformLoader, HGTLoader
 

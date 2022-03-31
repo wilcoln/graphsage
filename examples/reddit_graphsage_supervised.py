@@ -1,15 +1,12 @@
-import copy
 import os.path as osp
 
 import torch
-import torch.nn.functional as F
-from tqdm import tqdm
-
-from datasets import Reddit
 
 from graphsage import settings
-from graphsage.layers import SAGE
+from graphsage.datasets import Reddit
 from graphsage.samplers import UniformLoader
+from graphsage.trainers import SupervisedTrainerForNodeClassification
+from models.supervised import GraphSAGE
 
 device = settings.DEVICE
 
@@ -19,100 +16,25 @@ dataset = Reddit(path)
 data = dataset[0]
 
 kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
-train_loader = UniformLoader(data, input_nodes=data.train_mask,
-                              num_neighbors=[25, 10], shuffle=True, **kwargs)
+train_loader = UniformLoader(data, input_nodes=data.train_mask, num_neighbors=[25, 10], shuffle=False, **kwargs)
 
-subgraph_loader = UniformLoader(copy.copy(data), input_nodes=None,
-                                 num_neighbors=[-1], shuffle=False, **kwargs)
+subgraph_loader = UniformLoader(data, input_nodes=None, num_neighbors=[25, 10], shuffle=False, **kwargs)
 
-# No need to maintain these features during evaluation:
-del subgraph_loader.data.x, subgraph_loader.data.y
-# Add global node index information.
-subgraph_loader.data.num_nodes = data.num_nodes
-subgraph_loader.data.n_id = torch.arange(data.num_nodes)
+model = GraphSAGE(
+    in_channels=dataset.num_features,
+    hidden_channels=256,
+    out_channels=dataset.num_classes,
+    num_layers=2,
+    aggregator='mean',
+).to(device)
 
-
-class GraphSAGE(torch.nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels):
-        super().__init__()
-        self.convs = torch.nn.ModuleList()
-        # aggregator_type = ['mean', 'gcn', 'max', 'sum', 'lstm', 'bilstm']
-        self.convs.append(SAGE(in_channels, hidden_channels, aggregator='mean'))
-        self.convs.append(SAGE(hidden_channels, out_channels, aggregator='mean'))
-
-    def forward(self, x, edge_index):
-        for i, conv in enumerate(self.convs):
-            x = conv(x, edge_index)
-            if i < len(self.convs) - 1:
-                x = x.relu_()
-                x = F.dropout(x, p=0.5, training=self.training)
-        return x
-
-    @torch.no_grad()
-    def inference(self, x_all, subgraph_loader):
-        pbar = tqdm(total=len(subgraph_loader.dataset) * len(self.convs))
-        pbar.set_description('Evaluating')
-
-        # Compute representations of nodes layer by layer, using *all*
-        # available edges. This leads to faster computation in contrast to
-        # immediately computing the final representations of each batch:
-        for i, conv in enumerate(self.convs):
-            xs = []
-            for batch in subgraph_loader:
-                x = x_all[batch.n_id.to(x_all.device)].to(device)
-                x = conv(x, batch.edge_index.to(device))
-                if i < len(self.convs) - 1:
-                    x = x.relu_()
-                xs.append(x[:batch.batch_size].cpu())
-                pbar.update(batch.batch_size)
-            x_all = torch.cat(xs, dim=0)
-        pbar.close()
-        return x_all
-
-
-model = GraphSAGE(dataset.num_features, 256, dataset.num_classes).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-
-
-def train(epoch):
-    model.train()
-
-    pbar = tqdm(total=int(len(train_loader.dataset)))
-    pbar.set_description(f'Epoch {epoch:02d}')
-
-    total_loss = total_correct = total_examples = 0
-    for batch in train_loader:
-        optimizer.zero_grad()
-        y = batch.y[:batch.batch_size].to(device)
-        y_hat = model(batch.x.to(device), batch.edge_index.to(device))[:batch.batch_size]
-        loss = F.cross_entropy(y_hat, y)
-        loss.backward()
-        optimizer.step()
-
-        total_loss += float(loss) * batch.batch_size
-        total_correct += int((y_hat.argmax(dim=-1) == y).sum())
-        total_examples += batch.batch_size
-        pbar.update(batch.batch_size)
-    pbar.close()
-
-    return total_loss / total_examples, total_correct / total_examples
-
-
-@torch.no_grad()
-def test():
-    model.eval()
-    y_hat = model.inference(data.x, subgraph_loader).argmax(dim=-1)
-    y = data.y.to(y_hat.device)
-
-    accs = []
-    for mask in [data.train_mask, data.val_mask, data.test_mask]:
-        accs.append(int((y_hat[mask] == y[mask]).sum()) / int(mask.sum()))
-    return accs
-
-
-for epoch in range(1, settings.NUM_EPOCHS + 1):
-    loss, acc = train(epoch)
-    print(f'Epoch {epoch:02d}, Loss: {loss:.4f}, Approx. Train: {acc:.4f}')
-    train_acc, val_acc, test_acc = test()
-    print(f'Epoch: {epoch:02d}, Train: {train_acc:.4f}, Val: {val_acc:.4f}, '
-          f'Test: {test_acc:.4f}')
+SupervisedTrainerForNodeClassification(
+    model=model,
+    data=data,
+    num_epochs=settings.NUM_EPOCHS,
+    train_loader=train_loader,
+    subgraph_loader=subgraph_loader,
+    loss_fn=torch.nn.CrossEntropyLoss(),
+    optimizer=torch.optim.Adam(model.parameters(), lr=0.01),
+    device=device,
+).run()
