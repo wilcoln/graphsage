@@ -1,0 +1,1 @@
+{"graphsage_gcn": {"test_time": 23.039976771876635, "train_time": 0.03277542794144913}, "graphsage_mean": {"test_time": 23.18078554123211, "train_time": 0.03772185181229762}, "graphsage_max": {"test_time": 23.18969105127321, "train_time": 0.03735846781963583}, "graphsage_lstm": {"test_time": 22.991556677051868, "train_time": 0.0372142948078011}}
