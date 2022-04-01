@@ -11,8 +11,12 @@ from graphsage.samplers import UniformLoader
 from graphsage.trainers import SupervisedTrainerForNodeClassification
 
 device = settings.DEVICE
-dataset_name = 'Cora'
+
+dataset_name = fig2b_settings.DATASET.capitalize()
 path = osp.join(settings.DATA_DIR, dataset_name)
+dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
+# Send nodes to GPU for faster sampling
+data = dataset[0].to(device, 'x', 'y')
 
 
 class SampleSizeRunner:
@@ -23,10 +27,6 @@ class SampleSizeRunner:
         test_times = []
         test_f1s = []
         for _ in range(fig2b_settings.NUM_RUNS):
-            dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
-
-            # Already send node features/labels to GPU for faster access during sampling:
-            data = dataset[0].to(device, 'x', 'y')
 
             model = GraphSAGE(
                 in_channels=dataset.num_features,

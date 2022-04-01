@@ -3,20 +3,27 @@ import time
 
 import torch
 import torch.nn.functional as F
+import torch_geometric.transforms as T
 from tqdm import tqdm
 
 import experiments.fig2a.settings as fig2a_settings
 from graphsage import settings
-from graphsage.datasets import Reddit
+from graphsage.datasets import Reddit, Planetoid
 from graphsage.models.supervised import GraphSAGE
 from graphsage.samplers import UniformLoader
 
 device = settings.DEVICE
 
-path = osp.join(settings.DATA_DIR, 'Reddit')
 
-# dataset_name = 'Cora'
-# path = osp.join(settings.DATA_DIR, dataset_name)
+if fig2a_settings.DATASET == 'reddit':
+    path = osp.join(settings.DATA_DIR, fig2a_settings.DATASET.capitalize())
+    dataset = Reddit(path)
+
+
+if fig2a_settings.DATASET in {'cora', 'citeseer', 'pubmed'}:
+    dataset_name = fig2a_settings.DATASET.capitalize()
+    path = osp.join(settings.DATA_DIR, dataset_name)
+    dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
 
 kwargs = {'batch_size': fig2a_settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
 
@@ -63,9 +70,6 @@ def test(model, subgraph_loader, data):
 
 
 def run(aggregator):
-    dataset = Reddit(path)
-    # dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
-
     data = dataset[0]
 
     train_loader = UniformLoader(data, input_nodes=data.train_mask,
