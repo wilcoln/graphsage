@@ -19,3 +19,7 @@ if args.dataset is not None:
     DATASET = args.dataset
     DATASET = 'cora' if DATASET == 'citation' else DATASET  # Cora is our default citation dataset
 
+if args.batch_size is not None:
+    BATCH_SIZE = args.batch_size
+
+

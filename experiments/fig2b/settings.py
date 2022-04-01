@@ -18,3 +18,7 @@ if args.dataset is not None:
 if args.num_runs is not None:
     NUM_RUNS = args.num_runs
 
+if args.batch_size is not None:
+    BATCH_SIZE = args.batch_size
+
+
