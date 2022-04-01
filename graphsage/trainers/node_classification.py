@@ -32,8 +32,8 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
         total_loss = total_examples = 0
         for batch in self.train_loader:
             self.optimizer.zero_grad()
-            y = batch.y[:batch.batch_size]
-            y_hat = self.model(batch.x, batch.edge_index.to(self.device))[:batch.batch_size]
+            y = batch.y[:batch.batch_size].to(self.device)
+            y_hat = self.model(batch.x.to(self.device), batch.edge_index.to(self.device))[:batch.batch_size]
             loss = self.loss_fn(y_hat, y)
 
             loss.backward()
