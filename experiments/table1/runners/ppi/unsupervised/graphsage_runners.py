@@ -8,7 +8,7 @@ from graphsage import settings
 from graphsage.datasets import PPI
 from graphsage.models.unsupervised import GraphSAGE
 from graphsage.trainers import UnsupervisedTrainerForGraphClassification
-from samplers import UniformSampler
+from graphsage.samplers import UniformSampler
 
 device = settings.DEVICE
 

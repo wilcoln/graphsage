@@ -28,7 +28,9 @@ if args.colab:
     NUM_WORKERS = 2
 
 if args.num_epochs is not None:
-    NUM_EPOCHS = args.num_epochs
+    # NUM_EPOCHS = args.num_epochs
+    NUM_EPOCHS = 10
 
 if args.batch_size is not None:
-    BATCH_SIZE = args.batch_size
+    # BATCH_SIZE = args.batch_size
+    BATCH_SIZE = 512
