@@ -67,4 +67,4 @@ print(f'Results saved to {results_path}')
 
 # Show the plot
 plt.show()
-
+plt.close()

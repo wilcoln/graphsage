@@ -19,7 +19,7 @@ path = osp.join(settings.DATA_DIR, 'Reddit')
 # dataset_name = 'Cora'
 # path = osp.join(settings.DATA_DIR, dataset_name)
 
-kwargs = {'batch_size': fig2a_settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
+kwargs = {'batch_size': fig2a_settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
 
 
 def train(epoch, model, optimizer, train_loader):

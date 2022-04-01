@@ -15,7 +15,7 @@ path = osp.join(settings.DATA_DIR, 'Flickr')
 dataset = Flickr(path)
 data = dataset[0]
 
-kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
+kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
 train_loader = ShaDowKHopSampler(data, depth=2, num_neighbors=5,
                                  node_idx=data.train_mask, **kwargs)
 val_loader = ShaDowKHopSampler(data, depth=2, num_neighbors=5,

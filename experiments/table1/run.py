@@ -4,8 +4,6 @@ import os.path as osp
 from collections import defaultdict
 from datetime import datetime as dt
 
-from icecream import ic
-
 from experiments.table1 import runners
 from experiments.table1 import settings as table1_settings
 from graphsage import settings as graphsage_settings

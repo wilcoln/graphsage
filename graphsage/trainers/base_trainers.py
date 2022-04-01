@@ -1,6 +1,7 @@
 import os
 import os.path as osp
 import json
+import time
 from datetime import datetime as dt
 
 import pandas as pd
@@ -19,12 +20,16 @@ class BaseTrainer:
                  model,
                  optimizer,
                  num_epochs,
-                 device):
+                 device,
+                 k1: int = 25,
+                 k2: int = 10):
         self.model = model
         self.dataset_name = dataset_name
         self.optimizer = optimizer
         self.num_epochs = num_epochs
         self.device = device
+        self.k1 = k1
+        self.k2 = k2
 
         self.results = []
 
@@ -63,6 +68,7 @@ class BaseTrainer:
             # plt.ylabel(col_name)
 
             plt.savefig(osp.join(folder_path, f'{col}.png'))
+            plt.close()
 
         with open(osp.join(folder_path, 'params.json'), 'w') as f:
             json.dump(params_dict, f)
@@ -73,14 +79,20 @@ class BaseTrainer:
         # Print path to results
         print(f'Results saved to {folder_path}')
 
-    def run(self):
+    def run(self, return_best_epoch_only=True):
+
         for epoch in range(1, self.num_epochs + 1):
             # Train & test
+            start = time.time()
             loss = self.train(epoch)
+            train_time = time.time() - start
+
+            start = time.time()
             test_results = self.test()
+            test_time = time.time() - start
 
             # Save epoch results
-            epoch_results = {'loss': loss, **test_results}
+            epoch_results = {'loss': loss, **test_results, 'train_time': train_time, 'test_time': test_time}
 
             # print epoch and results
             current_results_str = ', '.join([f'{capitalize(k)}: {v:.4f}' for k, v in epoch_results.items()])
@@ -92,8 +104,15 @@ class BaseTrainer:
         # Save results
         self.save_results()
 
-        # Return epoch results with highest validation accuracy or f1 score
-        return max(self.results, key=lambda x: max(x.get('val_acc', 0), x.get('val_f1', 0)))
+        # Get best epoch result
+        best = max(self.results, key=lambda x: max(x.get('val_acc', 0), x.get('val_f1', 0)))
+
+        # Return best epoch results i.e. the one w/ the highest validation accuracy or f1 score
+        if return_best_epoch_only:
+            return best
+        else:
+            # Return best & all epoch results
+            return best, self.results
 
     def train(self, epoch) -> float:
         raise NotImplementedError

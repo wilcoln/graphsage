@@ -17,11 +17,11 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
         super(SupervisedTrainerForNodeClassification, self).__init__(*args, **kwargs)
 
         self.data = data
-        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
+        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
         self.train_loader = loader(data, input_nodes=data.train_mask,
-                                   num_neighbors=[25, 10], shuffle=False, **kwargs)
+                                   num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
 
-        self.subgraph_loader = loader(data, input_nodes=None, num_neighbors=[25, 10], shuffle=False, **kwargs)
+        self.subgraph_loader = loader(data, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -53,14 +53,24 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
         y_hat = self.model.inference(self.data.x, self.subgraph_loader).argmax(dim=-1)
         y = self.data.y.to(y_hat.device)
 
+        # compute accuracies for each class
         accs = [
             int((y_hat[mask] == y[mask]).sum()) / int(mask.sum())
+            for mask in [self.data.train_mask, self.data.val_mask, self.data.test_mask]
+        ]
+
+        # compute F1 scores for each class
+        f1_scores = [
+            f1_score(y[mask].cpu(), y_hat[mask].cpu(), average='micro')
             for mask in [self.data.train_mask, self.data.val_mask, self.data.test_mask]
         ]
         return {
             'train_acc': accs[0],
             'val_acc': accs[1],
             'test_acc': accs[2],
+            'train_f1': f1_scores[0],
+            'val_f1': f1_scores[1],
+            'test_f1': f1_scores[2]
         }
 
 
@@ -74,7 +84,7 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
 
         self.data = data
 
-        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
+        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
 
         self.train_loader = sampler(self.data.edge_index, sizes=[25, 10], shuffle=True, num_nodes=data.num_nodes,
                                            **kwargs)
@@ -113,20 +123,24 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
         clf = SGDClassifier(loss="log", penalty="l2")
         clf.fit(out[self.data.train_mask], self.data.y[self.data.train_mask])
 
-        # compute test and val accuracies score
-
+        # compute accuracies for each split
+        train_acc = clf.score(out[self.data.train_mask], self.data.y[self.data.train_mask])
         val_acc = clf.score(out[self.data.val_mask], self.data.y[self.data.val_mask])
         test_acc = clf.score(out[self.data.test_mask], self.data.y[self.data.test_mask])
 
-        # compute test and val f1 score
+        # compute f1 scores for each split
+        pred = clf.predict(out[self.data.train_mask])
+        train_f1 = f1_score(self.data.y[self.data.train_mask], pred, average='micro')
         pred = clf.predict(out[self.data.test_mask])
         test_f1 = f1_score(self.data.y[self.data.test_mask], pred, average='micro')
         pred = clf.predict(out[self.data.val_mask])
         val_f1 = f1_score(self.data.y[self.data.val_mask], pred, average='micro')
 
         return {
+            'train_acc': train_acc,
             'val_acc': val_acc,
             'test_acc': test_acc,
+            'train_f1': train_f1,
             'test_f1': test_f1,
             'val_f1': val_f1,
         }

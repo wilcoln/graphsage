@@ -28,7 +28,7 @@ data = dataset[0]
 
 train_input_nodes = ('paper', data['paper'].train_mask)
 val_input_nodes = ('paper', data['paper'].val_mask)
-kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': True}
+kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
 
 if not args.use_hgt_loader:
     train_loader = UniformLoader(data, num_neighbors=[10] * 2, shuffle=True,
