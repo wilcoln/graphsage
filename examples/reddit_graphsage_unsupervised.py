@@ -23,7 +23,6 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-
 UnsupervisedTrainerForNodeClassification(
     dataset_name=dataset_name,
     model=model,

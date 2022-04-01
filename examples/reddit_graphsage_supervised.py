@@ -24,7 +24,6 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-
 SupervisedTrainerForNodeClassification(
     dataset_name=dataset_name,
     model=model,
@@ -35,4 +34,3 @@ SupervisedTrainerForNodeClassification(
     optimizer=torch.optim.Adam(model.parameters(), lr=0.01),
     device=device,
 ).run()
-

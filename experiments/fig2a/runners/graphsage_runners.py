@@ -5,11 +5,11 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 
+import experiments.fig2a.settings as fig2a_settings
 from graphsage import settings
 from graphsage.datasets import Reddit
 from graphsage.models.supervised import GraphSAGE
 from graphsage.samplers import UniformLoader
-import experiments.fig2a.settings as fig2a_settings
 
 device = settings.DEVICE
 
@@ -63,7 +63,6 @@ def test(model, subgraph_loader, data):
 
 
 def run(aggregator):
-
     dataset = Reddit(path)
     # dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
 

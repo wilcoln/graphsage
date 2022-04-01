@@ -32,9 +32,9 @@ kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS
 
 if not args.use_hgt_loader:
     train_loader = UniformLoader(data, num_neighbors=[10] * 2, shuffle=True,
-                                  input_nodes=train_input_nodes, **kwargs)
+                                 input_nodes=train_input_nodes, **kwargs)
     val_loader = UniformLoader(data, num_neighbors=[10] * 2,
-                                input_nodes=val_input_nodes, **kwargs)
+                               input_nodes=val_input_nodes, **kwargs)
 else:
     train_loader = HGTLoader(data, num_samples=[1024] * 4, shuffle=True,
                              input_nodes=train_input_nodes, **kwargs)

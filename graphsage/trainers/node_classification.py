@@ -2,7 +2,6 @@ import torch
 import torch.nn.functional as F
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
-
 from tqdm import tqdm
 
 from graphsage import settings
@@ -46,7 +45,6 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
 
         return total_loss / total_examples
 
-
     @torch.no_grad()
     def test(self):
         self.model.eval()
@@ -86,10 +84,12 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
 
         kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
 
-        self.train_loader = sampler(self.data.edge_index, sizes=[25, 10], shuffle=True, num_nodes=data.num_nodes,
-                                           **kwargs)
+        self.train_loader = sampler(self.data.edge_index, sizes=[self.k1, self.k2], shuffle=True,
+                                    num_nodes=data.num_nodes,
+                                    **kwargs)
 
-        self.subgraph_loader = loader(self.data, input_nodes=None, num_neighbors=[25, 10], shuffle=False, **kwargs)
+        self.subgraph_loader = loader(self.data, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=False,
+                                      **kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -112,7 +112,6 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
             total_loss += float(loss) * out.size(0)
 
         return total_loss / self.data.num_nodes
-
 
     @torch.no_grad()
     def test(self):
@@ -144,4 +143,3 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
             'test_f1': test_f1,
             'val_f1': val_f1,
         }
-

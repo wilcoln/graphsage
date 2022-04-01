@@ -141,7 +141,6 @@ class OGB_MAG(InMemoryDataset):
                           ('author', 'writes', 'paper'),
                           ('paper', 'cites', 'paper'),
                           ('paper', 'has_topic', 'field_of_study')]:
-
             f = '___'.join(edge_type)
             path = osp.join(self.raw_dir, 'relations', f, 'edge.csv.gz')
             edge_index = pd.read_csv(path, compression='gzip', header=None,

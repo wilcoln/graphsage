@@ -30,4 +30,3 @@ if args.num_epochs is not None:
 
 if args.batch_size is not None:
     BATCH_SIZE = args.batch_size
-

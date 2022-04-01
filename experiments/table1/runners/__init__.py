@@ -1,11 +1,10 @@
-import experiments.table1.settings as table1_settings
-
 import experiments.table1.runners.citation.supervised.graphsage_runners as sup_citation_graphsage_runners
 import experiments.table1.runners.citation.unsupervised.graphsage_runners as unsup_citation_graphsage_runners
 import experiments.table1.runners.ppi.supervised.graphsage_runners as sup_ppi_graphsage_runners
 import experiments.table1.runners.ppi.unsupervised.graphsage_runners as unsup_ppi_graphsage_runners
 import experiments.table1.runners.reddit.supervised.graphsage_runners as sup_reddit_graphsage_runners
 import experiments.table1.runners.reddit.unsupervised.graphsage_runners as unsup_reddit_graphsage_runners
+import experiments.table1.settings as table1_settings
 
 # Dict of all implemented runners
 runners = {
@@ -49,4 +48,3 @@ def get(dataset, training_mode, model):
             return runners[dataset][training_mode][model]
     except KeyError:
         raise NotImplementedError
-

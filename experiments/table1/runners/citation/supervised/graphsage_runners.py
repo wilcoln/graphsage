@@ -4,12 +4,12 @@ import os.path as osp
 import torch
 import torch_geometric.transforms as T
 
+import experiments.table1.settings as table1_settings
 from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.models.supervised import GraphSAGE
 from graphsage.samplers import UniformLoader
 from graphsage.trainers import SupervisedTrainerForNodeClassification
-import experiments.table1.settings as table1_settings
 
 device = settings.DEVICE
 dataset_name = 'Cora'  # 'Cora', 'CiteSeer', 'PubMed'
@@ -42,4 +42,3 @@ def get(aggregator):
         optimizer=torch.optim.Adam(model.parameters(), lr=table1_settings.SUPERVISED_LEARNING_RATE),
         device=device,
     )
-

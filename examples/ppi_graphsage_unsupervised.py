@@ -1,7 +1,6 @@
 import os.path as osp
 
 import torch
-
 from torch_geometric.loader import DataLoader
 
 # Our own imports
@@ -21,7 +20,6 @@ test_dataset = PPI(path, split='test')
 train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=2, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=2, shuffle=False)
-
 
 model = GraphSAGE(
     in_channels=train_dataset.num_node_features,

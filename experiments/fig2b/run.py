@@ -3,8 +3,8 @@ import os
 import os.path as osp
 from collections import defaultdict
 from datetime import datetime as dt
+
 import numpy as np
-from icecream import ic
 from matplotlib import pyplot as plt
 
 from experiments.fig2b import runners
@@ -13,7 +13,6 @@ from graphsage import settings as graphsage_settings
 
 # Initialize the results dictionary
 results = defaultdict(dict)
-
 
 # Run experiments
 for sample_size in fig2b_settings.SAMPLE_SIZES:
@@ -32,7 +31,6 @@ os.makedirs(results_path)
 json_path = osp.join(results_path, f'fig2b.json')
 with open(json_path, 'w') as f:
     json.dump(results, f)
-
 
 xss = np.array(fig2b_settings.SAMPLE_SIZES)
 data1 = np.array([results[ss]['test_f1'] for ss in xss])
@@ -57,15 +55,12 @@ fig.legend(loc='lower right')
 
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
 
-
 # Save the plot in results directory
 plt.savefig(osp.join(results_path, 'fig2b.png'))
 
 # Print path to results
 print(f'Results saved to {results_path}')
 
-
 # Show the plot
 plt.show()
 plt.close()
-

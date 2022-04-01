@@ -23,7 +23,6 @@ for dataset in table1_settings.DATASETS:
             except NotImplementedError:
                 print(f'Skipping {dataset}, {training_mode}, {model}')
 
-
 # Add percentage f1 gain relative to raw features baseline
 for dataset in table1_settings.DATASETS:
     for training_mode in table1_settings.TRAINING_MODES:
@@ -48,7 +47,3 @@ with open(results_path, 'w') as f:
 
 # Print path to results
 print(f'Results saved to {results_path}')
-
-
-
-

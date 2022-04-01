@@ -3,12 +3,12 @@ import os.path as osp
 import torch
 import torch_geometric.transforms as T
 
+import experiments.fig2b.settings as fig2b_settings
 from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.models.supervised import GraphSAGE
 from graphsage.samplers import UniformLoader
 from graphsage.trainers import SupervisedTrainerForNodeClassification
-import experiments.fig2b.settings as fig2b_settings
 
 device = settings.DEVICE
 dataset_name = 'Cora'
@@ -57,4 +57,3 @@ class SampleSizeRunner:
             'test_time': sum(test_times) / len(test_times),
             'test_f1': sum(test_f1s) / len(test_f1s),
         }
-

@@ -1,6 +1,6 @@
+import json
 import os
 import os.path as osp
-import json
 import time
 from datetime import datetime as dt
 

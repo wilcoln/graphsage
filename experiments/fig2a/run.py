@@ -22,7 +22,6 @@ for model in fig2a_settings.MODELS:
     except NotImplementedError:
         print(f'Skipping {model}')
 
-
 # Create folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
 results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2a', date)
@@ -57,7 +56,6 @@ ax.bar_label(rects1, padding=3)
 ax.bar_label(rects2, padding=3)
 
 fig.tight_layout()
-
 
 # Save the plot in results directory
 plt.savefig(osp.join(results_path, 'fig2a.png'))

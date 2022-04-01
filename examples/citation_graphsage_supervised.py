@@ -25,7 +25,6 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-
 SupervisedTrainerForNodeClassification(
     dataset_name=dataset_name,
     model=model,

@@ -3,12 +3,12 @@ import os.path as osp
 import torch
 import torch_geometric.transforms as T
 
+import experiments.table1.settings as table1_settings
 from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.models.unsupervised import GraphSAGE
 from graphsage.samplers import UniformLoader, UniformSampler
 from graphsage.trainers import UnsupervisedTrainerForNodeClassification
-import experiments.table1.settings as table1_settings
 
 device = settings.DEVICE
 dataset_name = 'Cora'  # 'Cora', 'CiteSeer', 'PubMed'
@@ -31,12 +31,12 @@ def get(aggregator):
 
     # Return trainer
     return UnsupervisedTrainerForNodeClassification(
-            dataset_name=dataset_name,
-            model=model,
-            data=data,
-            sampler=UniformSampler,
-            loader=UniformLoader,
-            num_epochs=settings.NUM_EPOCHS,
-            optimizer=torch.optim.Adam(model.parameters(), lr=table1_settings.UNSUPERVISED_LEARNING_RATE),
-            device=device,
-        )
+        dataset_name=dataset_name,
+        model=model,
+        data=data,
+        sampler=UniformSampler,
+        loader=UniformLoader,
+        num_epochs=settings.NUM_EPOCHS,
+        optimizer=torch.optim.Adam(model.parameters(), lr=table1_settings.UNSUPERVISED_LEARNING_RATE),
+        device=device,
+    )

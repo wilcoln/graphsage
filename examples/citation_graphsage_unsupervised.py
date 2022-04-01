@@ -26,7 +26,6 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-
 UnsupervisedTrainerForNodeClassification(
     dataset_name=dataset_name,
     model=model,
@@ -37,5 +36,3 @@ UnsupervisedTrainerForNodeClassification(
     optimizer=torch.optim.Adam(model.parameters(), lr=0.01),
     device=device,
 ).run()
-
-
