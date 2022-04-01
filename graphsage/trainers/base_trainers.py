@@ -51,7 +51,7 @@ class BaseTrainer:
 
         # Create folder name
         date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
-        folder_name = date + '_' + '_'.join([f'{k}={v}' for k, v in folder_name_dict.items()])
+        folder_name = '_'.join([date] + [f'{k}={v}' for k, v in folder_name_dict.items()])
         folder_path = osp.join(settings.RESULTS_DIR, 'trainers', folder_name)
 
         # Create folder

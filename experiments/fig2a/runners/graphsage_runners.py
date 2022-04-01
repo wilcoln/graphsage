@@ -45,28 +45,28 @@ def train(epoch, model, optimizer, train_loader):
         loss.backward()
         optimizer.step()
         total_loss += float(loss) * batch.batch_size
-        train_time += (time.time() - start) * batch.batch_size
+        train_time += time.time() - start
         total_examples += batch.batch_size
         pbar.update(batch.batch_size)
     pbar.close()
 
-    return total_loss / total_examples, train_time / total_examples
+    train_time = time.time() - start
+
+    return total_loss / total_examples, train_time / len(train_loader)
 
 
 @torch.no_grad()
-def test(model, subgraph_loader, data):
+def test(model, subgraph_loader):
     model.eval()
 
     start = time.time()
-    y_hat = model.inference(data.x, subgraph_loader).argmax(dim=-1)
+    y_hat = model.inference(subgraph_loader).argmax(dim=-1)
     test_time = time.time() - start
 
-    y = data.y.to(y_hat.device)
+    y = torch.cat([batch.y[:batch.batch_size] for batch in subgraph_loader]).to(device)
 
-    accs = []
-    for mask in [data.train_mask, data.val_mask, data.test_mask]:
-        accs.append(int((y_hat[mask] == y[mask]).sum()) / int(mask.sum()))
-    return tuple(accs) + (test_time,)
+    # compute accuracy
+    return int((y_hat == y).sum()) / int(y.shape[0]), test_time
 
 
 def run(aggregator):
@@ -75,7 +75,7 @@ def run(aggregator):
     train_loader = UniformLoader(data, input_nodes=data.train_mask,
                                  num_neighbors=[fig2a_settings.K1, fig2a_settings.K2], shuffle=True, **kwargs)
 
-    subgraph_loader = UniformLoader(data, input_nodes=None,
+    test_loader = UniformLoader(data, input_nodes=data.test_mask,
                                     num_neighbors=[fig2a_settings.K1, fig2a_settings.K2], shuffle=False, **kwargs)
 
     model = GraphSAGE(
@@ -91,9 +91,8 @@ def run(aggregator):
     train_time = test_time = 0
     for epoch in range(1, settings.NUM_EPOCHS + 1):
         loss, epoch_train_time = train(epoch, model, optimizer, train_loader)
-        train_acc, val_acc, test_acc, epoch_test_time = test(model, subgraph_loader, data)
-        print(f'Epoch: {epoch:02d}, Loss: {loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}, Test Acc:'
-              f' {test_acc:.4f}')
+        test_acc, epoch_test_time = test(model, test_loader)
+        print(f'Epoch: {epoch:02d}, Loss: {loss:.4f}, Test Acc: {test_acc:.4f}')
 
         train_time += epoch_train_time
         test_time += epoch_test_time
@@ -101,11 +100,8 @@ def run(aggregator):
     train_time /= settings.NUM_EPOCHS
     test_time /= settings.NUM_EPOCHS
 
-    test_proportion = int(data.test_mask.sum()) / data.num_nodes
-    test_time *= test_proportion
-
     return {
-        'test_time': test_time,  # full test time
+        'test_time': test_time,  # on full test set
         'train_time': train_time,  # per batch
     }
 

@@ -20,7 +20,11 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
         self.train_loader = loader(data, input_nodes=data.train_mask,
                                    num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
 
-        self.subgraph_loader = loader(data, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
+        self.val_loader = loader(data, input_nodes=data.val_mask, num_neighbors=[self.k1, self.k2], shuffle=False,
+                                  **kwargs)
+
+        self.test_loader = loader(data, input_nodes=data.test_mask, num_neighbors=[self.k1, self.k2], shuffle=False,
+                                  **kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -48,28 +52,16 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
     @torch.no_grad()
     def test(self):
         self.model.eval()
-        y_hat = self.model.inference(self.data.x, self.subgraph_loader).argmax(dim=-1)
-        y = self.data.y.to(y_hat.device)
-
-        # compute accuracies for each class
-        accs = [
-            int((y_hat[mask] == y[mask]).sum()) / int(mask.sum())
-            for mask in [self.data.train_mask, self.data.val_mask, self.data.test_mask]
-        ]
-
-        # compute F1 scores for each class
-        f1_scores = [
-            f1_score(y[mask].cpu(), y_hat[mask].cpu(), average='micro')
-            for mask in [self.data.train_mask, self.data.val_mask, self.data.test_mask]
-        ]
-        return {
-            'train_acc': accs[0],
-            'val_acc': accs[1],
-            'test_acc': accs[2],
-            'train_f1': f1_scores[0],
-            'val_f1': f1_scores[1],
-            'test_f1': f1_scores[2]
-        }
+        results = {}
+        split_loader_dict = {'train': self.train_loader, 'val': self.val_loader, 'test': self.test_loader}
+        for split, loader in split_loader_dict.items():
+            y_hat = self.model.inference(loader).argmax(dim=-1)
+            y = torch.cat([batch.y[:batch.batch_size] for batch in loader]).to(self.device)
+            # compute accuracy
+            results[f'{split}_acc'] = int((y_hat == y).sum()) / y.shape[0]
+            # compute F1 score
+            results[f'{split}_f1'] = f1_score(y.cpu(), y_hat.cpu(), average='micro')
+        return results
 
 
 class UnsupervisedTrainerForNodeClassification(BaseTrainer):
@@ -116,9 +108,10 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
     @torch.no_grad()
     def test(self):
         self.model.eval()
-        out = self.model.inference(self.data.x, self.subgraph_loader).cpu()
+        out = self.model.inference(self.subgraph_loader).cpu()
         self.data.y = self.data.y.cpu()
 
+        # Train downstream classifier on train split representations
         clf = SGDClassifier(loss="log", penalty="l2")
         clf.fit(out[self.data.train_mask], self.data.y[self.data.train_mask])
 

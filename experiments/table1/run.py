@@ -37,7 +37,8 @@ for dataset in table1_settings.DATASETS:
 
 # Create folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
-folder_path = osp.join(graphsage_settings.RESULTS_DIR, 'table1', date)
+folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.args).items()])
+folder_path = osp.join(graphsage_settings.RESULTS_DIR, 'table1', folder_name)
 os.makedirs(folder_path)
 
 # Save results

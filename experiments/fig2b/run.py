@@ -24,7 +24,9 @@ for sample_size in fig2b_settings.SAMPLE_SIZES:
 
 # Create folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
-results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2b', date)
+folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.args).items()])
+results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2b', folder_name)
+
 os.makedirs(results_path)
 
 # Save dictionary to json file

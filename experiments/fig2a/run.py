@@ -24,7 +24,8 @@ for model in fig2a_settings.MODELS:
 
 # Create folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
-results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2a', date)
+folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.args).items()])
+results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2a', folder_name)
 os.makedirs(results_path)
 
 # Save dictionary to json file
@@ -45,7 +46,7 @@ rects2 = ax.bar(_x + width / 2, [results[model]['test_time'] for model in result
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
 ax.set_ylabel('Time (seconds)')
-plt.yscale('log')
+ax.set_yscale('log')
 ax.set_xlabel('Models')
 ax.set_title('Training (per batch) and Testing Time')
 ax.set_xticks(_x)

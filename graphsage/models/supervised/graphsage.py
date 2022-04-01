@@ -33,19 +33,21 @@ class GraphSAGE(torch.nn.Module):
         return x
 
     @torch.no_grad()
-    def inference(self, x_all, subgraph_loader):
-        pbar = tqdm(total=len(subgraph_loader.dataset) * len(self.layers))
+    def inference(self, subgraph_loader):
+        pbar = tqdm(total=len(subgraph_loader.dataset))
         pbar.set_description('Evaluating')
 
-        for i, layer in enumerate(self.layers):
-            xs = []
-            for batch in subgraph_loader:
-                x = x_all[batch.n_id.to(device)].to(device)
-                x = layer(x, batch.edge_index.to(device))
+        xs = []
+        for batch in subgraph_loader:
+            x = batch.x.to(device)
+            edge_index = batch.edge_index.to(device)
+            for i, layer in enumerate(self.layers):
+                x = layer(x, edge_index)
                 if i < len(self.layers) - 1:
                     x = x.relu_()
-                xs.append(x[:batch.batch_size].cpu())
-                pbar.update(batch.batch_size)
-            x_all = torch.cat(xs, dim=0)
+                    x = F.dropout(x, p=0.5, training=self.training)
+            xs.append(x[:batch.batch_size])
+            pbar.update(batch.batch_size)
+        x_all = torch.cat(xs, dim=0)
         pbar.close()
         return x_all
