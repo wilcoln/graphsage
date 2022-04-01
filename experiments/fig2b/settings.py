@@ -4,4 +4,4 @@ MODEL = 'graphsage_mean'
 SAMPLE_SIZES = [5, 10, 20, 40, 70, 100]
 BATCH_SIZE = 512
 LEARNING_RATE = 1e-3
-NUM_RUNS = 100
+NUM_RUNS = 5

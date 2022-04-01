@@ -20,5 +20,5 @@ if args.colab:
     DATA_DIR = '/content/data'
     CACHE_DIR = '/content/cache'
     RESULTS_DIR = '/content/results'
-    BATCH_SIZE = 256
+    BATCH_SIZE = 1024
     NUM_WORKERS = 2

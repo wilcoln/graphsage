@@ -28,14 +28,14 @@ runners = {
     ('ppi', 'unsupervised', 'graphsage_lstm'): unsup_ppi_graphsage_runners.get('lstm'),
     ('ppi', 'unsupervised', 'graphsage_max'): unsup_ppi_graphsage_runners.get('max'),
 
-    ('reddit', 'supervised', 'graphsage_mean'): sup_reddit_graphsage_runners.get('mean'),
-    ('reddit', 'supervised', 'graphsage_gcn'): sup_reddit_graphsage_runners.get('gcn'),
-    ('reddit', 'supervised', 'graphsage_lstm'): sup_reddit_graphsage_runners.get('lstm'),
-    ('reddit', 'supervised', 'graphsage_max'): sup_reddit_graphsage_runners.get('max'),
-    ('reddit', 'unsupervised', 'graphsage_mean'): unsup_reddit_graphsage_runners.get('mean'),
-    ('reddit', 'unsupervised', 'graphsage_gcn'): unsup_reddit_graphsage_runners.get('gcn'),
-    ('reddit', 'unsupervised', 'graphsage_lstm'): unsup_reddit_graphsage_runners.get('lstm'),
-    ('reddit', 'unsupervised', 'graphsage_max'): unsup_reddit_graphsage_runners.get('max'),
+    # ('reddit', 'supervised', 'graphsage_mean'): sup_reddit_graphsage_runners.get('mean'),
+    # ('reddit', 'supervised', 'graphsage_gcn'): sup_reddit_graphsage_runners.get('gcn'),
+    # ('reddit', 'supervised', 'graphsage_lstm'): sup_reddit_graphsage_runners.get('lstm'),
+    # ('reddit', 'supervised', 'graphsage_max'): sup_reddit_graphsage_runners.get('max'),
+    # ('reddit', 'unsupervised', 'graphsage_mean'): unsup_reddit_graphsage_runners.get('mean'),
+    # ('reddit', 'unsupervised', 'graphsage_gcn'): unsup_reddit_graphsage_runners.get('gcn'),
+    # ('reddit', 'unsupervised', 'graphsage_lstm'): unsup_reddit_graphsage_runners.get('lstm'),
+    # ('reddit', 'unsupervised', 'graphsage_max'): unsup_reddit_graphsage_runners.get('max'),
 }
 
 

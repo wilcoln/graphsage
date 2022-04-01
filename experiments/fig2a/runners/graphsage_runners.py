@@ -3,11 +3,10 @@ import time
 
 import torch
 import torch.nn.functional as F
-import torch_geometric.transforms as T
 from tqdm import tqdm
 
 from graphsage import settings
-from graphsage.datasets import Planetoid, Reddit
+from graphsage.datasets import Reddit
 from graphsage.models.supervised import GraphSAGE
 from graphsage.samplers import UniformLoader
 import experiments.fig2a.settings as fig2a_settings
@@ -60,7 +59,7 @@ def test(model, subgraph_loader, data):
     accs = []
     for mask in [data.train_mask, data.val_mask, data.test_mask]:
         accs.append(int((y_hat[mask] == y[mask]).sum()) / int(mask.sum()))
-    return *accs, test_time
+    return tuple(accs) + (test_time,)
 
 
 def run(aggregator):
