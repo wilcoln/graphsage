@@ -4,6 +4,8 @@ import os.path as osp
 import torch
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--num_epochs', help='Number of epochs', type=int)
+parser.add_argument('--batch_size', help='Batch size', type=int)
 parser.add_argument('--colab', action='store_true', default=False)
 args = parser.parse_args()
 
@@ -22,3 +24,10 @@ if args.colab:
     RESULTS_DIR = '/content/results'
     BATCH_SIZE = 512
     NUM_WORKERS = 2
+
+if args.num_epochs is not None:
+    NUM_EPOCHS = args.num_epochs
+
+if args.batch_size is not None:
+    BATCH_SIZE = args.batch_size
+
