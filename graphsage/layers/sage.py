@@ -1,6 +1,7 @@
 from typing import Tuple, Union
 
 import torch
+import torch.nn.functional as F
 from torch import Tensor
 from torch.nn import LSTM
 from torch_geometric.nn.conv import MessagePassing
@@ -19,6 +20,11 @@ class SAGE(MessagePassing):
             dimensionalities.
         aggregator (str): ['mean', 'max', 'gcn', 'lstm', 'bilstm', 'sum'], mean by default
         out_channels (int): Size of each output sample.
+        normalize (bool, optional): If set to :obj:`True`, output features
+            will be :math:`\ell_2`-normalized, *i.e.*,
+            :math:`\frac{\mathbf{x}^{\prime}_i}
+            {\| \mathbf{x}^{\prime}_i \|_2}`.
+            (default: :obj:`True`)
         root_weight (bool, optional): If set to :obj:`False`, the layer will
             not add transformed root node features to the output.
             (default: :obj:`True`)
@@ -36,7 +42,7 @@ class SAGE(MessagePassing):
 
     def __init__(self, in_channels: Union[int, Tuple[int, int]],
                  out_channels: int, aggregator: str = 'mean',
-                 normalize: bool = False, root_weight: bool = True,
+                 normalize: bool = True, root_weight: bool = True,
                  bias: bool = True, **kwargs):
 
         super(SAGE, self).__init__(**kwargs)
@@ -100,6 +106,9 @@ class SAGE(MessagePassing):
         x_r = x[1]  # x[1] -- root
         if self.root_weight and x_r is not None:
             out += self.lin_r(x_r)  # root doesn't get added for GCN
+
+        if self.normalize:
+            out = F.normalize(out, p=2., dim=-1)
 
         return out
 
