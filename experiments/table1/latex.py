@@ -1,5 +1,8 @@
 import json
 import os.path as osp
+
+from icecream import ic
+
 from experiments.table1.settings import TRAINING_MODES, DATASETS, MODELS
 from graphsage.settings import args
 
@@ -8,7 +11,7 @@ def _datasets_section():
     section = ''
 
     for i, dataset in enumerate(DATASETS):
-        section += f'\t\\multicolumn{{2}}{{c}}{{ {dataset.capitalize()} }}'
+        section += f'\t\\multicolumn{{2}}{{c}}{{ {dataset.upper()} }}'
 
         if i < len(DATASETS) - 1:
             section += ' & '
@@ -25,12 +28,16 @@ def _models_section(results):
         section += f"\t{'-'.join(w.upper() for w in model.split('_'))} & "
         for dataset in DATASETS:
             for training_mode in TRAINING_MODES:
-                all_f1s = [results[dataset][training_mode][other_model]['test_f1'] for other_model in MODELS]
-                current_f1 = results[dataset][training_mode][model]['test_f1']
-                if current_f1 == max(all_f1s):
-                    section += f'$\\underline{{\\mathbf{{{current_f1:.3f}}}}}$ & '
-                else:
-                    section += f'${current_f1:.3f}$ & '
+                try:
+                    current_f1 = results[dataset][training_mode][model]['test_f1']
+                    sub_results_dict = results[dataset][training_mode]
+                    all_f1s = [sub_results_dict[model]['test_f1'] for model in sub_results_dict]
+                    if current_f1 == max(all_f1s):
+                        section += f'$\\underline{{\\mathbf{{{current_f1:.3f}}}}}$ & '
+                    else:
+                        section += f'${current_f1:.3f}$ & '
+                except KeyError as e:
+                    section += '--' + ' & '
 
         section = section[:-2] + '\\\\' + '\n'
 
@@ -47,7 +54,7 @@ def generate_latex_table(results: dict):
     {_datasets_section()}
     
     \\cline {{ 2 - {num_cols} }} &
-        {('Unsup. F1 & Sup. F1 &'*((num_cols - 1)//2))[:-2]} \\\\
+        {(' Unsup. F1 & Sup. F1 & '*((num_cols - 1)//2))[:-2]} \\\\
     
     \\hline
     {_models_section(results)}
