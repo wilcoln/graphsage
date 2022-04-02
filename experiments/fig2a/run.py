@@ -41,8 +41,10 @@ width = 0.3  # the width of the bars
 
 fig, ax = plt.subplots()
 
-rects1 = ax.bar(_x - width / 2, [results[model]['train_time'] for model in results], width, label='Train time')
-rects2 = ax.bar(_x + width / 2, [results[model]['test_time'] for model in results], width, label='Test time')
+label1 = 'Training (per batch)'
+label2 = 'Inference (full test set)'
+rects1 = ax.bar(_x - width / 2, [results[model]['train_time'] for model in results], width, label=label1)
+rects2 = ax.bar(_x + width / 2, [results[model]['test_time'] for model in results], width, label=label2)
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
 ax.set_ylabel('Time (seconds)')
@@ -52,9 +54,6 @@ ax.set_title('Training (per batch) and Testing Time')
 ax.set_xticks(_x)
 ax.set_xticklabels(x)
 ax.legend(loc='upper left')
-
-ax.bar_label(rects1, padding=3)
-ax.bar_label(rects2, padding=3)
 
 fig.tight_layout()
 
