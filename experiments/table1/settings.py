@@ -19,6 +19,8 @@ MODELS = [
     'graphsage_max',
     'graphsage_bilstm',
     'graphsage_sum',
+    'graphsage_mean_pool',
+    'graphsage_max_pool',
 ]
 TRAINING_MODES = [
     'unsupervised',

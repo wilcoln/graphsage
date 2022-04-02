@@ -7,7 +7,6 @@ from torch.nn import LSTM
 from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.typing import Adj, OptPairTensor, Size
-from torch_geometric.utils import to_dense_batch
 from torch_sparse import SparseTensor, matmul
 
 
@@ -42,8 +41,7 @@ class SAGE(MessagePassing):
 
     def __init__(self, in_channels: Union[int, Tuple[int, int]],
                  out_channels: int, aggregator: str = 'mean',
-                 normalize: bool = True, root_weight: bool = True,
-                 bias: bool = True, **kwargs):
+                 normalize: bool = True, root_weight: bool = True, **kwargs):
 
         super(SAGE, self).__init__(**kwargs)
 
@@ -52,9 +50,8 @@ class SAGE(MessagePassing):
         self.normalize = normalize
         self.root_weight = root_weight
         self.aggregator = aggregator
-        self.bias = bias
 
-        assert self.aggregator in ['mean', 'max', 'lstm', 'gcn', 'sum', 'bilstm', None]
+        assert self.aggregator in ['mean', 'max',  'sum', 'gcn', 'lstm', 'bilstm', 'max_pool', 'mean_pool', None]
 
         if isinstance(in_channels, int):
             in_channels = (in_channels, in_channels)
@@ -68,10 +65,14 @@ class SAGE(MessagePassing):
             self.lstm = LSTM(in_channels[0], in_channels[0], batch_first=True)
 
         if self.aggregator == 'bilstm':
-            self.bilstm = LSTM(in_channels[0], in_channels[0] // 2, bidirectional=True, batch_first=True)
+            self.bilstm = LSTM(in_channels[0], in_channels[0], bidirectional=True, batch_first=True)
             self.att = Linear(2 * in_channels[0], 1)
 
-        self.lin_l = Linear(in_channels[0], out_channels, bias=bias)  # neighbours
+        if self.aggregator in {'max_pool', 'mean_pool'}:
+            self.pool = Linear(in_channels[0], in_channels[0], bias=True)
+
+        self.lin_l = Linear(in_channels[0], out_channels, bias=False)  # neighbours
+
         if self.root_weight:  # Not created for GCN
             self.lin_r = Linear(in_channels[1], out_channels, bias=False)  # root itself
 
@@ -97,6 +98,12 @@ class SAGE(MessagePassing):
         if isinstance(x, Tensor):
             x: OptPairTensor = (x, x)
 
+        # Convert edge_index to a sparse tensor,
+        # this is required for propagate to call message_and_aggregate
+        if isinstance(edge_index, Tensor):
+            num_nodes = int(edge_index.max()) + 1
+            edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
+
         # propagate_type: (x: OptPairTensor)
         # propagate internally calls message_and_aggregate()
         out = self.propagate(edge_index, x=x, size=size)
@@ -115,30 +122,32 @@ class SAGE(MessagePassing):
     def message(self, x_j: Tensor) -> Tensor:
         return x_j
 
-    def message_and_aggregate(self, adj_t: SparseTensor,
-                              x: OptPairTensor, edge_index_j, edge_index_i) -> Tensor:
+    def message_and_aggregate(self, adj_t: SparseTensor, x: OptPairTensor) -> Tensor:
         """
         Performs both message passing and aggregation of messages from neighbours using the aggregator
         """
         adj_t = adj_t.set_value(None, layout=None)
-        if self.aggregator == 'mean' or self.aggregator == 'gcn':
-            return matmul(adj_t, x[0], reduce='mean')
 
-        elif self.aggregator == 'max':
-            return matmul(adj_t, x[0], reduce='max')
-            # return torch.stack(x[0], dim=-1).max(dim=-1)[0] - alternative implementation of max pool operation
+        if self.aggregator in {'mean', 'max',  'sum', 'gcn'}:
+            return matmul(adj_t, x[0], reduce=self.aggregator)
 
-        elif self.aggregator == 'sum':
-            return matmul(adj_t, x[0], reduce='sum')
+        if self.aggregator == 'max_pool':
+            x = F.relu(self.pool(x[0]))
+            return matmul(adj_t, x, reduce='max')
+
+        if self.aggregator == 'mean_pool':
+            x = F.relu(self.pool(x[0]))
+            return matmul(adj_t, x, reduce='mean')
 
         elif self.aggregator == 'lstm':
-            x_j = x[0][edge_index_j]
-            x, mask = to_dense_batch(x_j, edge_index_i)
-            return self.lstm(x)
+            x = adj_t.t().matmul(x[0])
+            x, _ = self.lstm(x)
+            return F.relu(x)
 
         elif self.aggregator == 'bilstm':
-            x = torch.stack(x, dim=1)  # [num_nodes, num_layers, num_channels]
-            alpha, _ = self.bilstm(x)
+            x = adj_t.t().matmul(x[0])
+            x = torch.stack((x, x), dim=1)  # [num_nodes, num_layers, num_channels]
+            alpha, _ = self.bilstm(x[0])
             alpha = self.att(alpha).squeeze(-1)  # [num_nodes, num_layers]
             alpha = torch.softmax(alpha, dim=-1)
             return (x * alpha.unsqueeze(-1)).sum(dim=1)
