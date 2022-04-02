@@ -5,16 +5,17 @@ from sklearn.metrics import f1_score
 from tqdm import tqdm
 
 from graphsage import settings
+from graphsage.samplers import get_pos_neg_batches
 from .base_trainers import BaseTrainer, SupervisedBaseTrainer
 
 
-class SupervisedTrainerForGraphClassification(SupervisedBaseTrainer):
+class SupervisedTrainerForGraphLevelTask(SupervisedBaseTrainer):
     def __init__(self,
                  train_loader,
                  val_loader,
                  test_loader,
                  *args, **kwargs):
-        super(SupervisedTrainerForGraphClassification, self).__init__(*args, **kwargs)
+        super(SupervisedTrainerForGraphLevelTask, self).__init__(*args, **kwargs)
 
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -63,14 +64,14 @@ class SupervisedTrainerForGraphClassification(SupervisedBaseTrainer):
         }
 
 
-class UnsupervisedTrainerForGraphClassification(BaseTrainer):
+class UnsupervisedTrainerForGraphLevelTask(BaseTrainer):
     def __init__(self,
                  train_loader,
                  val_loader,
-                 sampler,
+                 loader,
                  test_loader,
                  *args, **kwargs):
-        super(UnsupervisedTrainerForGraphClassification, self).__init__(*args, **kwargs)
+        super(UnsupervisedTrainerForGraphLevelTask, self).__init__(*args, **kwargs)
 
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -80,10 +81,9 @@ class UnsupervisedTrainerForGraphClassification(BaseTrainer):
 
         self.train_loader_list = []
 
+        loader_kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
         for curr_graph in self.train_data_list:
-            _train_loader = sampler(curr_graph.edge_index, sizes=[self.k1, self.k2], batch_size=settings.BATCH_SIZE,
-                                    shuffle=True,
-                                    num_nodes=curr_graph.num_nodes)
+            _train_loader = loader(curr_graph, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=True, **loader_kwargs)
             self.train_loader_list.append(_train_loader)
 
     def train(self, epoch):
@@ -96,23 +96,24 @@ class UnsupervisedTrainerForGraphClassification(BaseTrainer):
             # add up current train loaders # of nodes to total_num_nodes
             total_num_nodes += self.train_data_list[i].num_nodes
             # update the value for x and edge index for the current data
-            x, edge_index = self.train_data_list[i].x.to(self.device), self.train_data_list[i].edge_index.to(
-                self.device)
-            for batch_size, n_id, adjs in self.train_loader_list[i]:  # train over the current graph
-                # `adjs` holds a list of `(edge_index, e_id, size)` tuples.
-                adjs = [adj.to(self.device) for adj in adjs]
-                self.optimizer.zero_grad()  # set the gradients to zero
+            # train over the current graph
+            for batch in self.train_loader_list[i]:
+                batch = batch.to(self.device)
+                pos_batch, neg_batch = get_pos_neg_batches(batch, self.train_data_list[i])
+                self.optimizer.zero_grad()
 
-                out = self.model(x[n_id], adjs)
-                out, pos_out, neg_out = out.split(out.size(0) // 3, dim=0)
+                out = self.model(batch.x, batch.edge_index)[:batch.batch_size]
+                pos_out = self.model(pos_batch.x, pos_batch.edge_index)[:batch.batch_size]
+                neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
 
                 pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
                 neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
                 loss = -pos_loss - neg_loss
+
                 loss.backward()
                 self.optimizer.step()
 
-                total_loss += float(loss) * out.size(0)
+                total_loss += loss.item() * out.size(0)
 
         return total_loss / total_num_nodes
 

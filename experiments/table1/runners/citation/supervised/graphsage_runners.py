@@ -9,7 +9,7 @@ from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
-from graphsage.trainers import SupervisedTrainerForNodeClassification
+from graphsage.trainers import SupervisedTrainerForNodeLevelTask
 
 device = settings.DEVICE
 dataset_name = 'Cora'  # 'Cora', 'CiteSeer', 'PubMed'
@@ -32,7 +32,7 @@ def get(aggregator):
     ).to(device)
 
     # Return trainer
-    return SupervisedTrainerForNodeClassification(
+    return SupervisedTrainerForNodeLevelTask(
         dataset_name=dataset_name,
         model=model,
         data=copy.copy(data),

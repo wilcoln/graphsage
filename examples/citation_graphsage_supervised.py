@@ -7,7 +7,7 @@ from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
-from graphsage.trainers import SupervisedTrainerForNodeClassification
+from graphsage.trainers import SupervisedTrainerForNodeLevelTask
 
 device = settings.DEVICE
 dataset_name = 'Cora'  # 'Cora', 'CiteSeer', 'PubMed'
@@ -15,7 +15,7 @@ path = osp.join(settings.DATA_DIR, dataset_name)
 dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
 
 # Already send node features/labels to GPU for faster access during sampling:
-data = dataset[0].to(device, 'x', 'y')
+data = dataset[0]  # .to(device, 'x', 'y')
 
 model = GraphSAGE(
     in_channels=dataset.num_features,
@@ -25,7 +25,7 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-SupervisedTrainerForNodeClassification(
+SupervisedTrainerForNodeLevelTask(
     dataset_name=dataset_name,
     model=model,
     data=data,

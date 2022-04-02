@@ -6,7 +6,7 @@ from graphsage import settings
 from graphsage.datasets import Reddit
 from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
-from graphsage.trainers import UnsupervisedTrainerForNodeClassification
+from graphsage.trainers import UnsupervisedTrainerForNodeLevelTask
 
 device = settings.DEVICE
 
@@ -23,7 +23,7 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-UnsupervisedTrainerForNodeClassification(
+UnsupervisedTrainerForNodeLevelTask(
     dataset_name=dataset_name,
     model=model,
     data=data,

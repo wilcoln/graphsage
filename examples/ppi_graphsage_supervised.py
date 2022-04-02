@@ -5,8 +5,8 @@ from torch_geometric.loader import DataLoader
 
 from graphsage import settings
 from graphsage.datasets import PPI
-from models.supervised import GraphSAGE
-from trainers import SupervisedTrainerForGraphClassification
+from models.graphsage import GraphSAGE
+from graphsage.trainers import SupervisedTrainerForGraphLevelTask
 
 device = settings.DEVICE
 
@@ -24,7 +24,7 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-SupervisedTrainerForGraphClassification(
+SupervisedTrainerForGraphLevelTask(
     dataset_name=dataset_name,
     model=model,
     loss_fn=torch.nn.BCEWithLogitsLoss(),

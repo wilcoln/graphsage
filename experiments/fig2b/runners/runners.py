@@ -8,7 +8,7 @@ from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
-from graphsage.trainers import SupervisedTrainerForNodeClassification
+from graphsage.trainers import SupervisedTrainerForNodeLevelTask
 
 device = settings.DEVICE
 
@@ -36,7 +36,7 @@ class SampleSizeRunner:
                 aggregator='mean',
             ).to(device)
 
-            best_result, all_results = SupervisedTrainerForNodeClassification(
+            best_result, all_results = SupervisedTrainerForNodeLevelTask(
                 dataset_name=dataset_name,
                 model=model,
                 data=data,

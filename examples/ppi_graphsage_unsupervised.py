@@ -7,8 +7,8 @@ from torch_geometric.loader import DataLoader
 from graphsage import settings
 from graphsage.datasets import PPI
 from graphsage.models import GraphSAGE
-from graphsage.samplers import UniformSampler
-from trainers import UnsupervisedTrainerForGraphClassification
+from graphsage.samplers import UniformLoader
+from graphsage.trainers import UnsupervisedTrainerForGraphLevelTask
 
 device = settings.DEVICE
 
@@ -29,11 +29,11 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-UnsupervisedTrainerForGraphClassification(
+UnsupervisedTrainerForGraphLevelTask(
     dataset_name=dataset_name,
     model=model,
     num_epochs=settings.NUM_EPOCHS,
-    sampler=UniformSampler,
+    loader=UniformLoader,
     train_loader=train_loader,
     val_loader=val_loader,
     test_loader=test_loader,

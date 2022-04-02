@@ -7,7 +7,8 @@ import experiments.table1.settings as table1_settings
 from graphsage import settings
 from graphsage.datasets import PPI
 from graphsage.models import GraphSAGE
-from graphsage.trainers import UnsupervisedTrainerForGraphClassification
+from graphsage.samplers import UniformLoader
+from graphsage.trainers import UnsupervisedTrainerForGraphLevelTask
 
 device = settings.DEVICE
 
@@ -30,10 +31,11 @@ def get(aggregator):
     ).to(device)
 
     # Return trainer
-    return UnsupervisedTrainerForGraphClassification(
+    return UnsupervisedTrainerForGraphLevelTask(
         dataset_name=dataset_name,
         model=model,
         optimizer=torch.optim.Adam(model.parameters(), lr=table1_settings.SUPERVISED_LEARNING_RATE),
+        loader=UniformLoader,
         train_loader=DataLoader(train_dataset, batch_size=1, shuffle=True),
         val_loader=DataLoader(val_dataset, batch_size=2, shuffle=False),
         test_loader=DataLoader(test_dataset, batch_size=2, shuffle=False),

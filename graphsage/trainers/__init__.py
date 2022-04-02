@@ -1,2 +1,2 @@
-from .graph_classification import *
-from .node_classification import *
+from .graph_level_task_trainers import *
+from .node_level_task_trainers import *

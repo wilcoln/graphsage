@@ -5,8 +5,8 @@ import torch
 from graphsage import settings
 from graphsage.datasets import Reddit
 from graphsage.samplers import UniformLoader
-from graphsage.trainers import SupervisedTrainerForNodeClassification
-from models.supervised import GraphSAGE
+from graphsage.trainers import SupervisedTrainerForNodeLevelTask
+from models.graphsage import GraphSAGE
 
 device = settings.DEVICE
 
@@ -24,7 +24,7 @@ model = GraphSAGE(
     aggregator='mean',
 ).to(device)
 
-SupervisedTrainerForNodeClassification(
+SupervisedTrainerForNodeLevelTask(
     dataset_name=dataset_name,
     model=model,
     data=data,
