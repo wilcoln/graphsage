@@ -6,6 +6,7 @@ from datetime import datetime as dt
 
 from experiments.table1 import runners
 from experiments.table1 import settings as table1_settings
+from experiments.table1.latex import generate_latex_table
 from graphsage import settings as graphsage_settings
 
 # Initialize the results dictionary
@@ -41,10 +42,16 @@ folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.
 folder_path = osp.join(graphsage_settings.RESULTS_DIR, 'table1', folder_name)
 os.makedirs(folder_path)
 
-# Save results
+# Save results as json file
 results_path = osp.join(folder_path, 'table1.json')
 with open(results_path, 'w') as f:
     json.dump(results, f)
+
+# Generate latex table
+table_path = osp.join(folder_path, 'table1.tex')
+with open(table_path, 'w') as f:
+    f.write(generate_latex_table(results))
+
 
 # Print path to results
 print(f'Results saved to {results_path}')

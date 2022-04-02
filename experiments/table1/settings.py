@@ -26,4 +26,7 @@ SUPERVISED_LEARNING_RATE = 1e-3
 UNSUPERVISED_LEARNING_RATE = 1e-5
 
 if args.ignore_reddit:
-    DATASETS.remove('reddit')
+    try:
+        DATASETS.remove('reddit')
+    except ValueError:
+        pass

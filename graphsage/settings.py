@@ -10,6 +10,7 @@ parser.add_argument('--num_runs', help='Number of runs', type=int)
 parser.add_argument('--colab', action='store_true', default=False)
 parser.add_argument('--ignore_reddit', action='store_true', default=False)
 parser.add_argument('--dataset', help='Dataset to use', type=str)
+parser.add_argument('--result_dir', help='result directory to use', type=str)
 args = parser.parse_args()
 
 DATA_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data')
