@@ -1,13 +1,11 @@
-import torch
 import os.path as osp
 
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import f1_score
-
 from torch_geometric.datasets import Planetoid
 
-def main():
 
+def main():
     print("Main script")
     dataset_name = 'Citeseer'
     path = osp.join(osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data'), dataset_name)
@@ -18,8 +16,9 @@ def main():
 
     randomClassifier.fit(data.x[data.train_mask], data.y[data.train_mask])
 
-    print('Citeseer', 'F1-score Random Classifier: ', f1_score(data.y[data.test_mask], randomClassifier.predict(data.x[data.test_mask]), average='micro'))
+    print('Citeseer', 'F1-score Random Classifier: ',
+          f1_score(data.y[data.test_mask], randomClassifier.predict(data.x[data.test_mask]), average='micro'))
+
 
 if __name__ == '__main__':
-
     main()

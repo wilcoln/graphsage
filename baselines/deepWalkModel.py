@@ -1,17 +1,16 @@
+import numpy as np
 import torch
-from torch.nn import Embedding
-from torch.utils.data import DataLoader
-from torch_sparse import SparseTensor
-
-from torch_geometric.utils.num_nodes import maybe_num_nodes
-from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
-
-import numpy as np
+from sklearn.preprocessing import StandardScaler
+from torch.nn import Embedding
+from torch.utils.data import DataLoader
+from torch_geometric.utils.num_nodes import maybe_num_nodes
+from torch_sparse import SparseTensor
 
 try:
     import torch_cluster  # noqa
+
     random_walk = torch.ops.torch_cluster.random_walk
 except ImportError:
     random_walk = None
@@ -51,6 +50,7 @@ class Deepwalk(torch.nn.Module):
         sparse (bool, optional): If set to :obj:`True`, gradients w.r.t. to the
             weight matrix will be sparse. (default: :obj:`False`)
     """
+
     def __init__(self, edge_index, embedding_dim, walk_length, context_size,
                  walks_per_node=1, p=1, q=1, num_negative_samples=1,
                  num_nodes=None, sparse=False):
@@ -81,17 +81,14 @@ class Deepwalk(torch.nn.Module):
     def reset_parameters(self):
         self.embedding.reset_parameters()
 
-
     def forward(self, batch=None):
         """Returns the embeddings for the nodes in :obj:`batch`."""
         emb = self.embedding.weight
         return emb if batch is None else emb.index_select(0, batch)
 
-
     def loader(self, **kwargs):
         return DataLoader(range(self.adj.sparse_size(0)),
                           collate_fn=self.sample, **kwargs)
-
 
     def pos_sample(self, batch):
         batch = batch.repeat(self.walks_per_node)
@@ -106,7 +103,6 @@ class Deepwalk(torch.nn.Module):
             walks.append(rw[:, j:j + self.context_size])
         return torch.cat(walks, dim=0)
 
-
     def neg_sample(self, batch):
         batch = batch.repeat(self.walks_per_node * self.num_negative_samples)
 
@@ -120,12 +116,10 @@ class Deepwalk(torch.nn.Module):
             walks.append(rw[:, j:j + self.context_size])
         return torch.cat(walks, dim=0)
 
-
     def sample(self, batch):
         if not isinstance(batch, torch.Tensor):
             batch = torch.tensor(batch)
         return self.pos_sample(batch), self.neg_sample(batch)
-
 
     def loss(self, pos_rw, neg_rw):
         r"""Computes the loss given positive and negative random walks."""
@@ -154,14 +148,12 @@ class Deepwalk(torch.nn.Module):
 
         return pos_loss + neg_loss
 
-
     def test_no_features(self, train_z, train_y, test_z, test_y, *args, **kwargs):
         r"""Evaluates latent space quality via a logistic regression downstream
         task."""
 
         train_z = train_z.detach().cpu().numpy()
         train_y = train_y.detach().cpu().numpy()
-
 
         test_z = test_z.detach().cpu().numpy()
         test_y = test_y.detach().cpu().numpy()
@@ -172,9 +164,9 @@ class Deepwalk(torch.nn.Module):
         test_z = scaler.transform(test_z)
 
         clf = SGDClassifier(loss='log', *args,
-                                 **kwargs).fit(train_z, train_y)
+                            **kwargs).fit(train_z, train_y)
         return f1_score(test_y, clf.predict(test_z), average="micro")
-        
+
     def test_features(self, train_z, train_y, test_z, test_y, train_x, test_x, *args, **kwargs):
         r"""Evaluates latent space quality via a logistic regression downstream
         task."""
@@ -196,9 +188,8 @@ class Deepwalk(torch.nn.Module):
         test_z = scaler.transform(test_z)
 
         clf = SGDClassifier(loss='log', *args,
-                                 **kwargs).fit(train_z, train_y)
+                            **kwargs).fit(train_z, train_y)
         return f1_score(test_y, clf.predict(test_z), average="micro")
-
 
     def __repr__(self) -> str:
         return (f'{self.__class__.__name__}({self.embedding.weight.size(0)}, '
