@@ -9,7 +9,7 @@ from tqdm import tqdm
 import experiments.fig2a.settings as fig2a_settings
 from graphsage import settings
 from graphsage.datasets import Reddit, Planetoid
-from graphsage.models.supervised import GraphSAGE
+from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
 
 device = settings.DEVICE

@@ -5,8 +5,8 @@ import torch
 import experiments.table1.settings as table1_settings
 from graphsage import settings
 from graphsage.datasets import Reddit
-from graphsage.models.unsupervised import GraphSAGE
-from graphsage.samplers import UniformLoader, UniformSampler
+from graphsage.models import GraphSAGE
+from graphsage.samplers import UniformLoader
 from graphsage.trainers import UnsupervisedTrainerForNodeClassification
 
 device = settings.DEVICE
@@ -32,7 +32,6 @@ def get(aggregator):
         dataset_name=dataset_name,
         model=model,
         data=data,
-        sampler=UniformSampler,
         loader=UniformLoader,
         num_epochs=settings.NUM_EPOCHS,
         optimizer=torch.optim.Adam(model.parameters(), lr=table1_settings.UNSUPERVISED_LEARNING_RATE),

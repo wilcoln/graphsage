@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from icecream import ic
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 from tqdm import tqdm
@@ -77,7 +78,6 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
 class UnsupervisedTrainerForNodeClassification(BaseTrainer):
     def __init__(self,
                  data,
-                 sampler,
                  loader,
                  *args, **kwargs):
         super(UnsupervisedTrainerForNodeClassification, self).__init__(*args, **kwargs)
@@ -86,34 +86,62 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
 
         kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
 
-        self.train_loader = sampler(self.data.edge_index, sizes=[self.k1, self.k2], shuffle=True,
-                                    num_nodes=data.num_nodes,
-                                    **kwargs)
+        self.train_loader = loader(data, input_nodes=data.train_mask,
+                                   num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
 
         self.subgraph_loader = loader(self.data, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=False,
                                       **kwargs)
 
+    # def train(self, epoch):
+    #     self.model.train()
+    #     print(f'Epoch: {epoch:02d}', end='\r')
+    #
+    #     total_loss = 0
+    #     for batch_size, n_id, adj_list in tqdm(self.train_loader):
+    #         # `adjs` holds a list of `(edge_index, e_id, size)` tuples.
+    #         adj_list = [adj.to(self.device) for adj in adj_list]
+    #         self.optimizer.zero_grad()
+    #
+    #         out = self.model(self.data.x[n_id].to(self.device), adj_list)
+    #         out, pos_out, neg_out = out.split(out.size(0) // 3, dim=0)
+    #
+    #         pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
+    #         neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
+    #         loss = -pos_loss - neg_loss
+    #         loss.backward()
+    #         self.optimizer.step()
+    #         total_loss += float(loss) * out.size(0)
+    #
+    #     return total_loss / self.data.num_nodes
+
     def train(self, epoch):
         self.model.train()
-        print(f'Epoch: {epoch:02d}', end='\r')
+
+        pbar = tqdm(total=int(len(self.train_loader.dataset)))
+        pbar.set_description(f'Epoch {epoch:02d}')
 
         total_loss = 0
-        for batch_size, n_id, adj_list in tqdm(self.train_loader):
-            # `adjs` holds a list of `(edge_index, e_id, size)` tuples.
-            adj_list = [adj.to(self.device) for adj in adj_list]
+        for batch in self.train_loader:
+            batch = batch.to(self.device)
+            ic(batch.batch_size)
             self.optimizer.zero_grad()
 
-            out = self.model(self.data.x[n_id].to(self.device), adj_list)
+            out = self.model(batch.x, batch.edge_index)
+            ic(out.shape)
             out, pos_out, neg_out = out.split(out.size(0) // 3, dim=0)
 
             pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
             neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
             loss = -pos_loss - neg_loss
+
             loss.backward()
             self.optimizer.step()
-            total_loss += float(loss) * out.size(0)
 
-        return total_loss / self.data.num_nodes
+            total_loss += loss.item() * batch.batch_size
+            pbar.update(batch.batch_size)
+        pbar.close()
+
+        return total_loss / len(self.train_loader.dataset)
 
     @torch.no_grad()
     def test(self):

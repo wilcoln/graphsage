@@ -7,7 +7,7 @@ import torch_geometric.transforms as T
 import experiments.table1.settings as table1_settings
 from graphsage import settings
 from graphsage.datasets import Planetoid
-from graphsage.models.supervised import GraphSAGE
+from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
 from graphsage.trainers import SupervisedTrainerForNodeClassification
 

@@ -121,7 +121,7 @@ class UnsupervisedTrainerForGraphClassification(BaseTrainer):
         for data in loader:
             ys.append(torch.argmax(data.y, dim=1))
             x, edge_index = data.x.to(self.device), data.edge_index.to(self.device)
-            out = model.full_forward(x, edge_index)
+            out = model(x, edge_index)
             xs.append(out)
         return torch.cat(xs, dim=0).cpu(), torch.cat(ys, dim=0).cpu()
 

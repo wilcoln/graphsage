@@ -6,7 +6,7 @@ import torch_geometric.transforms as T
 import experiments.fig2b.settings as fig2b_settings
 from graphsage import settings
 from graphsage.datasets import Planetoid
-from graphsage.models.supervised import GraphSAGE
+from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
 from graphsage.trainers import SupervisedTrainerForNodeClassification
 

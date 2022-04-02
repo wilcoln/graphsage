@@ -6,7 +6,7 @@ from torch_geometric.loader import DataLoader
 # Our own imports
 from graphsage import settings
 from graphsage.datasets import PPI
-from graphsage.models.unsupervised import GraphSAGE
+from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformSampler
 from trainers import UnsupervisedTrainerForGraphClassification
 

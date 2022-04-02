@@ -6,9 +6,8 @@ from torch_geometric.loader import DataLoader
 import experiments.table1.settings as table1_settings
 from graphsage import settings
 from graphsage.datasets import PPI
-from graphsage.models.unsupervised import GraphSAGE
+from graphsage.models import GraphSAGE
 from graphsage.trainers import UnsupervisedTrainerForGraphClassification
-from samplers import UniformSampler
 
 device = settings.DEVICE
 
@@ -35,7 +34,6 @@ def get(aggregator):
         dataset_name=dataset_name,
         model=model,
         optimizer=torch.optim.Adam(model.parameters(), lr=table1_settings.SUPERVISED_LEARNING_RATE),
-        sampler=UniformSampler,
         train_loader=DataLoader(train_dataset, batch_size=1, shuffle=True),
         val_loader=DataLoader(val_dataset, batch_size=2, shuffle=False),
         test_loader=DataLoader(test_dataset, batch_size=2, shuffle=False),
