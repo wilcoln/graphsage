@@ -32,36 +32,46 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
         pbar = tqdm(total=int(len(self.train_loader.dataset)))
         pbar.set_description(f'Epoch {epoch:02d}')
 
-        total_loss = total_examples = 0
+        total_loss = 0
         for batch in self.train_loader:
+            batch = batch.to(self.device)
             self.optimizer.zero_grad()
             y = batch.y[:batch.batch_size].to(self.device)
-            y_hat = self.model(batch.x.to(self.device), batch.edge_index.to(self.device))[:batch.batch_size]
+            y_hat = self.model(batch.x, batch.edge_index)[:batch.batch_size]
             loss = self.loss_fn(y_hat, y)
 
             loss.backward()
             self.optimizer.step()
 
-            total_loss += float(loss) * batch.batch_size
-            total_examples += batch.batch_size
+            total_loss += loss.item() * batch.batch_size
             pbar.update(batch.batch_size)
         pbar.close()
 
-        return total_loss / total_examples
+        return total_loss / len(self.train_loader.dataset)
+
+    @torch.no_grad()
+    def eval(self, loader):
+        self.model.eval()
+        y_hat = self.model.inference(loader).argmax(dim=-1)
+        y = torch.cat([batch.y[:batch.batch_size] for batch in loader]).to(self.device)
+        acc = int((y_hat == y).sum()) / y.shape[0]
+        micro_f1 = f1_score(y.cpu(), y_hat.cpu(), average='micro')
+        return acc, micro_f1
 
     @torch.no_grad()
     def test(self):
-        self.model.eval()
-        results = {}
-        split_loader_dict = {'train': self.train_loader, 'val': self.val_loader, 'test': self.test_loader}
-        for split, loader in split_loader_dict.items():
-            y_hat = self.model.inference(loader).argmax(dim=-1)
-            y = torch.cat([batch.y[:batch.batch_size] for batch in loader]).to(self.device)
-            # compute accuracy
-            results[f'{split}_acc'] = int((y_hat == y).sum()) / y.shape[0]
-            # compute F1 score
-            results[f'{split}_f1'] = f1_score(y.cpu(), y_hat.cpu(), average='micro')
-        return results
+        train_acc, train_f1 = self.eval(self.train_loader)
+        val_acc, val_f1 = self.eval(self.val_loader)
+        test_acc, test_f1 = self.eval(self.test_loader)
+
+        return {
+            'train_acc': train_acc,
+            'train_f1': train_f1,
+            'val_acc': val_acc,
+            'val_f1': val_f1,
+            'test_acc': test_acc,
+            'test_f1': test_f1
+        }
 
 
 class UnsupervisedTrainerForNodeClassification(BaseTrainer):

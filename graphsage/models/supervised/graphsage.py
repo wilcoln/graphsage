@@ -8,6 +8,15 @@ from graphsage.layers import SAGE
 device = settings.DEVICE
 
 
+def set_batch_size_attr(batch):
+    try:
+        getattr(batch, 'batch_size')
+    except AttributeError:
+        batch.batch_size = batch.num_graphs
+
+    return batch
+
+
 class GraphSAGE(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, aggregator, num_layers, out_channels=None):
         super().__init__()
@@ -39,6 +48,7 @@ class GraphSAGE(torch.nn.Module):
 
         xs = []
         for batch in subgraph_loader:
+            set_batch_size_attr(batch)
             x = batch.x.to(device)
             edge_index = batch.edge_index.to(device)
             for i, layer in enumerate(self.layers):

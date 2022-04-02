@@ -23,28 +23,32 @@ class SupervisedTrainerForGraphClassification(SupervisedBaseTrainer):
     def train(self, epoch):
         self.model.train()
 
+        pbar = tqdm(total=int(len(self.train_loader.dataset)))
+        pbar.set_description(f'Epoch {epoch:02d}')
+
         total_loss = 0
-        for data in self.train_loader:
-            data = data.to(self.device)
+        for batch in self.train_loader:
+            batch = batch.to(self.device)
             self.optimizer.zero_grad()
-            loss = self.loss_fn(self.model(data.x, data.edge_index), data.y)
-            total_loss += loss.item() * data.num_graphs
+            loss = self.loss_fn(self.model(batch.x, batch.edge_index), batch.y)
+
             loss.backward()
             self.optimizer.step()
+
+            total_loss += loss.item() * batch.num_graphs
+            pbar.update(batch.num_graphs)
+
+        pbar.close()
         return total_loss / len(self.train_loader.dataset)
 
     @torch.no_grad()
     def eval(self, loader):
         self.model.eval()
 
-        ys, preds = [], []
-        for data in loader:
-            ys.append(data.y)
-            out = self.model(data.x.to(self.device), data.edge_index.to(self.device))
-            preds.append((out > 0).float().cpu())
-
-        y, pred = torch.cat(ys, dim=0).numpy(), torch.cat(preds, dim=0).numpy()
-        return f1_score(y, pred, average='micro') if pred.sum() > 0 else 0
+        y_hat = self.model.inference(loader)
+        y_hat = (y_hat > 0).float()
+        y = torch.cat([batch.y[:batch.num_graphs] for batch in loader]).to(self.device)
+        return f1_score(y.cpu(), y_hat.cpu(), average='micro')
 
     @torch.no_grad()
     def test(self):
