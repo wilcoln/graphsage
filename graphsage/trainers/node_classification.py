@@ -1,8 +1,11 @@
 import torch
 import torch.nn.functional as F
-from icecream import ic
+
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
+from torch_cluster import random_walk
+from torch_geometric.data import Data
+from torch_sparse import SparseTensor
 from tqdm import tqdm
 
 from graphsage import settings
@@ -35,6 +38,8 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
 
         total_loss = 0
         for batch in self.train_loader:
+            # we slice with :batch.batch_size all the time to info about the actual nodes of the batch,
+            # the rest being about the sampled neighbors
             batch = batch.to(self.device)
             self.optimizer.zero_grad()
             y = batch.y[:batch.batch_size].to(self.device)
@@ -73,6 +78,39 @@ class SupervisedTrainerForNodeClassification(SupervisedBaseTrainer):
             'test_acc': test_acc,
             'test_f1': test_f1
         }
+
+
+def get_pos_neg_batches(batch, data):
+    device = batch.x.device
+
+    batch_edge_index = batch.edge_index
+    batch_num_nodes = int(batch_edge_index.max()) + 1
+    batch_edge_index = SparseTensor(
+        row=batch_edge_index[0],
+        col=batch_edge_index[1],
+        sparse_sizes=(batch_num_nodes, batch_num_nodes)
+    ).t()
+
+    row, col, _ = batch_edge_index.coo()
+
+    # For each node in `batch`, we sample a direct neighbor (as positive
+    # example) and a random node (as negative example):
+    pos_batch_n_id = random_walk(row, col, batch.n_id, walk_length=1, coalesced=False)[:, 1].cpu()
+
+    neg_batch_n_id = torch.randint(0, data.num_nodes, (batch.n_id.numel(),), dtype=torch.long)
+
+    pos_batch = Data(
+        x=torch.index_select(data.x.cpu(), 0, pos_batch_n_id).to(device),
+        n_id=pos_batch_n_id.to(device),
+        edge_index=batch.edge_index.to(device),
+    )
+    neg_batch = Data(
+        x=torch.index_select(data.x.cpu(), 0, neg_batch_n_id).to(device),
+        n_id=neg_batch_n_id.to(device),
+        edge_index=batch.edge_index.to(device),
+    )
+
+    return pos_batch, neg_batch
 
 
 class UnsupervisedTrainerForNodeClassification(BaseTrainer):
@@ -123,12 +161,12 @@ class UnsupervisedTrainerForNodeClassification(BaseTrainer):
         total_loss = 0
         for batch in self.train_loader:
             batch = batch.to(self.device)
-            ic(batch.batch_size)
+            pos_batch, neg_batch = get_pos_neg_batches(batch, self.data)
             self.optimizer.zero_grad()
 
-            out = self.model(batch.x, batch.edge_index)
-            ic(out.shape)
-            out, pos_out, neg_out = out.split(out.size(0) // 3, dim=0)
+            out = self.model(batch.x, batch.edge_index)[:batch.batch_size]
+            pos_out = self.model(pos_batch.x, pos_batch.edge_index)[:batch.batch_size]
+            neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
 
             pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
             neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
