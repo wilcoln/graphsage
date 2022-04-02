@@ -128,8 +128,11 @@ class SAGE(MessagePassing):
         """
         adj_t = adj_t.set_value(None, layout=None)
 
-        if self.aggregator in {'mean', 'max',  'sum', 'gcn'}:
+        if self.aggregator in {'mean', 'max',  'sum'}:
             return matmul(adj_t, x[0], reduce=self.aggregator)
+
+        if self.aggregator == 'gcn':
+            return matmul(adj_t, x[0], reduce='mean')
 
         if self.aggregator == 'max_pool':
             x = F.relu(self.pool(x[0]))

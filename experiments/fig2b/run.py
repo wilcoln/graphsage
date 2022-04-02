@@ -38,7 +38,7 @@ xss = np.array(fig2b_settings.SAMPLE_SIZES)
 data1 = np.array([results[ss]['test_f1'] for ss in xss])
 data2 = np.array([results[ss]['test_time'] for ss in xss])
 
-fig, ax1 = plt.subplots()  # TODO: Fix blocking caused by this line
+fig, ax1 = plt.subplots()
 
 color = 'tab:blue'
 ax1.set_xlabel('Neighborhood sample size')
