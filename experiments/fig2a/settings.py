@@ -6,6 +6,8 @@ MODELS = [
     'graphsage_mean',
     'graphsage_max',
     'graphsage_lstm',
+    'graphsage_bilstm',
+    'graphsage_sum',
     'deepwalk',
 ]
 LEARNING_RATE = 1e-3

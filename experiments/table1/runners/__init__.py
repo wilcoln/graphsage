@@ -8,12 +8,28 @@ import experiments.table1.settings as table1_settings
 
 # Dict of all implemented runners
 runners = {
-    'citation': {
+    'cora': {
         'supervised': {
-            'graphsage': sup_citation_graphsage_runners,
+            'graphsage': sup_citation_graphsage_runners.cora,
         },
         'unsupervised': {
-            'graphsage': unsup_citation_graphsage_runners,
+            'graphsage': unsup_citation_graphsage_runners.cora,
+        },
+    },
+    'citeseer': {
+        'supervised': {
+            'graphsage': sup_citation_graphsage_runners.citeseer,
+        },
+        'unsupervised': {
+            'graphsage': unsup_citation_graphsage_runners.citeseer,
+        },
+    },
+    'pubmed': {
+        'supervised': {
+            'graphsage': sup_citation_graphsage_runners.pubmed,
+        },
+        'unsupervised': {
+            'graphsage': unsup_citation_graphsage_runners.pubmed,
         },
     },
     'ppi': {

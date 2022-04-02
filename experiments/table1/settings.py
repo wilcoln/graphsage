@@ -2,7 +2,9 @@ from graphsage.settings import args
 
 
 DATASETS = [
-    'citation',
+    'cora',
+    'pubmed',
+    'citeseer',
     'reddit',
     'ppi',
 ]
@@ -15,6 +17,8 @@ MODELS = [
     'graphsage_mean',
     'graphsage_lstm',
     'graphsage_max',
+    'graphsage_bilstm',
+    'graphsage_sum',
 ]
 TRAINING_MODES = [
     'unsupervised',
@@ -25,8 +29,8 @@ NUM_LAYERS = 2
 SUPERVISED_LEARNING_RATE = 1e-3
 UNSUPERVISED_LEARNING_RATE = 1e-5
 
-if args.ignore_reddit:
+if args.ignore_datasets:
     try:
-        DATASETS.remove('reddit')
+        DATASETS = [d for d in DATASETS if d not in args.ignore_datasets]
     except ValueError:
         pass

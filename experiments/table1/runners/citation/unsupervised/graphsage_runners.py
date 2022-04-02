@@ -1,4 +1,5 @@
 import os.path as osp
+from types import SimpleNamespace
 
 import torch
 import torch_geometric.transforms as T
@@ -11,11 +12,11 @@ from graphsage.samplers import UniformLoader
 from graphsage.trainers import UnsupervisedTrainerForNodeLevelTask
 
 device = settings.DEVICE
-dataset_name = 'Cora'  # 'Cora', 'CiteSeer', 'PubMed'
-path = osp.join(settings.DATA_DIR, dataset_name)
 
 
-def get(aggregator):
+def get(dataset_name, aggregator):
+    dataset_name = dataset_name.capitalize()
+    path = osp.join(settings.DATA_DIR, dataset_name)
     dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
 
     # Send nodes to GPU for faster sampling:
@@ -39,3 +40,8 @@ def get(aggregator):
         optimizer=torch.optim.Adam(model.parameters(), lr=table1_settings.UNSUPERVISED_LEARNING_RATE),
         device=device,
     )
+
+
+cora = SimpleNamespace(get=lambda aggregator: get('cora', aggregator))
+citeseer = SimpleNamespace(get=lambda aggregator: get('citeseer', aggregator))
+pubmed = SimpleNamespace(get=lambda aggregator: get('pubmed', aggregator))

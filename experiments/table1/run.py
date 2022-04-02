@@ -50,7 +50,9 @@ with open(results_path, 'w') as f:
 # Generate latex table
 table_path = osp.join(folder_path, 'table1.tex')
 with open(table_path, 'w') as f:
-    f.write(generate_latex_table(results))
+    latex_table = generate_latex_table(results)
+    f.write(latex_table)
+    print(latex_table)
 
 
 # Print path to results
