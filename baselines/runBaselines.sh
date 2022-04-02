@@ -1,0 +1,5 @@
+python3 randomClassifierReddit.py
+python3 randomClassifierPPI.py
+python3 rawFeaturesReddit.py
+python3 rawFeaturesPPI.py
+python3 deepWalkReddit.py
