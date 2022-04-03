@@ -14,7 +14,7 @@ path = osp.join(settings.DATA_DIR, dataset_name)
 dataset = Planetoid(path, dataset_name)
 
 # Already send node features/labels to GPU for faster access during sampling:
-data = dataset[0]  # .to(device, 'x', 'y')
+data = dataset[0].to(device, 'x', 'y')
 
 model = GraphSAGE(
     in_channels=dataset.num_features,

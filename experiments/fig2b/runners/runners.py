@@ -14,8 +14,7 @@ device = settings.DEVICE
 dataset_name = fig2b_settings.DATASET.capitalize()
 path = osp.join(settings.DATA_DIR, dataset_name)
 dataset = Planetoid(path, dataset_name)
-# Send nodes to GPU for faster sampling
-data = dataset[0].to(device, 'x', 'y')
+data = dataset[0]
 
 
 class SampleSizeRunner:
