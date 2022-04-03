@@ -2,6 +2,7 @@ import argparse
 import os.path as osp
 
 import torch
+from icecream import ic
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_epochs', help='Number of epochs', type=int)
@@ -13,7 +14,9 @@ parser.add_argument('--aggregator', help='Aggregator to use', type=str, default=
 parser.add_argument('--ignore_datasets', nargs='*', help='Datasets to ignore', type=str)
 parser.add_argument('--ignore_aggregators', nargs='*', help='Aggregators to ignore', type=str)
 parser.add_argument('--results_dir', help='Result directory to use', type=str)
-parser.add_argument('--no-show', action='store_true', help="Do not show the figure at the end", default=False)
+parser.add_argument('--no_show', action='store_true', help="Do not show the figure at the end", default=False)
+parser.add_argument('--persistent_workers', action='store_true', help="Whether to make dataloader workers "
+                                                                      "persistent", default=False)
 parser.add_argument('--num_workers', help='Number of workers', type=int)
 args = parser.parse_args()
 
@@ -42,3 +45,5 @@ if args.ignore_aggregators is None:
 
 if args.num_workers is not None:
     NUM_WORKERS = args.num_workers
+
+PERSISTENT_WORKERS = args.persistent_workers

@@ -83,7 +83,7 @@ class UnsupervisedGraphSageTrainerForGraphLevelTask(GraphSageBaseTrainer):
 
         self.train_loader_list = []
 
-        loader_kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
+        loader_kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': settings.PERSISTENT_WORKERS}
         for curr_graph in self.train_data_list:
             _train_loader = loader(curr_graph, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=True, **loader_kwargs)
             self.train_loader_list.append(_train_loader)

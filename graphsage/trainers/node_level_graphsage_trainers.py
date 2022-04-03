@@ -17,7 +17,7 @@ class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer)
         super(SupervisedGraphSageTrainerForNodeLevelTask, self).__init__(*args, **kwargs)
 
         self.data = data
-        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
+        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': settings.PERSISTENT_WORKERS}
         self.train_loader = loader(data, input_nodes=data.train_mask,
                                    num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
 
@@ -86,7 +86,7 @@ class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
 
         self.data = data
 
-        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
+        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': settings.PERSISTENT_WORKERS}
 
         self.train_loader = loader(data, input_nodes=data.train_mask,
                                    num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
