@@ -135,6 +135,12 @@ class SAGE(MessagePassing):
         # TO DO - implement LSTM here 
         if self.aggregator == 'gcn':
             self.aggregator = 'mean'
+        elif self.aggregator == 'max_pool':
+            inputs = F.relu(self.pool(inputs))
+            self.aggregator = 'max'
+        elif self.aggregator == 'mean_pool':
+            inputs = F.relu(self.pool(inputs))
+            self.aggregator = 'mean'
         return scatter(inputs, index, dim=self.node_dim, dim_size=dim_size,
                            reduce=self.aggregator)
 
