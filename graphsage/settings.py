@@ -14,6 +14,7 @@ parser.add_argument('--ignore_datasets', nargs='*', help='Datasets to ignore', t
 parser.add_argument('--ignore_aggregators', nargs='*', help='Aggregators to ignore', type=str)
 parser.add_argument('--results_dir', help='Result directory to use', type=str)
 parser.add_argument('--no-show', action='store_true', help="Do not show the figure at the end", default=False)
+parser.add_argument('--num_workers', help='Number of workers', type=int)
 args = parser.parse_args()
 
 DATA_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data')
@@ -38,3 +39,6 @@ if args.batch_size is not None:
 # TODO: remove this when those are fixed
 if args.ignore_aggregators is None:
     args.ignore_aggregators = ['lstm', 'bilstm']
+
+if args.num_workers is not None:
+    NUM_WORKERS = args.num_workers

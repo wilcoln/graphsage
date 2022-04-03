@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from torch.optim import Optimizer
 
 from graphsage import settings
-from models import GraphSAGE
+from graphsage.models import GraphSAGE
 
 
 def capitalize(underscore_string):
