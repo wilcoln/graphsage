@@ -18,8 +18,17 @@ def set_batch_size_attr(batch):
 
 
 class GraphSAGE(torch.nn.Module):
-    def __init__(self, in_channels, hidden_channels, aggregator, num_layers, out_channels=None):
+    def __init__(
+            self,
+            in_channels: int,
+            hidden_channels: int,
+            aggregator: str = 'mean',
+            num_layers: int = 2,
+            out_channels=None
+    ):
         super().__init__()
+        self.aggregator = aggregator
+        self.name = 'GraphSAGE-' + aggregator.upper()
 
         if out_channels is None:
             out_channels = hidden_channels

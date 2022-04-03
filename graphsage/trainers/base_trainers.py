@@ -6,8 +6,10 @@ from datetime import datetime as dt
 
 import pandas as pd
 from matplotlib import pyplot as plt
+from torch.optim import Optimizer
 
 from graphsage import settings
+from models import GraphSAGE
 
 
 def capitalize(underscore_string):
@@ -30,10 +32,10 @@ class BaseTrainer:
 
 class GraphSageBaseTrainer(BaseTrainer):
     def __init__(self,
-                 model,
-                 optimizer,
-                 num_epochs,
-                 device,
+                 model: GraphSAGE,
+                 optimizer: Optimizer,
+                 num_epochs: int,
+                 device: str,
                  k1: int = 25,
                  k2: int = 10, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,7 +53,7 @@ class GraphSageBaseTrainer(BaseTrainer):
         # Create dictionary with all the parameters
         folder_name_dict = {
             'dataset': self.dataset_name,
-            'model': self.model.__class__.__name__,
+            'model': self.model.name,
             'num_epochs': self.num_epochs,
         }
 
