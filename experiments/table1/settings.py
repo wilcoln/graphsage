@@ -46,4 +46,4 @@ if args.ignore_datasets:
         pass
 
 if args.ignore_aggregators:
-    MODELS = [m for m in MODELS if any(m.endswith(a) for a in args.ignore_aggregators)]
+    MODELS = [m for m in MODELS if not any(m.endswith(a) for a in args.ignore_aggregators)]

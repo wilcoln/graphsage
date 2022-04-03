@@ -57,5 +57,7 @@ plt.savefig(osp.join(results_path, 'fig3.png'))
 print(f'Results saved to {results_path}')
 
 # Show the plot
-plt.show()
+if not graphsage_settings.args.no_show:
+    plt.show()
+
 plt.close()
