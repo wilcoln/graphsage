@@ -8,6 +8,7 @@ from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.typing import Adj, OptPairTensor, Size
 from torch_sparse import SparseTensor, matmul
+from icecream import ic
 
 
 class SAGE(MessagePassing):
@@ -100,9 +101,9 @@ class SAGE(MessagePassing):
 
         # Convert edge_index to a sparse tensor,
         # this is required for propagate to call message_and_aggregate
-        if isinstance(edge_index, Tensor):
-            num_nodes = int(edge_index.max()) + 1
-            edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
+        # if isinstance(edge_index, Tensor):
+        #     num_nodes = int(edge_index.max()) + 1
+        #     edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
 
         # propagate_type: (x: OptPairTensor)
         # propagate internally calls message_and_aggregate()

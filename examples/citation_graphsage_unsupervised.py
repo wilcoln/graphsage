@@ -1,7 +1,6 @@
 import os.path as osp
 
 import torch
-import torch_geometric.transforms as T
 
 from graphsage import settings
 # Our own imports
@@ -14,7 +13,7 @@ device = settings.DEVICE
 
 dataset_name = 'Cora'
 path = osp.join(settings.DATA_DIR, dataset_name)
-dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
+dataset = Planetoid(path, dataset_name)
 
 # Already send node features/labels to GPU for faster access during sampling:
 data = dataset[0]  # .to(device, 'x', 'y')

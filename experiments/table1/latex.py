@@ -1,8 +1,7 @@
 import json
 import os.path as osp
 
-from icecream import ic
-
+from collections import defaultdict
 from experiments.table1.settings import TRAINING_MODES, DATASETS, MODELS
 from graphsage.settings import args
 
@@ -21,7 +20,7 @@ def _datasets_section():
     return section
 
 
-def _models_section(results):
+def _models_section(results, gains_acc):
     section = ''
 
     for i, model in enumerate(MODELS):
@@ -33,6 +32,7 @@ def _models_section(results):
                     sub_results_dict = results[dataset][training_mode]
                     all_f1s = [sub_results_dict[model]['test_f1'] for model in sub_results_dict]
                     if current_f1 == max(all_f1s):
+                        gains_acc.append(sub_results_dict[model]['percentage_f1_gain'])
                         section += f'$\\underline{{\\mathbf{{{current_f1:.3f}}}}}$ & '
                     else:
                         section += f'${current_f1:.3f}$ & '
@@ -46,7 +46,11 @@ def _models_section(results):
 
 def generate_latex_table(results: dict):
 
+    gains_acc = []
+
     num_cols = 1 + 2 * len(DATASETS)
+
+    backslash = '\\'
 
     return f'''\\begin{{tabular}}{{{'c' * num_cols}}}
     \\hline
@@ -57,8 +61,10 @@ def generate_latex_table(results: dict):
         {(' Unsup. F1 & Sup. F1 & '*((num_cols - 1)//2))[:-2]} \\\\
     
     \\hline
-    {_models_section(results)}
+    {_models_section(results, gains_acc)}
     
+    \\hline
+    \\% Gain over Raw Features & {' & '.join(f'{gain:.2f}{backslash}%' for gain in gains_acc)} \\\\
     \\hline
     \\end{{tabular}}'''
 

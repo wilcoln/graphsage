@@ -2,7 +2,6 @@ import os.path as osp
 
 import torch
 import torch.nn.functional as F
-import torch_geometric.transforms as T
 from torch_geometric.utils import degree
 
 from graphsage import settings
@@ -12,7 +11,7 @@ from graphsage.samplers import GraphSAINTRandomWalkSampler
 
 dataset = 'Cora'
 path = osp.join(settings.DATA_DIR, dataset)
-dataset = Planetoid(path, dataset, transform=T.NormalizeFeatures())
+dataset = Planetoid(path, dataset)
 
 data = dataset[0]
 row, col = data.edge_index

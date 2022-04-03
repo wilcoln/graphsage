@@ -1,13 +1,12 @@
 import torch
 import torch.nn.functional as F
-
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
 from graphsage import settings
 from graphsage.samplers import get_pos_neg_batches
-from .base_trainers import SupervisedBaseTrainer, BaseTrainer
+from .base_trainers import SupervisedBaseTrainer, NNBaseTrainer
 
 
 class SupervisedTrainerForNodeLevelTask(SupervisedBaseTrainer):
@@ -78,7 +77,7 @@ class SupervisedTrainerForNodeLevelTask(SupervisedBaseTrainer):
         }
 
 
-class UnsupervisedTrainerForNodeLevelTask(BaseTrainer):
+class UnsupervisedTrainerForNodeLevelTask(NNBaseTrainer):
     def __init__(self,
                  data,
                  loader,

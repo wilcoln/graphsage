@@ -2,7 +2,6 @@ import copy
 import os.path as osp
 
 import torch
-import torch_geometric.transforms as T
 
 import experiments.fig3.settings as fig3_settings
 from graphsage import settings
@@ -10,7 +9,6 @@ from graphsage.datasets import Reddit, Planetoid
 from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
 from graphsage.trainers import SupervisedTrainerForNodeLevelTask
-
 
 device = settings.DEVICE
 
@@ -23,7 +21,7 @@ if fig3_settings.DATASET == 'reddit':
 if fig3_settings.DATASET in {'cora', 'citeseer', 'pubmed'}:
     dataset_name = fig3_settings.DATASET.capitalize()
     path = osp.join(settings.DATA_DIR, dataset_name)
-    dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
+    dataset = Planetoid(path, dataset_name)
 
 
 def get(aggregator, noise_prop):

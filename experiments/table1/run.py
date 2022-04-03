@@ -26,6 +26,10 @@ for dataset in table1_settings.DATASETS:
 
 # Add percentage f1 gain relative to raw features baseline
 for dataset in table1_settings.DATASETS:
+    # Repeat performance accross training mode for the following models
+    for model in table1_settings.UNIQUE_MODE_MODELS:
+        results[dataset]['unsupervised'][model] = results[dataset]['supervised'][model]
+
     for training_mode in table1_settings.TRAINING_MODES:
         for model in table1_settings.MODELS:
             try:

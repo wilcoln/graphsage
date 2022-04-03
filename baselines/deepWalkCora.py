@@ -1,7 +1,7 @@
 import json
 import os.path as osp
-import torch
 
+import torch
 from torch_geometric.datasets import Planetoid
 
 from deepWalkModel import Deepwalk

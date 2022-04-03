@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from graphsage import settings
 from graphsage.samplers import get_pos_neg_batches
-from .base_trainers import BaseTrainer, SupervisedBaseTrainer
+from .base_trainers import NNBaseTrainer, SupervisedBaseTrainer
 
 
 class SupervisedTrainerForGraphLevelTask(SupervisedBaseTrainer):
@@ -31,7 +31,9 @@ class SupervisedTrainerForGraphLevelTask(SupervisedBaseTrainer):
         for batch in self.train_loader:
             batch = batch.to(self.device)
             self.optimizer.zero_grad()
-            loss = self.loss_fn(self.model(batch.x, batch.edge_index), batch.y)
+            y_hat = self.model(batch.x, batch.edge_index)[:batch.num_graphs]
+            y = batch.y[:batch.num_graphs]
+            loss = self.loss_fn(y_hat, y)
 
             loss.backward()
             self.optimizer.step()
@@ -64,7 +66,7 @@ class SupervisedTrainerForGraphLevelTask(SupervisedBaseTrainer):
         }
 
 
-class UnsupervisedTrainerForGraphLevelTask(BaseTrainer):
+class UnsupervisedTrainerForGraphLevelTask(NNBaseTrainer):
     def __init__(self,
                  train_loader,
                  val_loader,
@@ -119,10 +121,10 @@ class UnsupervisedTrainerForGraphLevelTask(BaseTrainer):
 
     def _loader_to_embeddings_and_labels(self, model, loader):
         xs, ys = [], []
-        for data in loader:
-            ys.append(torch.argmax(data.y, dim=1))
-            x, edge_index = data.x.to(self.device), data.edge_index.to(self.device)
-            out = model(x, edge_index)
+        for batch in loader:
+            batch = batch.to(self.device)
+            ys.append(torch.argmax(batch.y[:batch.num_graphs], dim=1))
+            out = model(batch.x, batch.edge_index)[:batch.num_graphs]
             xs.append(out)
         return torch.cat(xs, dim=0).cpu(), torch.cat(ys, dim=0).cpu()
 

@@ -1,6 +1,5 @@
 import os.path as osp
 
-import torch_geometric.transforms as T
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import f1_score
 from sklearn.multioutput import MultiOutputClassifier
@@ -10,7 +9,6 @@ from torch_geometric.datasets import PPI
 def main():
     print("Main script")
     path = osp.join(osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data'), 'PPI')
-    dataset = PPI(path, transform=T.NormalizeFeatures())
 
     train_dataset = PPI(path, split='train')
     test_dataset = PPI(path, split='test')

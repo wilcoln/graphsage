@@ -1,7 +1,6 @@
 import os.path as osp
 
 import torch
-import torch_geometric.transforms as T
 
 import experiments.fig2b.settings as fig2b_settings
 from graphsage import settings
@@ -14,7 +13,7 @@ device = settings.DEVICE
 
 dataset_name = fig2b_settings.DATASET.capitalize()
 path = osp.join(settings.DATA_DIR, dataset_name)
-dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
+dataset = Planetoid(path, dataset_name)
 # Send nodes to GPU for faster sampling
 data = dataset[0].to(device, 'x', 'y')
 

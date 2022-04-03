@@ -26,6 +26,14 @@ TRAINING_MODES = [
     'unsupervised',
     'supervised',
 ]
+
+UNIQUE_MODE_MODELS = [
+    'random',
+    'raw_features',
+    'deep_walk',
+    'deep_walk_plus_features',
+]
+
 HIDDEN_CHANNELS = 256
 NUM_LAYERS = 2
 SUPERVISED_LEARNING_RATE = 1e-3

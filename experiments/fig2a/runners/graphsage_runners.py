@@ -3,7 +3,6 @@ import time
 
 import torch
 import torch.nn.functional as F
-import torch_geometric.transforms as T
 from tqdm import tqdm
 
 import experiments.fig2a.settings as fig2a_settings
@@ -23,7 +22,7 @@ if fig2a_settings.DATASET == 'reddit':
 if fig2a_settings.DATASET in {'cora', 'citeseer', 'pubmed'}:
     dataset_name = fig2a_settings.DATASET.capitalize()
     path = osp.join(settings.DATA_DIR, dataset_name)
-    dataset = Planetoid(path, dataset_name, transform=T.NormalizeFeatures())
+    dataset = Planetoid(path, dataset_name)
 
 kwargs = {'batch_size': fig2a_settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
 

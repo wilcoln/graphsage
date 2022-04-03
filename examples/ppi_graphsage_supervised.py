@@ -5,8 +5,8 @@ from torch_geometric.loader import DataLoader
 
 from graphsage import settings
 from graphsage.datasets import PPI
-from models.graphsage import GraphSAGE
 from graphsage.trainers import SupervisedTrainerForGraphLevelTask
+from models.graphsage import GraphSAGE
 
 device = settings.DEVICE
 

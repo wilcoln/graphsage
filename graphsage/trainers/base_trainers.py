@@ -15,16 +15,30 @@ def capitalize(underscore_string):
 
 
 class BaseTrainer:
+    def __init__(self, dataset_name: str = None):
+        self.dataset_name = dataset_name
+
+    def train(self, *args, **kwargs) -> float:
+        raise NotImplementedError
+
+    def test(self) -> dict:
+        raise NotImplementedError
+    
+    def run(self, *args, **kwargs) -> dict:
+        raise NotImplementedError
+
+
+class NNBaseTrainer(BaseTrainer):
     def __init__(self,
-                 dataset_name: str,
                  model,
                  optimizer,
                  num_epochs,
                  device,
                  k1: int = 25,
-                 k2: int = 10):
+                 k2: int = 10, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
         self.model = model
-        self.dataset_name = dataset_name
         self.optimizer = optimizer
         self.num_epochs = num_epochs
         self.device = device
@@ -114,14 +128,8 @@ class BaseTrainer:
             # Return best & all epoch results
             return best, self.results
 
-    def train(self, epoch) -> float:
-        raise NotImplementedError
 
-    def test(self) -> dict:
-        raise NotImplementedError
-
-
-class SupervisedBaseTrainer(BaseTrainer):
+class SupervisedBaseTrainer(NNBaseTrainer):
     def __init__(self,
                  loss_fn,
                  *args, **kwargs):
