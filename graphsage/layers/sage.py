@@ -3,12 +3,15 @@ from typing import Tuple, Union
 import torch
 import torch.nn.functional as F
 from torch import Tensor
-from torch.nn import LSTM
-from torch_geometric.nn.conv import MessagePassing
-from torch_geometric.nn.dense.linear import Linear
-from torch_geometric.typing import Adj, OptPairTensor, Size
+
 from torch_sparse import SparseTensor, matmul
-from icecream import ic
+
+from torch.nn import LSTM
+
+from torch_geometric.nn.dense.linear import Linear
+from torch_geometric.nn.conv import MessagePassing
+from torch_geometric.typing import Adj, OptPairTensor, Size
+from torch_geometric.utils import to_dense_batch
 
 
 class SAGE(MessagePassing):
@@ -18,13 +21,13 @@ class SAGE(MessagePassing):
             derive the size from the first input(s) to the forward method.
             A tuple corresponds to the sizes of source and target
             dimensionalities.
-        aggregator (str): ['mean', 'max', 'gcn', 'lstm', 'bilstm', 'sum'], mean by default
         out_channels (int): Size of each output sample.
+        aggregator_type (str): ['mean', 'max', 'gcn', 'lstm', 'bilstm', 'sum'], mean by default
         normalize (bool, optional): If set to :obj:`True`, output features
             will be :math:`\ell_2`-normalized, *i.e.*,
             :math:`\frac{\mathbf{x}^{\prime}_i}
             {\| \mathbf{x}^{\prime}_i \|_2}`.
-            (default: :obj:`True`)
+            (default: :obj:`False`)
         root_weight (bool, optional): If set to :obj:`False`, the layer will
             not add transformed root node features to the output.
             (default: :obj:`True`)
@@ -39,7 +42,6 @@ class SAGE(MessagePassing):
             the flow argument as either (flow = 'source_to_target') or
             (flow = 'target_to_source')
     """
-
     def __init__(self, in_channels: Union[int, Tuple[int, int]],
                  out_channels: int, aggregator: str = 'mean',
                  normalize: bool = True, root_weight: bool = True, **kwargs):
@@ -74,7 +76,7 @@ class SAGE(MessagePassing):
 
         self.lin_l = Linear(in_channels[0], out_channels, bias=False)  # neighbours
 
-        if self.root_weight:  # Not created for GCN
+        if self.root_weight: # Not created for GCN
             self.lin_r = Linear(in_channels[1], out_channels, bias=False)  # root itself
 
         self.reset_parameters()
@@ -99,14 +101,17 @@ class SAGE(MessagePassing):
         if isinstance(x, Tensor):
             x: OptPairTensor = (x, x)
 
-        # Convert edge_index to a sparse tensor,
+        # Convert edge_index to a sparse tensor if aggregator is 'lstm' or 'bilstm',
         # this is required for propagate to call message_and_aggregate
-        # if isinstance(edge_index, Tensor):
-        #     num_nodes = int(edge_index.max()) + 1
-        #     edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
+        if (self.aggregator == 'lstm' or self.aggregator == 'bilstm') and isinstance(edge_index, Tensor):
+            num_nodes = int(edge_index.max()) + 1
+            edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
+            self.fuse = True
 
         # propagate_type: (x: OptPairTensor)
-        # propagate internally calls message_and_aggregate()
+        # propagate internally calls message_and_aggregate() if edge_index is a SparseTensor 
+        # or if message_and_aggregate() is implemented
+        # otherwise it calls message(), aggregate() separately if edge_index is a Tensor
         out = self.propagate(edge_index, x=x, size=size)
         out = self.lin_l(out)
 
@@ -123,17 +128,34 @@ class SAGE(MessagePassing):
     def message(self, x_j: Tensor) -> Tensor:
         return x_j
 
-    def message_and_aggregate(self, adj_t: SparseTensor, x: OptPairTensor) -> Tensor:
+    def aggregate(self, inputs: Tensor, index: Tensor, edge_index_j, edge_index_i,
+                  ptr: Optional[Tensor] = None, dim_size: Optional[int] = None,
+                  aggr: Optional[str] = None) -> Tensor:
+        
+        # TO DO - implement LSTM here 
+        if self.aggregator == 'gcn':
+            self.aggregator = 'mean'
+        elif self.aggregator == 'max_pool':
+            inputs = F.relu(self.pool(inputs))
+            self.aggregator = 'max'
+        elif self.aggregator == 'mean_pool':
+            inputs = F.relu(self.pool(inputs))
+            self.aggregator = 'mean'
+        return scatter(inputs, index, dim=self.node_dim, dim_size=dim_size,
+                           reduce=self.aggregator)
+
+
+    def message_and_aggregate(self, adj_t: SparseTensor,
+                              x: OptPairTensor, edge_index_j, edge_index_i) -> Tensor:
         """
         Performs both message passing and aggregation of messages from neighbours using the aggregator
         """
         adj_t = adj_t.set_value(None, layout=None)
 
-        if self.aggregator in {'mean', 'max',  'sum'}:
+        if self.aggregator in {'mean', 'max',  'sum', 'gcn'}:
+            if self.aggregator == 'gcn':
+                self.aggregator = 'mean'
             return matmul(adj_t, x[0], reduce=self.aggregator)
-
-        if self.aggregator == 'gcn':
-            return matmul(adj_t, x[0], reduce='mean')
 
         if self.aggregator == 'max_pool':
             x = F.relu(self.pool(x[0]))
@@ -144,14 +166,15 @@ class SAGE(MessagePassing):
             return matmul(adj_t, x, reduce='mean')
 
         elif self.aggregator == 'lstm':
-            x = adj_t.t().matmul(x[0])
-            x, _ = self.lstm(x)
-            return F.relu(x)
+            x_j = x[0][edge_index_j]
+            x, mask = to_dense_batch(x_j, edge_index_i)
+            _, (rst, _) = self.lstm(x)
+            out = rst.squeeze(0)
+            return out
 
         elif self.aggregator == 'bilstm':
-            x = adj_t.t().matmul(x[0])
-            x = torch.stack((x, x), dim=1)  # [num_nodes, num_layers, num_channels]
-            alpha, _ = self.bilstm(x[0])
+            x = torch.stack(x, dim=1)  # [num_nodes, num_layers, num_channels]
+            alpha, _ = self.bilstm(x)
             alpha = self.att(alpha).squeeze(-1)  # [num_nodes, num_layers]
             alpha = torch.softmax(alpha, dim=-1)
             return (x * alpha.unsqueeze(-1)).sum(dim=1)
