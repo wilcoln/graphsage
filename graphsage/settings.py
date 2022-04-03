@@ -15,7 +15,6 @@ parser.add_argument('--results_dir', help='result directory to use', type=str)
 args = parser.parse_args()
 
 DATA_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data')
-CACHE_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'cache')
 RESULTS_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'results')
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -25,7 +24,6 @@ NUM_EPOCHS = 10
 
 if args.colab:
     DATA_DIR = '/content/data'
-    CACHE_DIR = '/content/cache'
     RESULTS_DIR = '/content/results'
     NUM_WORKERS = 2
 

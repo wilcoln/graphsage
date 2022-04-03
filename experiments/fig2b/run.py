@@ -14,6 +14,9 @@ from graphsage import settings as graphsage_settings
 # Initialize the results dictionary
 results = defaultdict(dict)
 
+# Override global number of workers with the experiment setting
+graphsage_settings.NUM_WORKERS = fig2b_settings.NUM_WORKERS
+
 # Run experiments
 for sample_size in fig2b_settings.SAMPLE_SIZES:
     print(f'Running experiment for sample_size {sample_size}')

@@ -7,6 +7,7 @@ MODEL = 'graphsage_mean'
 SAMPLE_SIZES = [5, 10, 20, 30, 70]
 BATCH_SIZE = 512
 LEARNING_RATE = 1e-3
+NUM_WORKERS = 1
 NUM_RUNS = 10
 
 
