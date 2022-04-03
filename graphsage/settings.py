@@ -11,6 +11,7 @@ parser.add_argument('--colab', action='store_true', help="whether we are running
 parser.add_argument('--dataset', help='Dataset to use', type=str)
 parser.add_argument('--aggregator', help='Aggregator to use', type=str, default='mean')
 parser.add_argument('--ignore_datasets', nargs='*', help='Datasets to ignore', type=str)
+parser.add_argument('--ignore_aggregators', nargs='*', help='Aggregators to ignore', type=str)
 parser.add_argument('--results_dir', help='result directory to use', type=str)
 args = parser.parse_args()
 
@@ -32,3 +33,7 @@ if args.num_epochs is not None:
 
 if args.batch_size is not None:
     BATCH_SIZE = args.batch_size
+
+# TODO: remove this when those are fixed
+if args.ignore_aggregators is None:
+    args.ignore_aggregators = ['lstm', 'bilstm']

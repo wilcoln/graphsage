@@ -15,10 +15,10 @@ MODELS = [
     'deep_walk_plus_features',
     'graphsage_gcn',
     'graphsage_mean',
-    'graphsage_lstm',
     'graphsage_max',
-    'graphsage_bilstm',
     'graphsage_sum',
+    'graphsage_lstm',
+    'graphsage_bilstm',
     'graphsage_mean_pool',
     'graphsage_max_pool',
 ]
@@ -44,3 +44,6 @@ if args.ignore_datasets:
         DATASETS = [d for d in DATASETS if d not in args.ignore_datasets]
     except ValueError:
         pass
+
+if args.ignore_aggregators:
+    MODELS = [m for m in MODELS if any(m.endswith(a) for a in args.ignore_aggregators)]

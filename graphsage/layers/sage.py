@@ -103,16 +103,9 @@ class SAGE(MessagePassing):
         if isinstance(x, Tensor):
             x: OptPairTensor = (x, x)
 
-        # Convert edge_index to a sparse tensor if aggregator is 'lstm' or 'bilstm',
-        # this is required for propagate to call message_and_aggregate
-        if isinstance(edge_index, Tensor):
-            num_nodes = int(edge_index.max()) + 1
-            edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
-
-        # propagate_type: (x: OptPairTensor)
-        # propagate internally calls message_and_aggregate() if edge_index is a SparseTensor 
-        # or if message_and_aggregate() is implemented
-        # otherwise it calls message(), aggregate() separately if edge_index is a Tensor
+        # propagate internally calls message_and_aggregate()
+        # if edge_index is a SparseTensor and message_and_aggregate() is implemented,
+        # otherwise it calls message(), aggregate() separately
         out = self.propagate(edge_index, x=x, size=size)
         out = self.lin_l(out)
 
@@ -132,7 +125,6 @@ class SAGE(MessagePassing):
     def aggregate(self, inputs: Tensor, index: Tensor, edge_index_j, edge_index_i,
                   ptr: Optional[Tensor] = None, dim_size: Optional[int] = None,
                   aggr: Optional[str] = None) -> Tensor:
-        ic('aggregate')
 
         if self.aggregator in {'mean', 'max',  'sum'}:
             reduce = self.aggregator
@@ -148,20 +140,6 @@ class SAGE(MessagePassing):
             inputs = F.relu(self.pool(inputs))
             reduce = 'mean'
 
-        elif self.aggregator == 'lstm':
-            x_j = inputs[edge_index_j]
-            x, mask = to_dense_batch(x_j, edge_index_i)
-            _, (rst, _) = self.lstm(x)
-            out = rst.squeeze(0)
-            return out
-
-        elif self.aggregator == 'bilstm':
-            x = inputs
-            alpha, _ = self.bilstm(x)
-            alpha = self.att(alpha).squeeze(-1)  # [num_nodes, num_layers]
-            alpha = torch.softmax(alpha, dim=-1)
-            return (x * alpha.unsqueeze(-1)).sum(dim=1)
-
         return scatter(inputs, index, dim=self.node_dim, dim_size=dim_size,
                            reduce=reduce)
 
@@ -171,14 +149,13 @@ class SAGE(MessagePassing):
         """
         Performs both message passing and aggregation of messages from neighbours using the aggregator
         """
-        ic('message_and_aggregate')
         adj_t = adj_t.set_value(None, layout=None)
 
         if self.aggregator in {'mean', 'max',  'sum'}:
             return matmul(adj_t, x[0], reduce=self.aggregator)
 
         if self.aggregator == 'gcn':
-            return matmul(adj_t, x[0], reduce='gcn')
+            return matmul(adj_t, x[0], reduce='mean')
 
         if self.aggregator == 'max_pool':
             x = F.relu(self.pool(x[0]))

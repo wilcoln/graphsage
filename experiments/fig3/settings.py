@@ -5,10 +5,14 @@ from graphsage.settings import args
 DATASET = 'citation'
 
 MODELS = [
-    # 'graphsage_bilstm',
     'graphsage_gcn',
+    'graphsage_mean',
+    'graphsage_max',
+    'graphsage_lstm',
+    'graphsage_bilstm',
+    'graphsage_sum',
     'graphsage_max_pool',
-    # 'graphsage_mean_pool',
+    'graphsage_mean_pool',
     'raw_features',
 ]
 
@@ -28,3 +32,5 @@ if args.dataset is not None:
 if args.batch_size is not None:
     BATCH_SIZE = args.batch_size
 
+if args.ignore_aggregators:
+    MODELS = [m for m in MODELS if not any(m.endswith(a) for a in args.ignore_aggregators)]

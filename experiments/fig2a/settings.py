@@ -26,4 +26,5 @@ if args.dataset is not None:
 if args.batch_size is not None:
     BATCH_SIZE = args.batch_size
 
-
+if args.ignore_aggregators:
+    MODELS = [m for m in MODELS if any(m.endswith(a) for a in args.ignore_aggregators)]
