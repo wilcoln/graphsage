@@ -6,16 +6,16 @@ from tqdm import tqdm
 
 from graphsage import settings
 from graphsage.samplers import get_pos_neg_batches
-from .base_trainers import NNBaseTrainer, SupervisedBaseTrainer
+from .base_trainers import GraphSageBaseTrainer, SupervisedGraphSageBaseTrainer
 
 
-class SupervisedTrainerForGraphLevelTask(SupervisedBaseTrainer):
+class SupervisedGraphSageTrainerForGraphLevelTask(SupervisedGraphSageBaseTrainer):
     def __init__(self,
                  train_loader,
                  val_loader,
                  test_loader,
                  *args, **kwargs):
-        super(SupervisedTrainerForGraphLevelTask, self).__init__(*args, **kwargs)
+        super(SupervisedGraphSageTrainerForGraphLevelTask, self).__init__(*args, **kwargs)
 
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -66,14 +66,14 @@ class SupervisedTrainerForGraphLevelTask(SupervisedBaseTrainer):
         }
 
 
-class UnsupervisedTrainerForGraphLevelTask(NNBaseTrainer):
+class UnsupervisedGraphSageTrainerForGraphLevelTask(GraphSageBaseTrainer):
     def __init__(self,
                  train_loader,
                  val_loader,
                  loader,
                  test_loader,
                  *args, **kwargs):
-        super(UnsupervisedTrainerForGraphLevelTask, self).__init__(*args, **kwargs)
+        super(UnsupervisedGraphSageTrainerForGraphLevelTask, self).__init__(*args, **kwargs)
 
         self.train_loader = train_loader
         self.val_loader = val_loader

@@ -22,18 +22,19 @@ for sample_size in fig2b_settings.SAMPLE_SIZES:
     except NotImplementedError:
         print(f'Skipping {sample_size}')
 
-# Create folder
+# Create a timestamped and args-explicit named for the results folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
 folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.args).items()])
 results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2b', folder_name)
 
 os.makedirs(results_path)
 
-# Save dictionary to json file
+# Save results as a json file
 json_path = osp.join(results_path, f'fig2b.json')
 with open(json_path, 'w') as f:
     json.dump(results, f)
 
+# Use results to plot the figure
 xss = np.array(fig2b_settings.SAMPLE_SIZES)
 data1 = np.array([results[ss]['test_f1'] for ss in xss])
 data2 = np.array([results[ss]['test_time'] for ss in xss])
@@ -57,10 +58,10 @@ fig.legend(loc='lower right')
 
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
 
-# Save the plot in results directory
+# Save the plot in the results directory
 plt.savefig(osp.join(results_path, 'fig2b.png'))
 
-# Print path to results
+# Print path to the results directory
 print(f'Results saved to {results_path}')
 
 # Show the plot

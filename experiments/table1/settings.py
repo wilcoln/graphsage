@@ -27,7 +27,7 @@ TRAINING_MODES = [
     'supervised',
 ]
 
-UNIQUE_MODE_MODELS = [
+GRAPH_OBLIVIOUS_MODELS = [
     'random',
     'raw_features',
     'deep_walk',

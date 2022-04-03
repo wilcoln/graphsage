@@ -22,19 +22,18 @@ for model in fig2a_settings.MODELS:
     except NotImplementedError:
         print(f'Skipping {model}')
 
-# Create folder
+# Create a timestamped and args-explicit named for the results folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
 folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.args).items()])
 results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2a', folder_name)
 os.makedirs(results_path)
 
-# Save dictionary to json file
+# Save results as a json file
 json_path = osp.join(results_path, f'fig2a.json')
 with open(json_path, 'w') as f:
     json.dump(results, f)
 
 # Use results to plot train and test time for each model in a bar plot
-# Plot the results
 x = results.keys()
 _x = np.arange(len(results))
 width = 0.3  # the width of the bars
@@ -55,12 +54,12 @@ ax.set_xticks(_x)
 ax.set_xticklabels(x)
 ax.legend(loc='upper left')
 
-fig.tight_layout()
+fig.tight_layout()  # otherwise the right y-label is slightly clipped
 
-# Save the plot in results directory
+# Save the plot in the results directory
 plt.savefig(osp.join(results_path, 'fig2a.png'))
 
-# Print path to results
+# Print path to the results directory
 print(f'Results saved to {results_path}')
 
 # Show the plot

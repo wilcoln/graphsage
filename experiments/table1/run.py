@@ -24,12 +24,12 @@ for dataset in table1_settings.DATASETS:
             except NotImplementedError:
                 print(f'Skipping {dataset}, {training_mode}, {model}')
 
-# Add percentage f1 gain relative to raw features baseline
+# Post process results
 for dataset in table1_settings.DATASETS:
-    # Repeat performance accross training mode for the following models
-    for model in table1_settings.UNIQUE_MODE_MODELS:
+    # Repeat performance across training mode for graph-oblivious models (as in the original paper)
+    for model in table1_settings.GRAPH_OBLIVIOUS_MODELS:
         results[dataset]['unsupervised'][model] = results[dataset]['supervised'][model]
-
+    # Add percentage f1 gain relative to raw features baseline
     for training_mode in table1_settings.TRAINING_MODES:
         for model in table1_settings.MODELS:
             try:
@@ -40,24 +40,26 @@ for dataset in table1_settings.DATASETS:
             except:
                 pass
 
-# Create folder
+# Create a timestamped and args-explicit named for the results folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
 folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.args).items()])
-folder_path = osp.join(graphsage_settings.RESULTS_DIR, 'table1', folder_name)
-os.makedirs(folder_path)
+results_path = osp.join(graphsage_settings.RESULTS_DIR, 'table1', folder_name)
 
-# Save results as json file
-results_path = osp.join(folder_path, 'table1.json')
-with open(results_path, 'w') as f:
+# Create the results folder
+os.makedirs(results_path)
+
+# Save results as a json file
+json_path = osp.join(results_path, 'table1.json')
+with open(json_path, 'w') as f:
     json.dump(results, f)
 
-# Generate latex table
-table_path = osp.join(folder_path, 'table1.tex')
+# Generate and save latex code for the table
+table_path = osp.join(results_path, 'table1.tex')
 with open(table_path, 'w') as f:
     latex_table = generate_latex_table(results)
     f.write(latex_table)
-    print(latex_table)
+    print(latex_table)  # Print to console for convenience
 
 
-# Print path to results
+# Print path to the results folder
 print(f'Results saved to {results_path}')

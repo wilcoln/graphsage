@@ -6,15 +6,15 @@ from tqdm import tqdm
 
 from graphsage import settings
 from graphsage.samplers import get_pos_neg_batches
-from .base_trainers import SupervisedBaseTrainer, NNBaseTrainer
+from .base_trainers import SupervisedGraphSageBaseTrainer, GraphSageBaseTrainer
 
 
-class SupervisedTrainerForNodeLevelTask(SupervisedBaseTrainer):
+class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer):
     def __init__(self,
                  data,
                  loader,
                  *args, **kwargs):
-        super(SupervisedTrainerForNodeLevelTask, self).__init__(*args, **kwargs)
+        super(SupervisedGraphSageTrainerForNodeLevelTask, self).__init__(*args, **kwargs)
 
         self.data = data
         kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS}
@@ -77,12 +77,12 @@ class SupervisedTrainerForNodeLevelTask(SupervisedBaseTrainer):
         }
 
 
-class UnsupervisedTrainerForNodeLevelTask(NNBaseTrainer):
+class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
     def __init__(self,
                  data,
                  loader,
                  *args, **kwargs):
-        super(UnsupervisedTrainerForNodeLevelTask, self).__init__(*args, **kwargs)
+        super(UnsupervisedGraphSageTrainerForNodeLevelTask, self).__init__(*args, **kwargs)
 
         self.data = data
 

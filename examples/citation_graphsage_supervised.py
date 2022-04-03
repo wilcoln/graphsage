@@ -6,7 +6,7 @@ from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
-from graphsage.trainers import SupervisedTrainerForNodeLevelTask
+from graphsage.trainers import SupervisedGraphSageTrainerForNodeLevelTask
 
 device = settings.DEVICE
 dataset_name = 'Cora'  # 'Cora', 'CiteSeer', 'PubMed'
@@ -24,7 +24,7 @@ model = GraphSAGE(
     aggregator=settings.args.aggregator,
 ).to(device)
 
-SupervisedTrainerForNodeLevelTask(
+SupervisedGraphSageTrainerForNodeLevelTask(
     dataset_name=dataset_name,
     model=model,
     data=data,

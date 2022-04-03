@@ -7,7 +7,7 @@ import experiments.table1.settings as table1_settings
 from graphsage import settings
 from graphsage.datasets import PPI
 from graphsage.models import GraphSAGE
-from graphsage.trainers import SupervisedTrainerForGraphLevelTask
+from graphsage.trainers import SupervisedGraphSageTrainerForGraphLevelTask
 
 device = settings.DEVICE
 
@@ -30,7 +30,7 @@ def get(aggregator):
     ).to(device)
 
     # Return trainer
-    return SupervisedTrainerForGraphLevelTask(
+    return SupervisedGraphSageTrainerForGraphLevelTask(
         dataset_name=dataset_name,
         model=model,
         loss_fn=torch.nn.BCEWithLogitsLoss(),

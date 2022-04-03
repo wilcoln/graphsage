@@ -7,7 +7,7 @@ from graphsage import settings
 from graphsage.datasets import Reddit
 from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
-from graphsage.trainers import SupervisedTrainerForNodeLevelTask
+from graphsage.trainers import SupervisedGraphSageTrainerForNodeLevelTask
 
 device = settings.DEVICE
 
@@ -29,7 +29,7 @@ def get(aggregator):
     ).to(device)
 
     # Return trainer
-    return SupervisedTrainerForNodeLevelTask(
+    return SupervisedGraphSageTrainerForNodeLevelTask(
         dataset_name=dataset_name,
         model=model,
         data=data,

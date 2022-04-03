@@ -8,7 +8,7 @@ from graphsage import settings
 from graphsage.datasets import PPI
 from graphsage.models import GraphSAGE
 from graphsage.samplers import UniformLoader
-from graphsage.trainers import UnsupervisedTrainerForGraphLevelTask
+from graphsage.trainers import UnsupervisedGraphSageTrainerForGraphLevelTask
 
 device = settings.DEVICE
 
@@ -31,7 +31,7 @@ def get(aggregator):
     ).to(device)
 
     # Return trainer
-    return UnsupervisedTrainerForGraphLevelTask(
+    return UnsupervisedGraphSageTrainerForGraphLevelTask(
         dataset_name=dataset_name,
         model=model,
         optimizer=torch.optim.Adam(model.parameters(), lr=table1_settings.SUPERVISED_LEARNING_RATE),

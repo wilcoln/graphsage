@@ -28,7 +28,7 @@ class BaseTrainer:
         raise NotImplementedError
 
 
-class NNBaseTrainer(BaseTrainer):
+class GraphSageBaseTrainer(BaseTrainer):
     def __init__(self,
                  model,
                  optimizer,
@@ -63,15 +63,15 @@ class NNBaseTrainer(BaseTrainer):
             'device': self.device.type,
         }
 
-        # Create folder name
+        # Create a timestamped and args-explicit named for the results folder name
         date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
         folder_name = '_'.join([date] + [f'{k}={v}' for k, v in folder_name_dict.items()])
-        folder_path = osp.join(settings.RESULTS_DIR, 'trainers', folder_name)
+        results_path = osp.join(settings.RESULTS_DIR, 'trainers', folder_name)
 
-        # Create folder
-        os.makedirs(folder_path)
+        # Create results folder
+        os.makedirs(results_path)
 
-        # Save figures
+        # Plot results
         df = pd.DataFrame(self.results)  # create dataframe
         df.index += 1  # shift index by 1, because epochs start at 1
         for i, col in enumerate(df.columns):
@@ -81,19 +81,19 @@ class NNBaseTrainer(BaseTrainer):
             plt.xlabel('Epoch')
             # plt.ylabel(col_name)
 
-            plt.savefig(osp.join(folder_path, f'{col}.png'))
+            plt.savefig(osp.join(results_path, f'{col}.png'))
             plt.close()
 
-        with open(osp.join(folder_path, 'params.json'), 'w') as f:
+        with open(osp.join(results_path, 'params.json'), 'w') as f:
             json.dump(params_dict, f)
 
-        with open(osp.join(folder_path, 'results.json'), 'w') as f:
+        with open(osp.join(results_path, 'results.json'), 'w') as f:
             json.dump(self.results, f)
 
-        # Print path to results
-        print(f'Results saved to {folder_path}')
+        # Print path to the results directory
+        print(f'Results saved to {results_path}')
 
-    def run(self, return_best_epoch_only=True):
+    def run(self, return_best_epoch_only=True, val_metric='f1'):
 
         for epoch in range(1, self.num_epochs + 1):
             # Train & test
@@ -118,10 +118,10 @@ class NNBaseTrainer(BaseTrainer):
         # Save results
         self.save_results()
 
-        # Get best epoch result
-        best = max(self.results, key=lambda x: max(x.get('val_acc', 0), x.get('val_f1', 0)))
+        # Get best epoch result w.r.t. validation metric
+        best = max(self.results, key=lambda x: x.get(f'val_{val_metric}', 0))
 
-        # Return best epoch results i.e. the one w/ the highest validation accuracy or f1 score
+        # Return best epoch results i.e. the one w/ the highest validation metric value
         if return_best_epoch_only:
             return best
         else:
@@ -129,9 +129,9 @@ class NNBaseTrainer(BaseTrainer):
             return best, self.results
 
 
-class SupervisedBaseTrainer(NNBaseTrainer):
+class SupervisedGraphSageBaseTrainer(GraphSageBaseTrainer):
     def __init__(self,
                  loss_fn,
                  *args, **kwargs):
-        super(SupervisedBaseTrainer, self).__init__(*args, **kwargs)
+        super(SupervisedGraphSageBaseTrainer, self).__init__(*args, **kwargs)
         self.loss_fn = loss_fn
