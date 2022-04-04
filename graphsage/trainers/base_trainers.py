@@ -6,11 +6,13 @@ from datetime import datetime as dt
 from typing import Any
 
 import pandas as pd
+import torch.nn.functional as F
 from matplotlib import pyplot as plt
 from torch import nn
 from torch.optim import Optimizer
 
 from graphsage import settings
+from samplers import get_pos_neg_batches
 
 dataloader_kwargs = kwargs = {
     'batch_size': settings.BATCH_SIZE,
@@ -147,6 +149,19 @@ class GraphSageBaseTrainer(TorchModuleBaseTrainer):
         super().__init__(*args, **kwargs)
         self.k1 = k1
         self.k2 = k2
+
+    def unsup_loss_fn(self, out, batch, *args, use_triplet_loss=settings.args.use_triplet_loss, **kwargs):
+        pos_batch, neg_batch = get_pos_neg_batches(out, batch, *args, **kwargs)
+
+        pos_out = self.model(pos_batch.x, pos_batch.edge_index)[:batch.batch_size]
+        neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
+
+        if use_triplet_loss:
+            return F.triplet_margin_loss(out, pos_out, neg_out)
+
+        pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
+        neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
+        return -pos_loss - neg_loss
 
 
 class SupervisedGraphSageBaseTrainer(GraphSageBaseTrainer, SupervisedTorchModuleBaseTrainer):

@@ -3,16 +3,13 @@ from typing import Tuple, Union, Optional
 import torch
 import torch.nn.functional as F
 from torch import Tensor
-from torch_scatter import scatter
-
-from torch_sparse import SparseTensor, matmul
-
 from torch.nn import LSTM
-
-from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.nn.conv import MessagePassing
+from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.typing import Adj, OptPairTensor, Size
 from torch_geometric.utils import to_dense_batch
+from torch_scatter import scatter
+from torch_sparse import SparseTensor, matmul
 
 
 class SAGE(MessagePassing):

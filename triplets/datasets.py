@@ -1,20 +1,15 @@
 import os.path as osp
 
 import torch
-import torch.nn.functional as F
-from icecream import ic
-from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import f1_score
-from sklearn.multioutput import MultiOutputClassifier
 
 from graphsage import settings
 from graphsage.datasets import Planetoid
 from triplets.models import MLP
-from triplets.utils import pyg_graph_to_triplets
 from triplets.trainers import TripletMLPTrainer
+from triplets.utils import pyg_graph_to_triplets
 
 device = settings.DEVICE
-dataset_name = 'PubMed'  # 'Cora'  # 'Citeseer', 'Cora', # 'PubMed'
+dataset_name = 'Cora'  # 'Cora'  # 'Citeseer', 'Cora', # 'PubMed'
 path = osp.join(settings.DATA_DIR, dataset_name)
 dataset = Planetoid(path, dataset_name)
 # Create the triplets dataset

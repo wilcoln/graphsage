@@ -24,10 +24,13 @@ class MLP(nn.Module):
             [nn.Linear(hidden_channels, out_channels)]
         )
 
-        self.batch_norms = nn.ModuleList([nn.BatchNorm1d(hidden_channels) for _ in range(num_layers)])
+        self.batch_norms = nn.ModuleList(
+            [nn.BatchNorm1d(hidden_channels) for _ in range(num_layers-1)] +
+            [nn.BatchNorm1d(out_channels)]
+        )
 
     def forward(self, x):
-        for i, layer, batch_norm in enumerate(zip(self.layers, self.batch_norms)):
+        for i, (layer, batch_norm) in enumerate(zip(self.layers, self.batch_norms)):
             x = layer(x)
             x = batch_norm(x)
             if i < len(self.layers) - 1:

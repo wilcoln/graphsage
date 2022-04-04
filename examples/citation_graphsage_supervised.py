@@ -1,7 +1,6 @@
 import os.path as osp
 
 import torch
-from icecream import ic
 
 from graphsage import settings
 from graphsage.datasets import Planetoid

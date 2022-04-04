@@ -1,19 +1,15 @@
 import experiments.table1.runners.citation.supervised.graphsage_runners as sup_citation_graphsage_runners
+import experiments.table1.runners.citation.supervised.random_runners as sup_citation_random_runners
+import experiments.table1.runners.citation.supervised.raw_features_runners as sup_citation_raw_features_runners
 import experiments.table1.runners.citation.unsupervised.graphsage_runners as unsup_citation_graphsage_runners
 import experiments.table1.runners.ppi.supervised.graphsage_runners as sup_ppi_graphsage_runners
+import experiments.table1.runners.ppi.supervised.random_runners as sup_ppi_random_runners
+import experiments.table1.runners.ppi.supervised.raw_features_runners as sup_ppi_raw_features_runners
 import experiments.table1.runners.ppi.unsupervised.graphsage_runners as unsup_ppi_graphsage_runners
 import experiments.table1.runners.reddit.supervised.graphsage_runners as sup_reddit_graphsage_runners
-import experiments.table1.runners.reddit.unsupervised.graphsage_runners as unsup_reddit_graphsage_runners
-
-import experiments.table1.runners.citation.supervised.raw_features_runners as sup_citation_raw_features_runners
-import experiments.table1.runners.reddit.supervised.raw_features_runners as sup_reddit_raw_features_runners
-import experiments.table1.runners.ppi.supervised.raw_features_runners as sup_ppi_raw_features_runners
-
-import experiments.table1.runners.citation.supervised.random_runners as sup_citation_random_runners
 import experiments.table1.runners.reddit.supervised.random_runners as sup_reddit_random_runners
-import experiments.table1.runners.ppi.supervised.random_runners as sup_ppi_random_runners
-
-
+import experiments.table1.runners.reddit.supervised.raw_features_runners as sup_reddit_raw_features_runners
+import experiments.table1.runners.reddit.unsupervised.graphsage_runners as unsup_reddit_graphsage_runners
 import experiments.table1.settings as table1_settings
 
 # Dict of all implemented runners

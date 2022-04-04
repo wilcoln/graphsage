@@ -1,10 +1,8 @@
 import torch
-import torch.nn.functional as F
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
-from graphsage.samplers import get_pos_neg_batches
 from .base_trainers import GraphSageBaseTrainer, SupervisedGraphSageBaseTrainer, dataloader_kwargs
 
 
@@ -98,16 +96,10 @@ class UnsupervisedGraphSageTrainerForGraphLevelTask(GraphSageBaseTrainer):
             # train over the current graph
             for batch in self.train_loader_list[i]:
                 batch = batch.to(self.device)
-                pos_batch, neg_batch = get_pos_neg_batches(batch, self.train_data_list[i])
+
                 self.optimizer.zero_grad()
-
                 out = self.model(batch.x, batch.edge_index)[:batch.batch_size]
-                pos_out = self.model(pos_batch.x, pos_batch.edge_index)[:batch.batch_size]
-                neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
-
-                pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
-                neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
-                loss = -pos_loss - neg_loss
+                loss = self.unsup_loss_fn(out, batch, self.train_data_list[i])
 
                 loss.backward()
                 self.optimizer.step()

@@ -1,10 +1,8 @@
 import torch
-import torch.nn.functional as F
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
-from graphsage.samplers import get_pos_neg_batches
 from .base_trainers import SupervisedGraphSageBaseTrainer, GraphSageBaseTrainer, dataloader_kwargs
 
 
@@ -39,7 +37,7 @@ class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer)
             self.optimizer.zero_grad()
             y = batch.y[:batch.batch_size].to(self.device)
             y_hat = self.model(batch.x, batch.edge_index)[:batch.batch_size]
-            loss = self.loss_fn(y_hat, y)
+            loss = self.loss_fn(y_hat, y) + self.unsup_loss_fn(y_hat, batch, self.data)
 
             loss.backward()
             self.optimizer.step()
@@ -98,16 +96,10 @@ class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
         total_loss = 0
         for batch in self.train_loader:
             batch = batch.to(self.device)
-            pos_batch, neg_batch = get_pos_neg_batches(batch, self.data)
             self.optimizer.zero_grad()
 
             out = self.model(batch.x, batch.edge_index)[:batch.batch_size]
-            pos_out = self.model(pos_batch.x, pos_batch.edge_index)[:batch.batch_size]
-            neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
-
-            pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
-            neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
-            loss = -pos_loss - neg_loss
+            loss = self.unsup_loss_fn(out, batch, self.data)
 
             loss.backward()
             self.optimizer.step()

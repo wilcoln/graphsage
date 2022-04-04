@@ -12,18 +12,20 @@ class TripletMLPTrainer(SupervisedTorchModuleBaseTrainer):
         super(TripletMLPTrainer, self).__init__(*args, **kwargs)
         # Create loader objects
 
+        self.triplet_train_loader = DataLoader(Subset(data, mask2index(data.triplet_train_mask)), shuffle=True,
+                                               **dataloader_kwargs)
         self.train_loader = DataLoader(Subset(data, mask2index(data.train_mask)), shuffle=True, **dataloader_kwargs)
         self.val_loader = DataLoader(Subset(data, mask2index(data.val_mask)), shuffle=True, **dataloader_kwargs)
         self.test_loader = DataLoader(Subset(data, mask2index(data.test_mask)), shuffle=True, **dataloader_kwargs)
 
     def train(self, epoch) -> float:
         # train for one epoch
-        pbar = tqdm(total=len(self.train_loader.dataset))
+        pbar = tqdm(total=len(self.triplet_train_loader.dataset))
         pbar.set_description(f'Epoch {epoch:02d}')
 
         self.model.train()
         total_loss = 0
-        for bdata, target in enumerate(tqdm(self.train_loader)):
+        for data, target in tqdm(self.triplet_train_loader):
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
@@ -36,7 +38,7 @@ class TripletMLPTrainer(SupervisedTorchModuleBaseTrainer):
             pbar.update(len(data))
         pbar.close()
 
-        return total_loss / len(self.train_loader.dataset)
+        return total_loss / len(self.triplet_train_loader.dataset)
 
     def eval(self, loader):
         self.model.eval()
@@ -51,10 +53,12 @@ class TripletMLPTrainer(SupervisedTorchModuleBaseTrainer):
         return f1_score(y_true, y_pred, average='micro')
 
     def test(self):
+        train_f1 = self.eval(self.train_loader)
         val_f1 = self.eval(self.val_loader)
         test_f1 = self.eval(self.test_loader)
 
         return {
+            'train_f1': train_f1,
             'val_f1': val_f1,
             'test_f1': test_f1
         }

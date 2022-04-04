@@ -1,11 +1,10 @@
 import os
 import os.path as osp
-from argparse import Namespace
 
 import torch
-from icecream import ic
 
 import graphsage.settings as graphsage_settings
+
 
 def singles_to_triplets(data, edge_index):
     heads = data[edge_index[0]]  # (E, D)
@@ -23,11 +22,11 @@ def singles_to_triplets(data, edge_index):
     return triplets  # triplet
 
 
-def get_triplets_mask(mask, edge_index, train=False):
+def get_triplets_mask(mask, edge_index, triplet=False):
     triplets_mask = mask[edge_index[0]]
     inverse_triplets_mask = mask[edge_index[1]]
     triplets_mask = torch.cat([triplets_mask, inverse_triplets_mask], dim=0)
-    triplets_mask = triplets_mask if train else torch.zeros_like(triplets_mask)
+    triplets_mask = triplets_mask if triplet else torch.zeros_like(triplets_mask)
     triplets_mask = torch.cat([triplets_mask, mask], dim=0)
     return triplets_mask
 
@@ -44,12 +43,14 @@ def pyg_graph_to_triplets(dataset):
         # Create triplets labels
         y = singles_to_triplets(data.y.view(-1, 1), data.edge_index)
         # Get new split masks
-        train_mask = get_triplets_mask(data.train_mask, data.edge_index, train=True)
+        triplet_train_mask = get_triplets_mask(data.train_mask, data.edge_index, triplet=True)
+        train_mask = get_triplets_mask(data.train_mask, data.edge_index)
         val_mask = get_triplets_mask(data.val_mask, data.edge_index)
         test_mask = get_triplets_mask(data.test_mask, data.edge_index)
         triplet_dataset = TripletDataset(
             name=dataset.name, x=x, y=y, num_classes=dataset.num_classes,
-            train_mask=train_mask, val_mask=val_mask, test_mask=test_mask
+            train_mask=train_mask, val_mask=val_mask, test_mask=test_mask,
+            triplet_train_mask=triplet_train_mask,
         )
         print(f'Saving triplets dataset to: {triplets_data_dir}')
         torch.save(triplet_dataset, triplets_data_path)
@@ -61,9 +62,10 @@ def pyg_graph_to_triplets(dataset):
 
 
 class TripletDataset(torch.utils.data.Dataset):
-    def __init__(self, x, y, train_mask, val_mask, test_mask, name, num_classes):
+    def __init__(self, x, y, triplet_train_mask, train_mask, val_mask, test_mask, name, num_classes):
         self.x = x
         self.y = y
+        self.triplet_train_mask = triplet_train_mask
         self.train_mask = train_mask
         self.val_mask = val_mask
         self.test_mask = test_mask
