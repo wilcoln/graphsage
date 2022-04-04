@@ -20,7 +20,7 @@ model = GraphSAGE(
     in_channels=data.num_node_features,
     hidden_channels=64,
     num_layers=2,
-    aggregator='mean',
+    aggregator=settings.args.aggregator,
 ).to(device)
 
 UnsupervisedGraphSageTrainerForNodeLevelTask(

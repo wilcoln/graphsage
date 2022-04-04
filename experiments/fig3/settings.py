@@ -6,14 +6,17 @@ DATASET = 'citation'
 
 MODELS = [
     'graphsage_gcn',
-    'graphsage_mean',
-    'graphsage_max',
-    'graphsage_lstm',
-    'graphsage_bilstm',
-    'graphsage_sum',
+    # 'graphsage_mean',
+    # 'graphsage_max',
+    # 'graphsage_lstm',
+    # 'graphsage_bilstm',
+    # 'graphsage_sum',
     'graphsage_max_pool',
-    'graphsage_mean_pool',
+    # 'graphsage_mean_pool',
     'raw_features',
+    'triplets_logreg',
+    'triplets_mlp2',
+    'triplets_mlp3',
 ]
 
 FEATURE_NOISE_PROP = np.linspace(0, 1, 10)

@@ -4,9 +4,8 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
-from graphsage import settings
 from graphsage.samplers import get_pos_neg_batches
-from .base_trainers import GraphSageBaseTrainer, SupervisedGraphSageBaseTrainer
+from .base_trainers import GraphSageBaseTrainer, SupervisedGraphSageBaseTrainer, dataloader_kwargs
 
 
 class SupervisedGraphSageTrainerForGraphLevelTask(SupervisedGraphSageBaseTrainer):
@@ -46,8 +45,6 @@ class SupervisedGraphSageTrainerForGraphLevelTask(SupervisedGraphSageBaseTrainer
 
     @torch.no_grad()
     def eval(self, loader):
-        self.model.eval()
-
         y_hat = self.model.inference(loader)
         y_hat = (y_hat > 0).float()
         y = torch.cat([batch.y[:batch.num_graphs] for batch in loader]).to(self.device)
@@ -83,9 +80,9 @@ class UnsupervisedGraphSageTrainerForGraphLevelTask(GraphSageBaseTrainer):
 
         self.train_loader_list = []
 
-        loader_kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': settings.PERSISTENT_WORKERS}
         for curr_graph in self.train_data_list:
-            _train_loader = loader(curr_graph, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=True, **loader_kwargs)
+            _train_loader = loader(curr_graph, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=True,
+                                   **dataloader_kwargs)
             self.train_loader_list.append(_train_loader)
 
     def train(self, epoch):

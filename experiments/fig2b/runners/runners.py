@@ -31,7 +31,7 @@ class SampleSizeRunner:
                 hidden_channels=fig2b_settings.BATCH_SIZE,
                 out_channels=dataset.num_classes,
                 num_layers=fig2b_settings.NUM_LAYERS,
-                aggregator='mean',
+                aggregator=settings.args.aggregator,
             ).to(device)
 
             best_result, all_results = SupervisedGraphSageTrainerForNodeLevelTask(
