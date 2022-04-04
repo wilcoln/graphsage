@@ -106,6 +106,11 @@ class SAGE(MessagePassing):
         # propagate internally calls message_and_aggregate()
         # if edge_index is a SparseTensor and message_and_aggregate() is implemented,
         # otherwise it calls message(), aggregate() separately
+        if self.aggregator == 'gcn':
+            root_indices = torch.unique(edge_index[1])
+            self_edge_index = torch.stack([root_indices, root_indices], dim=0)
+            edge_index = torch.cat([edge_index, self_edge_index], dim=1)
+
         out = self.propagate(edge_index, x=x, size=size)
         out = self.lin_l(out)
 
