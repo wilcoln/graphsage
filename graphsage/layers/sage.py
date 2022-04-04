@@ -94,6 +94,8 @@ class SAGE(MessagePassing):
             self.lstm.reset_parameters()
         if self.aggregator == 'bilstm':
             self.bilstm.reset_parameters()
+        if hasattr(self, 'att'):
+            self.att.reset_parameters()
 
     def forward(self, x: Union[Tensor, OptPairTensor], edge_index: Adj,
                 size: Size = None) -> Tensor:
@@ -106,6 +108,10 @@ class SAGE(MessagePassing):
         # propagate internally calls message_and_aggregate()
         # if edge_index is a SparseTensor and message_and_aggregate() is implemented,
         # otherwise it calls message(), aggregate() separately
+        if self.aggregator in {'bilstm', 'lstm'} and isinstance(edge_index, Tensor):
+            num_nodes = int(edge_index.max()) + 1
+            edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
+            
         if self.aggregator == 'gcn':
             root_indices = torch.unique(edge_index[1])
             self_edge_index = torch.stack([root_indices, root_indices], dim=0)
