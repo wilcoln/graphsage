@@ -18,7 +18,6 @@ parser.add_argument('--use_triplet_loss', action='store_true', help="Use triplet
 parser.add_argument('--persistent_workers', action='store_true', help="Whether to make dataloader workers "
                                                                       "persistent", default=False)
 parser.add_argument('--num_workers', help='Number of workers', type=int)
-parser.add_argument('-f')
 args = parser.parse_args()
 
 DATA_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data')
