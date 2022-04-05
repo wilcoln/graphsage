@@ -4,8 +4,8 @@ import torch
 
 from graphsage import settings
 from graphsage.datasets import Planetoid
-from triples.models import MLP
-from triples.trainers import TripleMLPTrainer
+from triples.models import MLP, InvariantModel
+from triples.trainers import TriplesTorchModuleTrainer
 from triples.utils import pyg_graph_to_triples
 
 device = settings.DEVICE
@@ -52,16 +52,44 @@ td = pyg_graph_to_triples(dataset)
 # ic(f1_score(y_hat_test, y_test, average='micro'))
 # endregion
 
-# region MLP classifier
+# # region MLP classifier
+# td.y = td.y[:, 0]
+# model = MLP(
+#     in_channels=td.x.shape[1],
+#     num_layers=2,
+#     hidden_channels=256,
+#     out_channels=td.num_classes
+# ).to(device)
+#
+# TripleMLPTrainer(
+#     dataset_name=dataset_name,
+#     model=model,
+#     data=td,
+#     num_epochs=settings.NUM_EPOCHS,
+#     loss_fn=torch.nn.CrossEntropyLoss(),
+#     optimizer=torch.optim.Adam(model.parameters(), lr=1e-3),
+#     device=device,
+# ).run()
+# # endregion
+
+# region InvariantModel classifier
 td.y = td.y[:, 0]
-model = MLP(
-    in_channels=td.x.shape[1],
-    num_layers=2,
+
+phi = MLP(
+    in_channels=td.x.shape[1]//2,
+    num_layers=1,
     hidden_channels=256,
-    out_channels=td.num_classes
 ).to(device)
 
-TripleMLPTrainer(
+rho = MLP(
+    in_channels=256,
+    num_layers=1,
+    hidden_channels=td.num_classes,
+).to(device)
+
+model = InvariantModel(phi=phi, rho=rho).to(device)
+
+TriplesTorchModuleTrainer(
     dataset_name=dataset_name,
     model=model,
     data=td,

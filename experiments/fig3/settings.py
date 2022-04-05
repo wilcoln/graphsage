@@ -17,6 +17,7 @@ MODELS = [
     'triples_logreg',
     'triples_mlp2',
     'triples_mlp3',
+    'triples_invariant',
 ]
 
 FEATURE_NOISE_PROP = np.linspace(0, 1, 10)

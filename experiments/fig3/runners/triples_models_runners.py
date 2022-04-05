@@ -10,7 +10,7 @@ import triples.models
 from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.datasets import Reddit
-from triples.trainers import TripleMLPTrainer
+from triples.trainers import TriplesTorchModuleTrainer
 from triples.utils import pyg_graph_to_triples, singles_to_triples
 
 if fig3_settings.DATASET == 'reddit':
@@ -34,7 +34,7 @@ def add_noise_and_convert_to_triples(dataset, noise_prop):
     return td
 
 
-class triplesLogisticRegressionRunner:
+class TriplesLogisticRegressionRunner:
     def __init__(self, noise_prop):
         self.noise_prop = noise_prop
 
@@ -56,7 +56,7 @@ class triplesLogisticRegressionRunner:
         return {'test_f1': f1_score(y_hat_test, y_test, average='micro')}
 
 
-class triplesMultiLayerPerceptronRunner:
+class TriplesMultiLayerPerceptronRunner:
     def __init__(self, num_layers, noise_prop):
         self.noise_prop = noise_prop
         self.num_layers = num_layers
@@ -74,7 +74,7 @@ class triplesMultiLayerPerceptronRunner:
             out_channels=td.num_classes,
         ).to(settings.DEVICE)
 
-        return TripleMLPTrainer(
+        return TriplesTorchModuleTrainer(
             dataset_name=dataset_name,
             model=model,
             data=td,
@@ -84,6 +84,42 @@ class triplesMultiLayerPerceptronRunner:
             device=settings.DEVICE,
         ).run()
 
-logreg = SimpleNamespace(get=lambda noise_prop: triplesLogisticRegressionRunner(noise_prop))
-mlp2 = SimpleNamespace(get=lambda noise_prop: triplesMultiLayerPerceptronRunner(2, noise_prop))
-mlp3 = SimpleNamespace(get=lambda noise_prop: triplesMultiLayerPerceptronRunner(3, noise_prop))
+
+class TriplesInvariantModelRunner:
+    def __init__(self, noise_prop):
+        self.noise_prop = noise_prop
+
+    def run(self):
+        # Create the noised triples dataset
+        td = add_noise_and_convert_to_triples(dataset, self.noise_prop)
+        td.y = td.y[:, 0]
+
+        # Train an mlp on the dataset
+        phi = triples.models.MLP(
+            in_channels=td.x.shape[1]//2,
+            hidden_channels=fig3_settings.HIDDEN_CHANNELS,
+        ).to(settings.DEVICE)
+
+        rho = triples.models.MLP(
+            in_channels=fig3_settings.HIDDEN_CHANNELS,
+            num_layers=1,
+            hidden_channels=td.num_classes,
+        ).to(settings.DEVICE)
+
+        model = triples.models.InvariantModel(phi=phi, rho=rho).to(settings.DEVICE)
+
+        return TriplesTorchModuleTrainer(
+            dataset_name=dataset_name,
+            model=model,
+            data=td,
+            num_epochs=settings.NUM_EPOCHS,
+            loss_fn=torch.nn.CrossEntropyLoss(),
+            optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE),
+            device=settings.DEVICE,
+        ).run()
+
+
+logreg = SimpleNamespace(get=lambda noise_prop: TriplesLogisticRegressionRunner(noise_prop))
+mlp2 = SimpleNamespace(get=lambda noise_prop: TriplesMultiLayerPerceptronRunner(2, noise_prop))
+mlp3 = SimpleNamespace(get=lambda noise_prop: TriplesMultiLayerPerceptronRunner(3, noise_prop))
+invariant = SimpleNamespace(get=lambda noise_prop: TriplesInvariantModelRunner(noise_prop))

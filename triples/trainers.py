@@ -9,9 +9,9 @@ from graphsage.trainers.base_trainers import SupervisedTorchModuleBaseTrainer, d
 from triples.utils import mask2index
 
 
-class TripleMLPTrainer(SupervisedTorchModuleBaseTrainer):
+class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):
     def __init__(self, data, *args, **kwargs):
-        super(TripleMLPTrainer, self).__init__(*args, **kwargs)
+        super(TriplesTorchModuleTrainer, self).__init__(*args, **kwargs)
         self.data = data
 
         # Create loader objects
@@ -22,26 +22,29 @@ class TripleMLPTrainer(SupervisedTorchModuleBaseTrainer):
         self.test_loader = DataLoader(Subset(data, mask2index(data.test_mask)), shuffle=True, **dataloader_kwargs)
 
     def unsup_loss(self, out, data, batch_index, use_triple_loss=True):
-        neg_data_indices = torch.randint(0, self.data.x.shape[0], (data.shape[0],))
-        neg_data = self.data.x.index_select(0, neg_data_indices).to(self.device)
+        loss = 0
 
         # TODO: Get positive samples
         # batch_offset = batch_index * self.triple_train_loader.batch_size
         # triple_indices = list(range(batch_offset, batch_offset + data.shape[0]))
         # pos_data = ...
+        # Compute positive loss
         # pos_out = self.model(pos_data)
-        # neg_out = self.model(neg_data)
-        #
+        # pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
+        # loss -= pos_loss
+
+        # Get negative samples
+        neg_data_indices = torch.randint(0, self.data.x.shape[0], (data.shape[0],))
+        neg_data = self.data.x.index_select(0, neg_data_indices).to(self.device)
+        # Compute negative loss
+        neg_out = self.model(neg_data)
+        neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
+        loss -= neg_loss
+
         # if use_triple_loss:
         #     return F.triple_margin_loss(out, pos_out, neg_out)
-        #
-        # pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
-        # neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
-        # return -pos_loss - neg_loss
-        neg_out = self.model(neg_data)
 
-        neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
-        return - neg_loss
+        return loss
 
     def train(self, epoch) -> float:
         # train for one epoch
@@ -56,7 +59,7 @@ class TripleMLPTrainer(SupervisedTorchModuleBaseTrainer):
 
             self.optimizer.zero_grad()
             output = self.model(data)
-            loss = self.loss_fn(output, target) + self.unsup_loss(output, data, batch_index)
+            loss = self.loss_fn(output, target) # + self.unsup_loss(output, data, batch_index)
             loss.backward()
             self.optimizer.step()
 

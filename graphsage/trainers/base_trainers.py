@@ -58,7 +58,7 @@ class TorchModuleBaseTrainer(BaseTrainer):
         # Create dictionary with all the parameters
         folder_name_dict = {
             'dataset': self.dataset_name,
-            'model': self.model.name,
+            'model': self.model.name if hasattr(self.model, 'name') else self.model.__class__.__name__,
             'num_epochs': self.num_epochs,
         }
 
