@@ -1,5 +1,6 @@
 import torch
 from sklearn.linear_model import SGDClassifier
+from sklearn.multioutput import MultiOutputClassifier
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
@@ -28,8 +29,8 @@ class SupervisedGraphSageTrainerForGraphLevelTask(SupervisedGraphSageBaseTrainer
         for batch in self.train_loader:
             batch = batch.to(self.device)
             self.optimizer.zero_grad()
-            y_hat = self.model(batch.x, batch.edge_index)[:batch.num_graphs]
-            y = batch.y[:batch.num_graphs]
+            y = batch.y
+            y_hat = self.model(batch.x, batch.edge_index)
             loss = self.loss_fn(y_hat, y)
 
             loss.backward()
@@ -43,10 +44,16 @@ class SupervisedGraphSageTrainerForGraphLevelTask(SupervisedGraphSageBaseTrainer
 
     @torch.no_grad()
     def eval(self, loader):
-        y_hat = self.model.inference(loader)
-        y_hat = (y_hat > 0).float()
-        y = torch.cat([batch.y[:batch.num_graphs] for batch in loader]).to(self.device)
-        return f1_score(y.cpu(), y_hat.cpu(), average='micro')
+        self.model.eval()
+
+        y, y_hat = [], []
+        for data in loader:
+            y.append(data.y)
+            out = self.model(data.x.to(self.device), data.edge_index.to(self.device))
+            y_hat.append((out > 0).float().cpu())
+
+        y, y_hat = torch.cat(y, dim=0).numpy(), torch.cat(y_hat, dim=0).numpy()
+        return f1_score(y, y_hat, average='micro')
 
     @torch.no_grad()
     def test(self):
@@ -108,35 +115,34 @@ class UnsupervisedGraphSageTrainerForGraphLevelTask(GraphSageBaseTrainer):
 
         return total_loss / total_num_nodes
 
-    def _loader_to_embeddings_and_labels(self, model, loader):
+    def _loader_to_embeddings_and_labels(self, loader):
         xs, ys = [], []
-        for batch in loader:
-            batch = batch.to(self.device)
-            ys.append(torch.argmax(batch.y[:batch.num_graphs], dim=1))
-            out = model(batch.x, batch.edge_index)[:batch.num_graphs]
-            xs.append(out)
-        return torch.cat(xs, dim=0).cpu(), torch.cat(ys, dim=0).cpu()
+        for data in loader:
+            ys.append(data.y)
+            xs.append(self.model(data.x.to(self.device), data.edge_index.to(self.device)))
+
+        return torch.cat(xs, dim=0).cpu().numpy(), torch.cat(ys, dim=0).cpu().numpy()
 
     @torch.no_grad()
     def test(self):
         self.model.eval()
 
         # Create classifier
-        clf = SGDClassifier(loss="log", penalty="l2")
+        clf = MultiOutputClassifier(SGDClassifier(loss="log", penalty="l2"))
 
         # Train classifier on train data
-        train_embeddings, train_labels = self._loader_to_embeddings_and_labels(self.model, self.train_loader)
+        train_embeddings, train_labels = self._loader_to_embeddings_and_labels(self.train_loader)
         clf.fit(train_embeddings, train_labels)
         train_predictions = clf.predict(train_embeddings)
         train_f1 = f1_score(train_labels, train_predictions, average='micro')
 
         # Evaluate on validation set
-        val_embeddings, val_labels = self._loader_to_embeddings_and_labels(self.model, self.val_loader)
+        val_embeddings, val_labels = self._loader_to_embeddings_and_labels(self.val_loader)
         val_predictions = clf.predict(val_embeddings)
         val_f1 = f1_score(val_labels, val_predictions, average='micro')
 
         # Evaluate on validation set
-        test_embeddings, test_labels = self._loader_to_embeddings_and_labels(self.model, self.test_loader)
+        test_embeddings, test_labels = self._loader_to_embeddings_and_labels(self.test_loader)
         test_predictions = clf.predict(test_embeddings)
         test_f1 = f1_score(test_labels, test_predictions, average='micro')
 

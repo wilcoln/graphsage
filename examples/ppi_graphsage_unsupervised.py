@@ -23,8 +23,7 @@ test_loader = DataLoader(test_dataset, batch_size=2, shuffle=False)
 
 model = GraphSAGE(
     in_channels=train_dataset.num_node_features,
-    hidden_channels=64,
-    out_channels=train_dataset.num_classes,
+    hidden_channels=256,
     num_layers=2,
     aggregator=settings.args.aggregator,
 ).to(device)
@@ -37,6 +36,6 @@ UnsupervisedGraphSageTrainerForGraphLevelTask(
     train_loader=train_loader,
     val_loader=val_loader,
     test_loader=test_loader,
-    optimizer=torch.optim.Adam(model.parameters(), lr=0.01),
+    optimizer=torch.optim.Adam(model.parameters(), lr=0.005),
     device=device,
 ).run()
