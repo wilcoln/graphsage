@@ -47,7 +47,6 @@ class GraphSAGE(torch.nn.Module):
             x = layer(x, edge_index)
             if i < len(self.layers) - 1:
                 x = x.relu_()
-                x = F.dropout(x, p=0.5, training=self.training)
         return x
 
     @torch.no_grad()
