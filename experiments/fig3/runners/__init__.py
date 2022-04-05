@@ -11,10 +11,8 @@ def get(model, noise_prop):
         return raw_features_runner.get(noise_prop)
     if model == 'triples_logreg':
         return triples_models_runners.logreg.get(noise_prop)
-    if model == 'triples_mlp2':
+    if model == 'triples_mlp':
         return triples_models_runners.mlp2.get(noise_prop)
-    if model == 'triples_mlp3':
-        return triples_models_runners.mlp3.get(noise_prop)
     if model == 'triples_invariant':
         return triples_models_runners.invariant.get(noise_prop)
     else:

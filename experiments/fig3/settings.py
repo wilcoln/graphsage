@@ -15,8 +15,7 @@ MODELS = [
     'graphsage_mean_pool',
     'raw_features',
     'triples_logreg',
-    'triples_mlp2',
-    'triples_mlp3',
+    'triples_mlp',
     'triples_invariant',
 ]
 

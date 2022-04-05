@@ -121,5 +121,4 @@ class TriplesInvariantModelRunner:
 
 logreg = SimpleNamespace(get=lambda noise_prop: TriplesLogisticRegressionRunner(noise_prop))
 mlp2 = SimpleNamespace(get=lambda noise_prop: TriplesMultiLayerPerceptronRunner(2, noise_prop))
-mlp3 = SimpleNamespace(get=lambda noise_prop: TriplesMultiLayerPerceptronRunner(3, noise_prop))
 invariant = SimpleNamespace(get=lambda noise_prop: TriplesInvariantModelRunner(noise_prop))
