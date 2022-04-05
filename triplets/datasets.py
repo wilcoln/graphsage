@@ -67,7 +67,7 @@ TripletMLPTrainer(
     data=td,
     num_epochs=settings.NUM_EPOCHS,
     loss_fn=torch.nn.CrossEntropyLoss(),
-    optimizer=torch.optim.Adam(model.parameters(), lr=0.01),
+    optimizer=torch.optim.Adam(model.parameters(), lr=1e-3),
     device=device,
 ).run()
 # endregion

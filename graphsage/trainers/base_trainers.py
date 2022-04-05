@@ -150,8 +150,8 @@ class GraphSageBaseTrainer(TorchModuleBaseTrainer):
         self.k1 = k1
         self.k2 = k2
 
-    def unsup_loss_fn(self, out, batch, *args, use_triplet_loss=settings.args.use_triplet_loss, **kwargs):
-        pos_batch, neg_batch = get_pos_neg_batches(out, batch, *args, **kwargs)
+    def unsup_loss_fn(self, out, batch, data, use_triplet_loss=settings.args.use_triplet_loss):
+        pos_batch, neg_batch = get_pos_neg_batches(batch, data)
 
         pos_out = self.model(pos_batch.x, pos_batch.edge_index)[:batch.batch_size]
         neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
