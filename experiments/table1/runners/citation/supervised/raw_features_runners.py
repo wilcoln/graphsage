@@ -1,5 +1,6 @@
 import os.path as osp
 from types import SimpleNamespace
+
 from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.trainers import RawFeaturesTrainerForNodeLevelTask

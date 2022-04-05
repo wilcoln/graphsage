@@ -1,12 +1,9 @@
 import torch
-import torch.nn.functional as F
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
-from graphsage import settings
-from graphsage.samplers import get_pos_neg_batches
-from .base_trainers import SupervisedGraphSageBaseTrainer, GraphSageBaseTrainer
+from .base_trainers import SupervisedGraphSageBaseTrainer, GraphSageBaseTrainer, dataloader_kwargs
 
 
 class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer):
@@ -17,15 +14,14 @@ class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer)
         super(SupervisedGraphSageTrainerForNodeLevelTask, self).__init__(*args, **kwargs)
 
         self.data = data
-        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': settings.PERSISTENT_WORKERS}
         self.train_loader = loader(data, input_nodes=data.train_mask,
-                                   num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
+                                   num_neighbors=[self.k1, self.k2], shuffle=False, **dataloader_kwargs)
 
         self.val_loader = loader(data, input_nodes=data.val_mask, num_neighbors=[self.k1, self.k2], shuffle=False,
-                                  **kwargs)
+                                  **dataloader_kwargs)
 
         self.test_loader = loader(data, input_nodes=data.test_mask, num_neighbors=[self.k1, self.k2], shuffle=False,
-                                  **kwargs)
+                                  **dataloader_kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -41,7 +37,7 @@ class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer)
             self.optimizer.zero_grad()
             y = batch.y[:batch.batch_size].to(self.device)
             y_hat = self.model(batch.x, batch.edge_index)[:batch.batch_size]
-            loss = self.loss_fn(y_hat, y)
+            loss = self.loss_fn(y_hat, y) + self.unsup_loss_fn(y_hat, batch, self.data)
 
             loss.backward()
             self.optimizer.step()
@@ -54,7 +50,6 @@ class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer)
 
     @torch.no_grad()
     def eval(self, loader):
-        self.model.eval()
         y_hat = self.model.inference(loader).argmax(dim=-1)
         y = torch.cat([batch.y[:batch.batch_size] for batch in loader]).to(self.device)
         acc = int((y_hat == y).sum()) / y.shape[0]
@@ -86,13 +81,11 @@ class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
 
         self.data = data
 
-        kwargs = {'batch_size': settings.BATCH_SIZE, 'num_workers': settings.NUM_WORKERS, 'persistent_workers': settings.PERSISTENT_WORKERS}
-
         self.train_loader = loader(data, input_nodes=data.train_mask,
-                                   num_neighbors=[self.k1, self.k2], shuffle=False, **kwargs)
+                                   num_neighbors=[self.k1, self.k2], shuffle=False, **dataloader_kwargs)
 
         self.subgraph_loader = loader(self.data, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=False,
-                                      **kwargs)
+                                      **dataloader_kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -103,16 +96,10 @@ class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
         total_loss = 0
         for batch in self.train_loader:
             batch = batch.to(self.device)
-            pos_batch, neg_batch = get_pos_neg_batches(batch, self.data)
             self.optimizer.zero_grad()
 
             out = self.model(batch.x, batch.edge_index)[:batch.batch_size]
-            pos_out = self.model(pos_batch.x, pos_batch.edge_index)[:batch.batch_size]
-            neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
-
-            pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
-            neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
-            loss = -pos_loss - neg_loss
+            loss = self.unsup_loss_fn(out, batch, self.data)
 
             loss.backward()
             self.optimizer.step()
@@ -125,7 +112,6 @@ class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
 
     @torch.no_grad()
     def test(self):
-        self.model.eval()
         out = self.model.inference(self.subgraph_loader).cpu()
         self.data.y = self.data.y.cpu()
 

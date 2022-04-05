@@ -1,4 +1,5 @@
 import os.path as osp
+
 from graphsage import settings
 from graphsage.datasets import Reddit
 from graphsage.trainers import RawFeaturesTrainerForNodeLevelTask

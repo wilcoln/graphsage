@@ -2,7 +2,6 @@ import argparse
 import os.path as osp
 
 import torch
-from icecream import ic
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_epochs', help='Number of epochs', type=int)
@@ -15,9 +14,11 @@ parser.add_argument('--ignore_datasets', nargs='*', help='Datasets to ignore', t
 parser.add_argument('--ignore_aggregators', nargs='*', help='Aggregators to ignore', type=str)
 parser.add_argument('--results_dir', help='Result directory to use', type=str)
 parser.add_argument('--no_show', action='store_true', help="Do not show the figure at the end", default=False)
+parser.add_argument('--use_triplet_loss', action='store_true', help="Use triplet loss as unsup. loss", default=False)
 parser.add_argument('--persistent_workers', action='store_true', help="Whether to make dataloader workers "
                                                                       "persistent", default=False)
 parser.add_argument('--num_workers', help='Number of workers', type=int)
+parser.add_argument('-f')
 args = parser.parse_args()
 
 DATA_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data')

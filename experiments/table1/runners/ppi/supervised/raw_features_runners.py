@@ -1,4 +1,5 @@
 import os.path as osp
+
 from graphsage import settings
 from graphsage.datasets import PPI
 from graphsage.trainers import RawFeaturesTrainerForGraphLevelTask

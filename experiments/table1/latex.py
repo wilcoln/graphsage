@@ -1,7 +1,6 @@
 import json
 import os.path as osp
 
-from collections import defaultdict
 from experiments.table1.settings import TRAINING_MODES, DATASETS, MODELS
 from graphsage.settings import args
 

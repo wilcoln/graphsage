@@ -56,8 +56,6 @@ def train(epoch, model, optimizer, train_loader):
 
 @torch.no_grad()
 def test(model, subgraph_loader):
-    model.eval()
-
     start = time.time()
     y_hat = model.inference(subgraph_loader).argmax(dim=-1)
     test_time = time.time() - start

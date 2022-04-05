@@ -3,14 +3,22 @@ import os
 import os.path as osp
 import time
 from datetime import datetime as dt
+from typing import Any
 
 import pandas as pd
+import torch.nn.functional as F
 from matplotlib import pyplot as plt
+from torch import nn
 from torch.optim import Optimizer
 
 from graphsage import settings
-from graphsage.models import GraphSAGE
+from samplers import get_pos_neg_batches
 
+dataloader_kwargs = kwargs = {
+    'batch_size': settings.BATCH_SIZE,
+    'num_workers': settings.NUM_WORKERS,
+    'persistent_workers': settings.PERSISTENT_WORKERS
+}
 
 def capitalize(underscore_string):
     return ' '.join(w.capitalize() for w in underscore_string.split('_'))
@@ -30,22 +38,19 @@ class BaseTrainer:
         raise NotImplementedError
 
 
-class GraphSageBaseTrainer(BaseTrainer):
+class TorchModuleBaseTrainer(BaseTrainer):
     def __init__(self,
-                 model: GraphSAGE,
+                 model: nn.Module,
                  optimizer: Optimizer,
                  num_epochs: int,
-                 device: str,
-                 k1: int = 25,
-                 k2: int = 10, *args, **kwargs):
+                 device: Any,
+                 *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         self.model = model
         self.optimizer = optimizer
         self.num_epochs = num_epochs
         self.device = device
-        self.k1 = k1
-        self.k2 = k2
 
         self.results = []
 
@@ -131,9 +136,33 @@ class GraphSageBaseTrainer(BaseTrainer):
             return best, self.results
 
 
-class SupervisedGraphSageBaseTrainer(GraphSageBaseTrainer):
+class SupervisedTorchModuleBaseTrainer(TorchModuleBaseTrainer):
     def __init__(self,
                  loss_fn,
                  *args, **kwargs):
-        super(SupervisedGraphSageBaseTrainer, self).__init__(*args, **kwargs)
+        super(SupervisedTorchModuleBaseTrainer, self).__init__(*args, **kwargs)
         self.loss_fn = loss_fn
+
+
+class GraphSageBaseTrainer(TorchModuleBaseTrainer):
+    def __init__(self, k1: int = 25, k2: int = 10, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.k1 = k1
+        self.k2 = k2
+
+    def unsup_loss_fn(self, out, batch, data, use_triplet_loss=settings.args.use_triplet_loss):
+        pos_batch, neg_batch = get_pos_neg_batches(batch, data)
+
+        pos_out = self.model(pos_batch.x, pos_batch.edge_index)[:batch.batch_size]
+        neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
+
+        if use_triplet_loss:
+            return F.triplet_margin_loss(out, pos_out, neg_out)
+
+        pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
+        neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
+        return -pos_loss - neg_loss
+
+
+class SupervisedGraphSageBaseTrainer(GraphSageBaseTrainer, SupervisedTorchModuleBaseTrainer):
+    pass
