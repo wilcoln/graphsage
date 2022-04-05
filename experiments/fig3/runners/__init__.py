@@ -1,4 +1,4 @@
-from experiments.fig3.runners import graphsage_runners, raw_features_runner, triplets_models_runners
+from experiments.fig3.runners import graphsage_runners, raw_features_runner, triples_models_runners
 
 
 def get(model, noise_prop):
@@ -9,11 +9,11 @@ def get(model, noise_prop):
 
     if model == 'raw_features':
         return raw_features_runner.get(noise_prop)
-    if model == 'triplets_logreg':
-        return triplets_models_runners.logreg.get(noise_prop)
-    if model == 'triplets_mlp2':
-        return triplets_models_runners.mlp2.get(noise_prop)
-    if model == 'triplets_mlp3':
-        return triplets_models_runners.mlp3.get(noise_prop)
+    if model == 'triples_logreg':
+        return triples_models_runners.logreg.get(noise_prop)
+    if model == 'triples_mlp2':
+        return triples_models_runners.mlp2.get(noise_prop)
+    if model == 'triples_mlp3':
+        return triples_models_runners.mlp3.get(noise_prop)
     else:
         raise NotImplementedError

@@ -35,7 +35,7 @@ class NeighborSampler:
         elif isinstance(data, HeteroData):
             # Convert the graph data into a suitable format for sampling.
             # NOTE: Since C++ cannot take dictionaries with tuples as key as
-            # input, edge type triplets are converted into single strings.
+            # input, edge type triples are converted into single strings.
             out = to_hetero_csc(data, device='cpu')
             self.colptr_dict, self.row_dict, self.perm_dict = out
 

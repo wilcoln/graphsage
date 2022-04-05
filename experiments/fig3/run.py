@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import os.path as osp
@@ -39,9 +40,10 @@ with open(json_path, 'w') as f:
 
 
 # Use results to plot the figure
+linestyle = itertools.cycle(['-', '--', '-.', ':'])
 for model in results:
     y = np.array([results[model][noise_prop]['test_f1'] for noise_prop in fig3_settings.FEATURE_NOISE_PROP])
-    plt.plot(fig3_settings.FEATURE_NOISE_PROP, y, linestyle='dashed', label=model)
+    plt.plot(fig3_settings.FEATURE_NOISE_PROP, y, linestyle=next(linestyle), label=model)
 
 
 plt.xlabel('Feature Noise Proportion')

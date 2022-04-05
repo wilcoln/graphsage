@@ -6,48 +6,51 @@ from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
 from graphsage.trainers.base_trainers import SupervisedTorchModuleBaseTrainer, dataloader_kwargs
-from triplets.utils import mask2index
+from triples.utils import mask2index
 
 
-class TripletMLPTrainer(SupervisedTorchModuleBaseTrainer):
+class TripleMLPTrainer(SupervisedTorchModuleBaseTrainer):
     def __init__(self, data, *args, **kwargs):
-        super(TripletMLPTrainer, self).__init__(*args, **kwargs)
+        super(TripleMLPTrainer, self).__init__(*args, **kwargs)
         self.data = data
 
         # Create loader objects
-        self.triplet_train_loader = DataLoader(Subset(data, mask2index(data.triplet_train_mask)), shuffle=False,
+        self.triple_train_loader = DataLoader(Subset(data, mask2index(data.triple_train_mask)), shuffle=False,
                                                **dataloader_kwargs)
         self.train_loader = DataLoader(Subset(data, mask2index(data.train_mask)), shuffle=True, **dataloader_kwargs)
         self.val_loader = DataLoader(Subset(data, mask2index(data.val_mask)), shuffle=True, **dataloader_kwargs)
         self.test_loader = DataLoader(Subset(data, mask2index(data.test_mask)), shuffle=True, **dataloader_kwargs)
 
-    def unsup_loss(self, out, data, batch_index, use_triplet_loss=True):
-        # batch_offset = batch_index * self.triplet_train_loader.batch_size
-        # triplet_indices = list(range(batch_offset, batch_offset + data.shape[0]))
-        heads, tails = torch.split(data, data.shape[1]//2, dim=1)
-        pos_data = torch.cat([tails, heads], dim=1)
-
+    def unsup_loss(self, out, data, batch_index, use_triple_loss=True):
         neg_data_indices = torch.randint(0, self.data.x.shape[0], (data.shape[0],))
         neg_data = self.data.x.index_select(0, neg_data_indices).to(self.device)
 
-        pos_out = self.model(pos_data)
+        # TODO: Get positive samples
+        # batch_offset = batch_index * self.triple_train_loader.batch_size
+        # triple_indices = list(range(batch_offset, batch_offset + data.shape[0]))
+        # pos_data = ...
+        # pos_out = self.model(pos_data)
+        # neg_out = self.model(neg_data)
+        #
+        # if use_triple_loss:
+        #     return F.triple_margin_loss(out, pos_out, neg_out)
+        #
+        # pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
+        # neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
+        # return -pos_loss - neg_loss
         neg_out = self.model(neg_data)
 
-        if use_triplet_loss:
-            return F.triplet_margin_loss(out, pos_out, neg_out)
-
-        pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
         neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
-        return -pos_loss - neg_loss
+        return - neg_loss
 
     def train(self, epoch) -> float:
         # train for one epoch
-        pbar = tqdm(total=len(self.triplet_train_loader.dataset))
+        pbar = tqdm(total=len(self.triple_train_loader.dataset))
         pbar.set_description(f'Epoch {epoch:02d}')
 
         self.model.train()
         total_loss = 0
-        for batch_index, (data, target) in enumerate(tqdm(self.triplet_train_loader)):
+        for batch_index, (data, target) in enumerate(tqdm(self.triple_train_loader)):
             # get range of indices for batch
             data, target = data.to(self.device), target.to(self.device)
 
@@ -61,7 +64,7 @@ class TripletMLPTrainer(SupervisedTorchModuleBaseTrainer):
             pbar.update(len(data))
         pbar.close()
 
-        return total_loss / len(self.triplet_train_loader.dataset)
+        return total_loss / len(self.triple_train_loader.dataset)
 
     def eval(self, loader):
         self.model.eval()

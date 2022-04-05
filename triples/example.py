@@ -4,16 +4,16 @@ import torch
 
 from graphsage import settings
 from graphsage.datasets import Planetoid
-from triplets.models import MLP
-from triplets.trainers import TripletMLPTrainer
-from triplets.utils import pyg_graph_to_triplets
+from triples.models import MLP
+from triples.trainers import TripleMLPTrainer
+from triples.utils import pyg_graph_to_triples
 
 device = settings.DEVICE
 dataset_name = 'Cora'  # 'Cora'  # 'Citeseer', 'Cora', # 'PubMed'
 path = osp.join(settings.DATA_DIR, dataset_name)
 dataset = Planetoid(path, dataset_name)
-# Create the triplets dataset
-td = pyg_graph_to_triplets(dataset)
+# Create the triples dataset
+td = pyg_graph_to_triples(dataset)
 
 
 # Train a simple model on the dataset
@@ -61,7 +61,7 @@ model = MLP(
     out_channels=td.num_classes
 ).to(device)
 
-TripletMLPTrainer(
+TripleMLPTrainer(
     dataset_name=dataset_name,
     model=model,
     data=td,
