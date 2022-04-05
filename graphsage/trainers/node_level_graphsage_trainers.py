@@ -17,11 +17,11 @@ class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer)
         self.train_loader = loader(data, input_nodes=data.train_mask,
                                    num_neighbors=[self.k1, self.k2], shuffle=False, **dataloader_kwargs)
 
-        self.val_loader = loader(data, input_nodes=data.val_mask, num_neighbors=[self.k1, self.k2], shuffle=False,
-                                  **dataloader_kwargs)
+        self.val_loader = loader(data, input_nodes=data.val_mask,
+                                 num_neighbors=[self.k1, self.k2], shuffle=False, **dataloader_kwargs)
 
-        self.test_loader = loader(data, input_nodes=data.test_mask, num_neighbors=[self.k1, self.k2], shuffle=False,
-                                  **dataloader_kwargs)
+        self.test_loader = loader(data, input_nodes=data.test_mask,
+                                  num_neighbors=[self.k1, self.k2], shuffle=False, **dataloader_kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -84,8 +84,13 @@ class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
         self.train_loader = loader(data, input_nodes=data.train_mask,
                                    num_neighbors=[self.k1, self.k2], shuffle=False, **dataloader_kwargs)
 
-        self.subgraph_loader = loader(self.data, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=False,
+        self.test_loader = loader(data, input_nodes=None, num_neighbors=[self.k1, self.k2], shuffle=False,
                                       **dataloader_kwargs)
+        self.val_loader = loader(data, input_nodes=data.val_mask, num_neighbors=[self.k1, self.k2], shuffle=False,
+                                 **dataloader_kwargs)
+
+        self.test_loader = loader(data, input_nodes=data.test_mask, num_neighbors=[self.k1, self.k2], shuffle=False,
+                                  **dataloader_kwargs)
 
     def train(self, epoch):
         self.model.train()
@@ -112,25 +117,25 @@ class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
 
     @torch.no_grad()
     def test(self):
-        out = self.model.inference(self.subgraph_loader).cpu()
-        self.data.y = self.data.y.cpu()
-
         # Train downstream classifier on train split representations
         clf = SGDClassifier(loss="log", penalty="l2")
-        clf.fit(out[self.data.train_mask], self.data.y[self.data.train_mask])
+        train_out = self.model.inference(self.train_loader).cpu()
+        self.data.y = self.data.y.cpu()
+        clf.fit(train_out, self.data.y[self.data.train_mask])
 
-        # compute accuracies for each split
-        train_acc = clf.score(out[self.data.train_mask], self.data.y[self.data.train_mask])
-        val_acc = clf.score(out[self.data.val_mask], self.data.y[self.data.val_mask])
-        test_acc = clf.score(out[self.data.test_mask], self.data.y[self.data.test_mask])
+        # compute f1 and accuracy on train split
+        train_acc = clf.score(train_out, self.data.y[self.data.train_mask])
+        train_f1 = f1_score(self.data.y[self.data.train_mask],  clf.predict(train_out), average='micro')
 
-        # compute f1 scores for each split
-        pred = clf.predict(out[self.data.train_mask])
-        train_f1 = f1_score(self.data.y[self.data.train_mask], pred, average='micro')
-        pred = clf.predict(out[self.data.test_mask])
-        test_f1 = f1_score(self.data.y[self.data.test_mask], pred, average='micro')
-        pred = clf.predict(out[self.data.val_mask])
-        val_f1 = f1_score(self.data.y[self.data.val_mask], pred, average='micro')
+        # compute f1 and accuracy on val split
+        val_out = self.model.inference(self.val_loader).cpu()
+        val_f1 = f1_score(self.data.y[self.data.val_mask], clf.predict(val_out), average='micro')
+        val_acc = clf.score(val_out, self.data.y[self.data.val_mask])
+
+        # compute f1 and accuracy on test split
+        test_out = self.model.inference(self.test_loader).cpu()
+        test_f1 = f1_score(self.data.y[self.data.test_mask], clf.predict(test_out), average='micro')
+        test_acc = clf.score(test_out, self.data.y[self.data.test_mask])
 
         return {
             'train_acc': train_acc,
