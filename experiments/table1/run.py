@@ -29,9 +29,12 @@ for dataset in table1_settings.DATASETS:
 
 # Post process results
 for dataset in table1_settings.DATASETS:
-    # Repeat performance across training mode for graph-oblivious models (as in the original paper)
-    for model in set(table1_settings.GRAPH_OBLIVIOUS_MODELS) & set(table1_settings.MODELS):
-        results[dataset]['unsupervised'][model] = results[dataset]['supervised'][model]
+    # Repeat performance across training mode for training mode oblivious models (as in the original paper)
+    for model in set(table1_settings.TRAINING_MODE_OBLIVIOUS_MODELS) & set(table1_settings.MODELS):
+        try:
+            results[dataset]['unsupervised'][model] = results[dataset]['supervised'][model]
+        except KeyError:
+            pass
     # Add percentage f1 gain relative to raw features baseline
     for training_mode in table1_settings.TRAINING_MODES:
         for model in table1_settings.MODELS:
@@ -40,7 +43,7 @@ for dataset in table1_settings.DATASETS:
                     (results[dataset][training_mode][model]['test_f1'] -
                      results[dataset][training_mode]['raw_features']['test_f1']) / \
                     results[dataset][training_mode]['raw_features']['test_f1']
-            except:
+            except KeyError:
                 pass
 
 # Create a timestamped and args-explicit named for the results folder
