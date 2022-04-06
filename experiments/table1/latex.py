@@ -32,7 +32,7 @@ def _models_section(results, gains_acc):
                     all_f1s = [sub_results_dict[model]['test_f1'] for model in sub_results_dict]
                     if current_f1 == max(all_f1s):
                         section += f'$\\underline{{\\mathbf{{{current_f1:.3f}}}}}$ & '
-                        gains_acc[k + j] = sub_results_dict[model]['percentage_f1_gain']
+                        gains_acc[k + j*len(TRAINING_MODES)] = sub_results_dict[model]['percentage_f1_gain'] * 100
                     else:
                         section += f'${current_f1:.3f}$ & '
                 except KeyError as e:
@@ -62,7 +62,7 @@ def generate_latex_table(results: dict):
     {_models_section(results, gains_acc)}
     
     \\hline
-    \\% Gain over Raw Features & {' & '.join(f'{gain:.2f}{backslash}%' for gain in gains_acc)} \\\\
+    \\% Gain over Raw Features & {' & '.join(f'{gain:.0f}{backslash}%' for gain in gains_acc)} \\\\
     \\hline
     \\end{{tabular}}'''
 

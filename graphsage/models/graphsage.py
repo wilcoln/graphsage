@@ -61,10 +61,9 @@ class GraphSAGE(torch.nn.Module):
             x = batch.x.to(device)
             edge_index = batch.edge_index.to(device)
             x = self.forward(x, edge_index)
-            x_all.append(x[:batch.batch_size])
-            del x, edge_index
+            x_all.append(x[:batch.batch_size].cpu())
             pbar.update(batch.batch_size)
-        x_all = torch.cat(x_all, dim=0)
+        x_all = torch.cat(x_all, dim=0).to(device)
         pbar.close()
 
         return x_all
