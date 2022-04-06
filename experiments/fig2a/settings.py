@@ -1,23 +1,35 @@
+from types import SimpleNamespace
+
 from graphsage.settings import args
 
 DATASET = 'reddit'
 MODELS = [
     'graphsage_gcn',
     'graphsage_mean',
-    'graphsage_max',
     'graphsage_lstm',
-    'graphsage_bilstm',
-    'graphsage_sum',
     'graphsage_max_pool',
-    'graphsage_mean_pool',
     'deepwalk',
 ]
+extensions = SimpleNamespace(
+    MODELS=[
+        'graphsage_max',
+        'graphsage_sum',
+        'graphsage_bilstm',
+        'graphsage_mean_pool',
+        'triples_logreg',
+        'triples_mlp',
+        'triples_invariant',
+    ]
+)
 LEARNING_RATE = 1e-3
 HIDDEN_CHANNELS = 256
 NUM_LAYERS = 2
 BATCH_SIZE = 512
 K1 = 25
 K2 = 10
+
+if not args.no_extensions:
+    MODELS += extensions.MODELS
 
 if args.dataset is not None:
     DATASET = args.dataset

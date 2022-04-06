@@ -3,7 +3,7 @@ import os.path as osp
 
 import torch
 
-import graphsage.settings as graphsage_settings
+import graphsage.settings as settings
 
 
 def singles_to_triples(data, edge_index):
@@ -32,7 +32,7 @@ def get_triples_mask(mask, edge_index, triple=False):
 
 
 def pyg_graph_to_triples(dataset):
-    triples_data_dir = osp.join(graphsage_settings.DATA_DIR, 'triples', dataset.name)
+    triples_data_dir = osp.join(settings.DATA_DIR, 'triples', dataset.name)
     triples_data_path = osp.join(triples_data_dir, f'{dataset.name}.pt')
     if not osp.exists(triples_data_path):
         print(f'Creating triples for {dataset.name}')

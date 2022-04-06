@@ -31,8 +31,8 @@ def _models_section(results, gains_acc):
                     sub_results_dict = results[dataset][training_mode]
                     all_f1s = [sub_results_dict[model]['test_f1'] for model in sub_results_dict]
                     if current_f1 == max(all_f1s):
-                        gains_acc.append(sub_results_dict[model]['percentage_f1_gain'])
                         section += f'$\\underline{{\\mathbf{{{current_f1:.3f}}}}}$ & '
+                        gains_acc.append(sub_results_dict[model]['percentage_f1_gain'])
                     else:
                         section += f'${current_f1:.3f}$ & '
                 except KeyError as e:

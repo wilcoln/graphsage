@@ -4,6 +4,7 @@ from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
+from graphsage import settings
 from graphsage.trainers.base_trainers import SupervisedTorchModuleBaseTrainer, dataloader_kwargs
 from triples.utils import mask2index
 
@@ -58,7 +59,7 @@ class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):
 
             self.optimizer.zero_grad()
             output = self.model(data)
-            loss = self.loss_fn(output, target) # + self.unsup_loss(output, data, batch_index)
+            loss = self.loss_fn(output, target)  # + self.unsup_loss(output, data, batch_index)
             loss.backward()
             self.optimizer.step()
 
@@ -81,7 +82,7 @@ class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):
         return f1_score(y_true, y_pred, average='micro')
 
     def test(self):
-        train_f1 = self.eval(self.train_loader)
+        train_f1 = self.eval(self.train_loader) if not settings.NO_EVAL_TRAIN else None
         val_f1 = self.eval(self.val_loader)
         test_f1 = self.eval(self.test_loader)
 

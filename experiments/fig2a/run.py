@@ -9,10 +9,13 @@ from matplotlib import pyplot as plt
 
 from experiments.fig2a import runners
 from experiments.fig2a import settings as fig2a_settings
-from graphsage import settings as graphsage_settings
+from graphsage import settings
 
 # Initialize the results dictionary
 results = defaultdict(lambda: defaultdict(dict))
+
+# Evaluate only on validation and test set
+settings.NO_EVAL_TRAIN = True
 
 # Run experiments
 for model in fig2a_settings.MODELS:
@@ -24,9 +27,9 @@ for model in fig2a_settings.MODELS:
 
 # Create a timestamped and args-explicit named for the results folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
-folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.args).items() if v and not 
+folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(settings.args).items() if v and not 
 isinstance(v, list)])
-results_path = osp.join(graphsage_settings.RESULTS_DIR, 'fig2a', folder_name)
+results_path = osp.join(settings.RESULTS_DIR, 'fig2a', folder_name)
 os.makedirs(results_path)
 
 # Save results as a json file
@@ -64,7 +67,7 @@ plt.savefig(osp.join(results_path, 'fig2a.png'))
 print(f'Results saved to {results_path}')
 
 # Show the plot
-if not graphsage_settings.args.no_show:
+if not settings.args.no_show:
     plt.show()
 
 plt.close()

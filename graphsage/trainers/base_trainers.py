@@ -115,6 +115,9 @@ class TorchModuleBaseTrainer(BaseTrainer):
             # Save epoch results
             epoch_results = {'loss': loss, **test_results, 'train_time': train_time, 'test_time': test_time}
 
+            # Clean epoch results
+            epoch_results = {k: v for k, v in epoch_results.items() if v is not None}
+
             # print epoch and results
             current_results_str = ', '.join([f'{capitalize(k)}: {v:.4f}' for k, v in epoch_results.items()])
             print(f'Epoch: {epoch:02d}, {current_results_str}')

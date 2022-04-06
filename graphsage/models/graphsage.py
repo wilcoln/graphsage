@@ -53,7 +53,7 @@ class GraphSAGE(torch.nn.Module):
     def inference(self, subgraph_loader):
         self.eval()
         pbar = tqdm(total=len(subgraph_loader.dataset))
-        pbar.set_description('Evaluating')
+        pbar.set_description('Inference')
 
         xs = []
         for batch in subgraph_loader:
@@ -65,4 +65,5 @@ class GraphSAGE(torch.nn.Module):
             pbar.update(batch.batch_size)
         x_all = torch.cat(xs, dim=0)
         pbar.close()
+
         return x_all

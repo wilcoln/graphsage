@@ -10,6 +10,7 @@ import experiments.table1.runners.reddit.supervised.graphsage_runners as sup_red
 import experiments.table1.runners.reddit.supervised.random_runners as sup_reddit_random_runners
 import experiments.table1.runners.reddit.supervised.raw_features_runners as sup_reddit_raw_features_runners
 import experiments.table1.runners.reddit.unsupervised.graphsage_runners as unsup_reddit_graphsage_runners
+from experiments.table1.runners.others import triples_models_runners
 import experiments.table1.settings as table1_settings
 
 # Dict of all implemented runners
@@ -76,6 +77,8 @@ def get(dataset, training_mode, model):
         if 'graphsage' in model:
             aggregator = model.split('_')[1]
             return runners[dataset][training_mode]['graphsage'].get(aggregator)
+        if 'triples' in model:
+            return triples_models_runners.get(dataset, training_mode, model)
         else:
             return runners[dataset][training_mode][model].get()
     except KeyError:
