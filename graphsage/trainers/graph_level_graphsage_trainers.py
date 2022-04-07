@@ -1,11 +1,11 @@
 import torch
 from sklearn.linear_model import SGDClassifier
-from sklearn.multioutput import MultiOutputClassifier
 from sklearn.metrics import f1_score
+from sklearn.multioutput import MultiOutputClassifier
 from tqdm import tqdm
 
-from .. import settings
 from .base_trainers import GraphSageBaseTrainer, SupervisedGraphSageBaseTrainer, dataloader_kwargs
+from .. import settings
 
 
 class SupervisedGraphSageTrainerForGraphLevelTask(SupervisedGraphSageBaseTrainer):

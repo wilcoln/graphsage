@@ -2,7 +2,6 @@ from types import SimpleNamespace
 
 from graphsage.settings import args
 
-
 DATASETS = [
     'cora',
     'reddit',

@@ -3,8 +3,8 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 
-from .. import settings
 from .base_trainers import SupervisedGraphSageBaseTrainer, GraphSageBaseTrainer, dataloader_kwargs
+from .. import settings
 
 
 class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer):
