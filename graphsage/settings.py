@@ -18,6 +18,7 @@ parser.add_argument('--use_triple_loss', action='store_true', help="Use triple l
 parser.add_argument('--persistent_workers', action='store_true', help="Whether to make dataloader workers "
                                                                       "persistent", default=False)
 parser.add_argument('--num_workers', help='Number of workers', type=int)
+parser.add_argument('--lstm_num_inputs', help='Number of inputs for lstm aggregator', type=int)
 args = parser.parse_args()
 
 DATA_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data')
@@ -45,5 +46,8 @@ if args.ignore_aggregators is None:
 
 if args.num_workers is not None:
     NUM_WORKERS = args.num_workers
+
+if args.num_workers is not None:
+    LSTM_NUM_INPUTS = args.lstm_num_inputs
 
 PERSISTENT_WORKERS = args.persistent_workers
