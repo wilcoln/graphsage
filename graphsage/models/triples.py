@@ -7,7 +7,7 @@ class MLP(nn.Module):
     """ Single Layer Perceptron for regression. """
 
     def __init__(self, in_channels, hidden_channels=100, out_channels=None, num_layers=2):
-        assert num_layers >= 1, "Number of layers must be at least 1."
+        assert num_layers >= 2, "MLP must have at least 2 layers"
         super(MLP, self).__init__()
 
         self.name = f'{num_layers}-MLP'
