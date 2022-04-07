@@ -47,7 +47,7 @@ if args.ignore_aggregators is None:
 if args.num_workers is not None:
     NUM_WORKERS = args.num_workers
 
-if args.num_workers is not None:
+if args.lstm_num_inputs is not None:
     LSTM_NUM_INPUTS = args.lstm_num_inputs
 
 PERSISTENT_WORKERS = args.persistent_workers
