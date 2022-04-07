@@ -1,0 +1,1 @@
+{"dataset": "Pubmed", "model": "GraphSAGE(\n  (layers): ModuleList(\n    (0): SAGE(500, 256)\n    (1): SAGE(256, 256)\n  )\n)", "optimizer": "Adam (\nParameter Group 0\n    amsgrad: False\n    betas: (0.9, 0.999)\n    eps: 1e-08\n    lr: 1e-05\n    maximize: False\n    weight_decay: 0\n)", "num_epochs": 10, "device": "cuda"}

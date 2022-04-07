@@ -1,0 +1,1 @@
+{"cora": {"unsupervised": {"graphsage_gcn": {"loss": 1.3760557174682617, "val_acc": 0.73, "test_acc": 0.698, "test_f1": 0.698, "val_f1": 0.7299999999999999, "train_time": 2.693824291229248, "test_time": 7.390608787536621}}}}
