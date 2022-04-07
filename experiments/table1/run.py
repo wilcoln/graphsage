@@ -27,25 +27,6 @@ for dataset in table1_settings.DATASETS:
             except NotImplementedError:
                 print(f'Skipping {dataset}, {training_mode}, {model}')
 
-# Post process results
-for dataset in table1_settings.DATASETS:
-    # Repeat performance across training mode for training mode oblivious models (as in the original paper)
-    for model in set(table1_settings.TRAINING_MODE_OBLIVIOUS_MODELS) & set(table1_settings.MODELS):
-        try:
-            results[dataset]['unsupervised'][model] = results[dataset]['supervised'][model]
-        except KeyError:
-            pass
-    # Add percentage f1 gain relative to raw features baseline
-    for training_mode in table1_settings.TRAINING_MODES:
-        for model in table1_settings.MODELS:
-            try:
-                results[dataset][training_mode][model]['percentage_f1_gain'] = \
-                    (results[dataset][training_mode][model]['test_f1'] -
-                     results[dataset][training_mode]['raw_features']['test_f1']) / \
-                    results[dataset][training_mode]['raw_features']['test_f1']
-            except KeyError:
-                pass
-
 # Create a timestamped and args-explicit named for the results folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
 folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(settings.args).items() if v and not 
