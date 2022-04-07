@@ -2,7 +2,7 @@ import json
 import os.path as osp
 
 import torch
-from torch_geometric.datasets import Reddit
+from graphsage.datasets import Reddit
 
 from deepWalkModel import Deepwalk
 

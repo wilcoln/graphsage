@@ -2,7 +2,7 @@ import json
 import os.path as osp
 
 import torch
-from torch_geometric.datasets import Planetoid
+from graphsage.datasets import Planetoid
 
 from deepWalkModel import Deepwalk
 

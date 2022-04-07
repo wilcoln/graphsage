@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from graphsage import settings
 from graphsage.trainers.base_trainers import SupervisedTorchModuleBaseTrainer, dataloader_kwargs
-from triples.utils import mask2index
+from graphsage.datasets.triples import mask2index
 
 
 class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):

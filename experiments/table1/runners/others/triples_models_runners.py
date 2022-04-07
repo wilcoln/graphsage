@@ -5,12 +5,12 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 
 import experiments.fig3.settings as fig3_settings
-import triples.models
+import graphsage.models.triples
 from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.datasets import Reddit
-from triples.trainers import TriplesTorchModuleTrainer
-from triples.utils import pyg_graph_to_triples
+from graphsage.trainers.triples_models_trainers import TriplesTorchModuleTrainer
+from graphsage.datasets.triples import pyg_graph_to_triples
 
 
 def get(dataset_name, training_mode, model_name):
@@ -64,7 +64,7 @@ class TriplesMultiLayerPerceptronRunner(TriplesModelRunner):
 
     def run(self):
         # Train an mlp on the dataset
-        model = triples.models.MLP(
+        model = graphsage.models.triples.MLP(
             in_channels=self.td.x.shape[1],
             num_layers=self.num_layers,
             hidden_channels=fig3_settings.HIDDEN_CHANNELS,
@@ -85,18 +85,18 @@ class TriplesMultiLayerPerceptronRunner(TriplesModelRunner):
 class TriplesInvariantModelRunner(TriplesModelRunner):
     def run(self):
         # Train an mlp on the dataset
-        phi = triples.models.MLP(
+        phi = graphsage.models.triples.MLP(
             in_channels=self.td.x.shape[1]//2,
             hidden_channels=fig3_settings.HIDDEN_CHANNELS,
         ).to(settings.DEVICE)
 
-        rho = triples.models.MLP(
+        rho = graphsage.models.triples.MLP(
             in_channels=fig3_settings.HIDDEN_CHANNELS,
             num_layers=1,
             hidden_channels=self.td.num_classes,
         ).to(settings.DEVICE)
 
-        model = triples.models.InvariantModel(phi=phi, rho=rho).to(settings.DEVICE)
+        model = graphsage.models.triples.InvariantModel(phi=phi, rho=rho).to(settings.DEVICE)
 
         return TriplesTorchModuleTrainer(
             dataset_name=self.dataset_name,
