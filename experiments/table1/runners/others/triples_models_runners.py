@@ -10,7 +10,7 @@ from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.datasets import Reddit
 from graphsage.datasets.triples import pyg_graph_to_triples
-from graphsage.trainers.triples_models_trainers import TriplesTorchModuleTrainer
+from graphsage.trainers.node_level_triples_models_trainers import TriplesTorchModuleTrainer
 
 
 def get(dataset_name, training_mode, model_name):

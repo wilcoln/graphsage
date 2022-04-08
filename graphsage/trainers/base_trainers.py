@@ -44,12 +44,15 @@ class TorchModuleBaseTrainer(BaseTrainer):
                  optimizer: Optimizer,
                  num_epochs: int,
                  device: Any,
-                 *args, **kwargs):
+                 *args,
+                 num_prints: int = 10,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         
         self.model = model
         self.optimizer = optimizer
         self.num_epochs = num_epochs
+        self.num_prints = num_prints
         self.device = device
 
         self.results = []
@@ -119,24 +122,35 @@ class TorchModuleBaseTrainer(BaseTrainer):
             epoch_results = {k: v for k, v in epoch_results.items() if v is not None}
 
             # print epoch and results
-            current_results_str = ', '.join([f'{capitalize(k)}: {v:.4f}' for k, v in epoch_results.items()])
-            print(f'Epoch: {epoch:02d}, {current_results_str}')
+            if epoch % (self.num_epochs // self.num_prints) == 0:
+                self.print_epoch_with_results(epoch, epoch_results)
 
             # Save epoch results to list
             self.results.append(epoch_results)
 
-        # Save results
-        self.save_results()
+        # Print best epoch and results
+        best_epoch, best_results = self.get_best_epoch_with_results(val_metric)
+        print(f'*** BEST ***')
+        self.print_epoch_with_results(best_epoch, best_results)
 
-        # Get best epoch result w.r.t. validation metric
-        best = max(self.results, key=lambda x: x.get(f'val_{val_metric}', 0))
+        # Save results to file
+        self.save_results()
 
         # Return best epoch results i.e. the one w/ the highest validation metric value
         if return_best_epoch_only:
-            return best
+            return best_results
         else:
             # Return best & all epoch results
-            return best, self.results
+            return best_results, self.results
+
+    @staticmethod
+    def print_epoch_with_results(epoch, epoch_results):
+        epoch_results_str = ', '.join([f'{capitalize(k)}: {v:.4f}' for k, v in epoch_results.items()])
+        print(f'Epoch: {epoch:02d}, {epoch_results_str}')
+
+    def get_best_epoch_with_results(self, val_metric):
+        best_epoch_results = max(self.results, key=lambda x: x.get(f'val_{val_metric}', 0))
+        return self.results.index(best_epoch_results) + 1, best_epoch_results
 
 
 class SupervisedTorchModuleBaseTrainer(TorchModuleBaseTrainer):
