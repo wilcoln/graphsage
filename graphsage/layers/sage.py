@@ -1,16 +1,19 @@
+import random
 from typing import Tuple, Union, Optional
 
 import torch
 import torch.nn.functional as F
+from icecream import ic
 from torch import Tensor
-from torch.nn import LSTM
+from torch.nn import LSTMCell
 from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.typing import Adj, OptPairTensor, Size
 from torch_geometric.utils import to_dense_batch
 from torch_scatter import scatter
 from torch_sparse import SparseTensor, matmul
-
+from graphsage import settings
+import numpy as np
 
 class SAGE(MessagePassing):
     """
@@ -63,10 +66,11 @@ class SAGE(MessagePassing):
             self.root_weight = False
 
         if self.aggregator == 'lstm':
-            self.lstm = LSTM(in_channels[0], in_channels[0], batch_first=True)
+            self.lstm_n_inputs = settings.LSTM_NUM_INPUTS
+            self.lstm = LSTMCell(self.lstm_n_inputs * in_channels[0], in_channels[0])
 
         if self.aggregator == 'bilstm':
-            self.bilstm = LSTM(in_channels[0], in_channels[0], bidirectional=True, batch_first=True)
+            self.bilstm = LSTMCell(in_channels[0], in_channels[0], bidirectional=True, batch_first=True)
             self.att = Linear(2 * in_channels[0], 1)
 
         if self.aggregator in {'max_pool', 'mean_pool'}:
@@ -104,16 +108,20 @@ class SAGE(MessagePassing):
         # propagate internally calls message_and_aggregate()
         # if edge_index is a SparseTensor and message_and_aggregate() is implemented,
         # otherwise it calls message(), aggregate() separately
-        if self.aggregator in {'bilstm', 'lstm'} and isinstance(edge_index, Tensor):
-            num_nodes = int(edge_index.max()) + 1
-            edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
-            
+        # if self.aggregator in {'bilstm', 'lstm'} and isinstance(edge_index, Tensor):
+        #     num_nodes = int(edge_index.max()) + 1
+        #     edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
+
         if self.aggregator == 'gcn':
             root_indices = torch.unique(edge_index[1])
             self_edge_index = torch.stack([root_indices, root_indices], dim=0)
             edge_index = torch.cat([edge_index, self_edge_index], dim=1)
 
         out = self.propagate(edge_index, x=x, size=size)
+
+        if self.aggregator == 'lstm':   
+            out =  F.pad(out, (0, 0, 0, x[1].shape[0] - out.shape[0]), value=0)
+
         out = self.lin_l(out)
 
         # updates node embeddings 
@@ -129,11 +137,63 @@ class SAGE(MessagePassing):
     def message(self, x_j: Tensor) -> Tensor:
         return x_j
 
+    def _get_neighbors(self, node_idx, edge_index_i: Tensor, edge_index_j: Tensor) -> list:
+        """Return the neighbors of a node"""
+        return list(set(edge_index_j[edge_index_i == node_idx].cpu().numpy().tolist()))
+
+
     def aggregate(self, inputs: Tensor, index: Tensor, edge_index_j, edge_index_i,
                   ptr: Optional[Tensor] = None, dim_size: Optional[int] = None,
                   aggr: Optional[str] = None) -> Tensor:
+        if self.aggregator == 'lstm':
+            # Get neighbours of all inputs
+            node_neighbors_dict = {
+                node: self._get_neighbors(node, edge_index_i, edge_index_j)
+                for node in set(edge_index_j.cpu().numpy().tolist())
+            }
 
-        if self.aggregator in {'mean', 'max',  'sum'}:
+            # Truncate neighbours to self.lstm_n_inputs randomly
+            node_neighbors_dict = {
+                node: random.sample(neighbors, self.lstm_n_inputs)
+                if len(neighbors) > self.lstm_n_inputs else neighbors
+                for node, neighbors in node_neighbors_dict.items()
+            }
+
+            node_neighbors_embeddings_dict = {}
+            for node, neighbors in node_neighbors_dict.items():
+                try:
+                    node_neighbors_embeddings_dict[node] = torch.cat((inputs[neighbors], inputs[neighbors][0,:].repeat(self.lstm_n_inputs - len(neighbors),1)))
+                except:
+                    node_neighbors_embeddings_dict[node] = F.pad(inputs[neighbors], (0, 0, 0, self.lstm_n_inputs - len(neighbors)), value=np.random.randn())
+
+            # # Get the node embeddings of the neighbours & pad them to self.lstm_n_inputs
+            # node_neighbors_embeddings_dict = {
+            #     node: torch.cat((inputs[neighbors], inputs[neighbors][0,:].repeat(self.lstm_n_inputs - len(neighbors),1)))# F.pad(inputs[neighbors], (0, 0, 0, self.lstm_n_inputs - len(neighbors)), value=0)
+            #     for node, neighbors in node_neighbors_dict.items()
+            # }
+
+            del node_neighbors_dict
+
+            # Flatten the embeddings
+            node_neighbors_sequence_embeddings_dict = {}
+            for node, neighbors_embeddings in node_neighbors_embeddings_dict.items():
+                node_neighbors_sequence_embeddings_dict[node] = neighbors_embeddings.view(1, -1)
+                del neighbors_embeddings
+
+            del node_neighbors_embeddings_dict
+
+            # Aggregate the embeddings using LSTM
+            node_aggregated_neighbors_embeddings_dict = {}
+            for node, neighbors_sequence_embeddings in node_neighbors_sequence_embeddings_dict.items():
+                node_aggregated_neighbors_embeddings_dict[node], _ = self.lstm(neighbors_sequence_embeddings)
+                del _
+                del neighbors_sequence_embeddings
+
+            del node_neighbors_sequence_embeddings_dict
+
+            return torch.cat(list(node_aggregated_neighbors_embeddings_dict.values()), dim=0)
+
+        elif self.aggregator in {'mean', 'max',  'sum'}:
             reduce = self.aggregator
 
         elif self.aggregator in 'gcn':
@@ -148,7 +208,7 @@ class SAGE(MessagePassing):
             reduce = 'mean'
 
         return scatter(inputs, index, dim=self.node_dim, dim_size=dim_size,
-                           reduce=reduce)
+                       reduce=reduce)
 
 
     def message_and_aggregate(self, adj_t: SparseTensor,
