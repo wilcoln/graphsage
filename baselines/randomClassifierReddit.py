@@ -2,7 +2,7 @@ import os.path as osp
 
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import f1_score
-from torch_geometric.datasets import Reddit
+from graphsage.datasets import Reddit
 
 
 def main():

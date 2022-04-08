@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from tqdm import tqdm
 
 from graphsage import settings
@@ -53,16 +52,17 @@ class GraphSAGE(torch.nn.Module):
     def inference(self, subgraph_loader):
         self.eval()
         pbar = tqdm(total=len(subgraph_loader.dataset))
-        pbar.set_description('Evaluating')
+        pbar.set_description('Inference')
 
-        xs = []
+        x_all = []
         for batch in subgraph_loader:
             set_batch_size_attr(batch)
             x = batch.x.to(device)
             edge_index = batch.edge_index.to(device)
             x = self.forward(x, edge_index)
-            xs.append(x[:batch.batch_size])
+            x_all.append(x[:batch.batch_size].cpu())
             pbar.update(batch.batch_size)
-        x_all = torch.cat(xs, dim=0)
+        x_all = torch.cat(x_all, dim=0).to(device)
         pbar.close()
+
         return x_all

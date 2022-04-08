@@ -1,10 +1,11 @@
 import torch
 from sklearn.linear_model import SGDClassifier
-from sklearn.multioutput import MultiOutputClassifier
 from sklearn.metrics import f1_score
+from sklearn.multioutput import MultiOutputClassifier
 from tqdm import tqdm
 
 from .base_trainers import GraphSageBaseTrainer, SupervisedGraphSageBaseTrainer, dataloader_kwargs
+from .. import settings
 
 
 class SupervisedGraphSageTrainerForGraphLevelTask(SupervisedGraphSageBaseTrainer):
@@ -57,7 +58,7 @@ class SupervisedGraphSageTrainerForGraphLevelTask(SupervisedGraphSageBaseTrainer
 
     @torch.no_grad()
     def test(self):
-        train_f1 = self.eval(self.train_loader)
+        train_f1 = self.eval(self.train_loader) if not settings.NO_EVAL_TRAIN else None
         val_f1 = self.eval(self.val_loader)
         test_f1 = self.eval(self.test_loader)
 
@@ -133,8 +134,13 @@ class UnsupervisedGraphSageTrainerForGraphLevelTask(GraphSageBaseTrainer):
         # Train classifier on train data
         train_embeddings, train_labels = self._loader_to_embeddings_and_labels(self.train_loader)
         clf.fit(train_embeddings, train_labels)
-        train_predictions = clf.predict(train_embeddings)
-        train_f1 = f1_score(train_labels, train_predictions, average='micro')
+
+        # Evaluate on training set
+        if not settings.NO_EVAL_TRAIN:
+            train_predictions = clf.predict(train_embeddings)
+            train_f1 = f1_score(train_labels, train_predictions, average='micro')
+        else:
+            train_f1 = None
 
         # Evaluate on validation set
         val_embeddings, val_labels = self._loader_to_embeddings_and_labels(self.val_loader)

@@ -19,6 +19,10 @@ parser.add_argument('--persistent_workers', action='store_true', help="Whether t
                                                                       "persistent", default=False)
 parser.add_argument('--num_workers', help='Number of workers', type=int)
 parser.add_argument('--lstm_num_inputs', help='Number of inputs for lstm aggregator', type=int)
+parser.add_argument('--no_eval_train', action='store_true', help="whether to evaluate on the train set as well",
+                    default=False)
+parser.add_argument('--no_extensions', action='store_true', help="whether to include extension in the experiments",
+                    default=False)
 args = parser.parse_args()
 
 DATA_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data')
@@ -51,3 +55,5 @@ if args.lstm_num_inputs is not None:
     LSTM_NUM_INPUTS = args.lstm_num_inputs
 
 PERSISTENT_WORKERS = args.persistent_workers
+
+NO_EVAL_TRAIN = args.no_eval_train

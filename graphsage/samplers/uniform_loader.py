@@ -107,7 +107,7 @@ class NeighborLoader(BaseDataLoader):
 
     .. code-block:: python
 
-        from torch_geometric.datasets import Planetoid
+        from graphsage.datasets import Planetoid
         from torch_geometric.loader import NeighborLoader
 
         data = Planetoid(path, name='Cora')[0]

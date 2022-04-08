@@ -1,0 +1,666 @@
+{
+    "cora": {
+        "unsupervised": {
+            "graphsage_gcn": {
+                "loss": 1.3760557174682617,
+                "val_acc": 0.73,
+                "test_acc": 0.698,
+                "test_f1": 0.698,
+                "val_f1": 0.7299999999999999,
+                "train_time": 2.693824291229248,
+                "test_time": 7.390608787536621,
+                "percentage_f1_gain": 0.2925925925925924
+            },
+            "graphsage_mean": {
+                "loss": 1.371389389038086,
+                "val_acc": 0.582,
+                "test_acc": 0.598,
+                "test_f1": 0.598,
+                "val_f1": 0.582,
+                "train_time": 2.703242778778076,
+                "test_time": 7.4934210777282715,
+                "percentage_f1_gain": 0.10740740740740728
+            },
+            "graphsage_max_pool": {
+                "loss": 1.3880739212036133,
+                "val_acc": 0.576,
+                "test_acc": 0.597,
+                "test_f1": 0.597,
+                "val_f1": 0.576,
+                "train_time": 2.553093194961548,
+                "test_time": 7.514307260513306,
+                "percentage_f1_gain": 0.10555555555555543
+            },
+            "graphsage_max": {
+                "loss": 1.3728306293487549,
+                "val_acc": 0.592,
+                "test_acc": 0.614,
+                "test_f1": 0.614,
+                "val_f1": 0.592,
+                "train_time": 2.5907981395721436,
+                "test_time": 7.502387046813965,
+                "percentage_f1_gain": 0.13703703703703696
+            },
+            "graphsage_sum": {
+                "loss": 1.3757526874542236,
+                "val_acc": 0.704,
+                "test_acc": 0.718,
+                "test_f1": 0.718,
+                "val_f1": 0.704,
+                "train_time": 2.7130727767944336,
+                "test_time": 7.583195447921753,
+                "percentage_f1_gain": 0.3296296296296295
+            },
+            "graphsage_mean_pool": {
+                "loss": 1.3658678531646729,
+                "val_acc": 0.614,
+                "test_acc": 0.598,
+                "test_f1": 0.598,
+                "val_f1": 0.614,
+                "train_time": 2.5681862831115723,
+                "test_time": 7.630734443664551,
+                "percentage_f1_gain": 0.10740740740740728
+            },
+            "raw_features": {
+                "test_f1": 0.54,
+                "percentage_f1_gain": 0.0
+            },
+            "random": {
+                "test_f1": 0.13,
+                "percentage_f1_gain": -0.7592592592592593
+            }
+        },
+        "supervised": {
+            "random": {
+                "test_f1": 0.13,
+                "percentage_f1_gain": -0.7592592592592593
+            },
+            "raw_features": {
+                "test_f1": 0.54,
+                "percentage_f1_gain": 0.0
+            },
+            "graphsage_gcn": {
+                "loss": 2.248354911804199,
+                "val_acc": 0.776,
+                "val_f1": 0.776,
+                "test_acc": 0.776,
+                "test_f1": 0.776,
+                "train_time": 2.77339506149292,
+                "test_time": 9.901801586151123,
+                "percentage_f1_gain": 0.437037037037037
+            },
+            "graphsage_mean": {
+                "loss": 2.1992406845092773,
+                "val_acc": 0.704,
+                "val_f1": 0.704,
+                "test_acc": 0.717,
+                "test_f1": 0.7169999999999999,
+                "train_time": 2.700042963027954,
+                "test_time": 10.153783082962036,
+                "percentage_f1_gain": 0.32777777777777745
+            },
+            "graphsage_max_pool": {
+                "loss": 2.217975616455078,
+                "val_acc": 0.706,
+                "val_f1": 0.706,
+                "test_acc": 0.706,
+                "test_f1": 0.706,
+                "train_time": 2.7052743434906006,
+                "test_time": 10.066455125808716,
+                "percentage_f1_gain": 0.30740740740740724
+            },
+            "graphsage_max": {
+                "loss": 2.2000107765197754,
+                "val_acc": 0.726,
+                "val_f1": 0.726,
+                "test_acc": 0.732,
+                "test_f1": 0.732,
+                "train_time": 2.767460823059082,
+                "test_time": 10.27025580406189,
+                "percentage_f1_gain": 0.35555555555555546
+            },
+            "graphsage_sum": {
+                "loss": 2.2938032150268555,
+                "val_acc": 0.716,
+                "val_f1": 0.7160000000000001,
+                "test_acc": 0.731,
+                "test_f1": 0.731,
+                "train_time": 2.561476707458496,
+                "test_time": 10.166858434677124,
+                "percentage_f1_gain": 0.3537037037037036
+            },
+            "graphsage_mean_pool": {
+                "loss": 2.2069191932678223,
+                "val_acc": 0.71,
+                "val_f1": 0.7100000000000001,
+                "test_acc": 0.708,
+                "test_f1": 0.708,
+                "train_time": 2.651266098022461,
+                "test_time": 10.095858097076416,
+                "percentage_f1_gain": 0.31111111111111095
+            }
+        }
+    },
+    "ppi": {
+        "unsupervised": {
+            "graphsage_gcn": {
+                "loss": 1.32108139738773,
+                "val_f1": 0.48357171734831017,
+                "test_f1": 0.4847383074204498,
+                "train_time": 54.605568408966064,
+                "test_time": 15.952791929244995,
+                "percentage_f1_gain": 0.16356854816122138
+            },
+            "graphsage_mean": {
+                "loss": 1.2624275182735807,
+                "val_f1": 0.4641398473418739,
+                "test_f1": 0.468957986016878,
+                "train_time": 52.69968128204346,
+                "test_time": 15.624979496002197,
+                "percentage_f1_gain": 0.12568937627818466
+            },
+            "graphsage_max_pool": {
+                "loss": 1.2743759626737603,
+                "val_f1": 0.48701302211435027,
+                "test_f1": 0.4841174793270601,
+                "train_time": 50.62715983390808,
+                "test_time": 15.690541505813599,
+                "percentage_f1_gain": 0.16207830892857789
+            },
+            "graphsage_max": {
+                "loss": 1.319478980383565,
+                "val_f1": 0.4844258534903732,
+                "test_f1": 0.48426843799913794,
+                "train_time": 50.4362952709198,
+                "test_time": 15.52267599105835,
+                "percentage_f1_gain": 0.1624406709705561
+            },
+            "graphsage_sum": {
+                "loss": 1.3121585533071327,
+                "val_f1": 0.48124691314230517,
+                "test_f1": 0.4821385253750398,
+                "train_time": 52.063854694366455,
+                "test_time": 15.769522190093994,
+                "percentage_f1_gain": 0.1573280167779868
+            },
+            "graphsage_mean_pool": {
+                "loss": 1.259360576631104,
+                "val_f1": 0.46267286250540746,
+                "test_f1": 0.4655749183133655,
+                "train_time": 50.2495858669281,
+                "test_time": 15.58901858329773,
+                "percentage_f1_gain": 0.11756864161404187
+            },
+            "raw_features": {
+                "test_f1": 0.41659626172130393,
+                "percentage_f1_gain": 0.0
+            },
+            "random": {
+                "test_f1": 0.3935170132458756,
+                "percentage_f1_gain": -0.055399557307760826
+            }
+        },
+        "supervised": {
+            "random": {
+                "test_f1": 0.3935170132458756,
+                "percentage_f1_gain": -0.055399557307760826
+            },
+            "raw_features": {
+                "test_f1": 0.41659626172130393,
+                "percentage_f1_gain": 0.0
+            },
+            "graphsage_gcn": {
+                "loss": 0.6687096893787384,
+                "val_f1": 0.492568493243961,
+                "test_f1": 0.4991305171135062,
+                "train_time": 0.12199974060058594,
+                "test_time": 0.3079988956451416,
+                "percentage_f1_gain": 0.19811568891949477
+            },
+            "graphsage_mean": {
+                "loss": 0.6675704419612885,
+                "val_f1": 0.531833749057065,
+                "test_f1": 0.5410042835294332,
+                "train_time": 0.11800169944763184,
+                "test_time": 0.31300806999206543,
+                "percentage_f1_gain": 0.298629712360108
+            },
+            "graphsage_max_pool": {
+                "loss": 0.6669625490903854,
+                "val_f1": 0.5744113444637999,
+                "test_f1": 0.5809530613702936,
+                "train_time": 0.11116766929626465,
+                "test_time": 0.31600093841552734,
+                "percentage_f1_gain": 0.394522982443231
+            },
+            "graphsage_max": {
+                "loss": 0.6674060553312302,
+                "val_f1": 0.5632219389787303,
+                "test_f1": 0.5695733700226986,
+                "train_time": 0.11113333702087402,
+                "test_time": 0.32900166511535645,
+                "percentage_f1_gain": 0.36720710759458
+            },
+            "graphsage_sum": {
+                "loss": 0.6669517278671264,
+                "val_f1": 0.5543277376622244,
+                "test_f1": 0.5584415584415585,
+                "train_time": 0.11199951171875,
+                "test_time": 0.3161447048187256,
+                "percentage_f1_gain": 0.34048624472570704
+            },
+            "graphsage_mean_pool": {
+                "loss": 0.6675699710845947,
+                "val_f1": 0.5472680642003025,
+                "test_f1": 0.5566489384979388,
+                "train_time": 0.11599922180175781,
+                "test_time": 0.3216533660888672,
+                "percentage_f1_gain": 0.3361832297725414
+            }
+        }
+    },
+    "pubmed": {
+        "unsupervised": {
+            "graphsage_gcn": {
+                "loss": 1.3566886186599731,
+                "val_acc": 0.758,
+                "test_acc": 0.727,
+                "test_f1": 0.7269999999999999,
+                "val_f1": 0.7579999999999999,
+                "train_time": 2.4901368618011475,
+                "test_time": 7.562713623046875,
+                "percentage_f1_gain": 0.18597063621533422
+            },
+            "graphsage_mean": {
+                "loss": 1.3213541507720947,
+                "val_acc": 0.67,
+                "test_acc": 0.661,
+                "test_f1": 0.661,
+                "val_f1": 0.67,
+                "train_time": 2.5244600772857666,
+                "test_time": 7.295035362243652,
+                "percentage_f1_gain": 0.07830342577487773
+            },
+            "graphsage_max_pool": {
+                "loss": 1.3602654933929443,
+                "val_acc": 0.71,
+                "test_acc": 0.679,
+                "test_f1": 0.679,
+                "val_f1": 0.7100000000000001,
+                "train_time": 2.472759246826172,
+                "test_time": 7.163640975952148,
+                "percentage_f1_gain": 0.10766721044045686
+            },
+            "graphsage_max": {
+                "loss": 1.3662749528884888,
+                "val_acc": 0.724,
+                "test_acc": 0.706,
+                "test_f1": 0.706,
+                "val_f1": 0.724,
+                "train_time": 2.5799715518951416,
+                "test_time": 7.299675464630127,
+                "percentage_f1_gain": 0.1517128874388254
+            },
+            "graphsage_sum": {
+                "loss": 1.3311238288879395,
+                "val_acc": 0.756,
+                "test_acc": 0.716,
+                "test_f1": 0.7160000000000001,
+                "val_f1": 0.756,
+                "train_time": 2.4061717987060547,
+                "test_time": 6.968424320220947,
+                "percentage_f1_gain": 0.16802610114192512
+            },
+            "graphsage_mean_pool": {
+                "loss": 1.341629981994629,
+                "val_acc": 0.648,
+                "test_acc": 0.633,
+                "test_f1": 0.633,
+                "val_f1": 0.648,
+                "train_time": 2.5710716247558594,
+                "test_time": 7.29431414604187,
+                "percentage_f1_gain": 0.03262642740619905
+            },
+            "raw_features": {
+                "test_f1": 0.613,
+                "percentage_f1_gain": 0.0
+            },
+            "random": {
+                "test_f1": 0.18,
+                "percentage_f1_gain": -0.7063621533442088
+            }
+        },
+        "supervised": {
+            "random": {
+                "test_f1": 0.18,
+                "percentage_f1_gain": -0.7063621533442088
+            },
+            "raw_features": {
+                "test_f1": 0.613,
+                "percentage_f1_gain": 0.0
+            },
+            "graphsage_gcn": {
+                "loss": 1.8464717864990234,
+                "val_acc": 0.734,
+                "val_f1": 0.734,
+                "test_acc": 0.703,
+                "test_f1": 0.703,
+                "train_time": 2.4676198959350586,
+                "test_time": 9.400293111801147,
+                "percentage_f1_gain": 0.14681892332789553
+            },
+            "graphsage_mean": {
+                "loss": 1.6165807247161865,
+                "val_acc": 0.708,
+                "val_f1": 0.708,
+                "test_acc": 0.684,
+                "test_f1": 0.684,
+                "train_time": 2.424185037612915,
+                "test_time": 9.582738161087036,
+                "percentage_f1_gain": 0.11582381729200664
+            },
+            "graphsage_max_pool": {
+                "loss": 1.804853916168213,
+                "val_acc": 0.678,
+                "val_f1": 0.678,
+                "test_acc": 0.655,
+                "test_f1": 0.655,
+                "train_time": 2.493650197982788,
+                "test_time": 9.736022233963013,
+                "percentage_f1_gain": 0.068515497553018
+            },
+            "graphsage_max": {
+                "loss": 1.6214245557785034,
+                "val_acc": 0.742,
+                "val_f1": 0.7419999999999999,
+                "test_acc": 0.712,
+                "test_f1": 0.712,
+                "train_time": 2.4965522289276123,
+                "test_time": 9.873647212982178,
+                "percentage_f1_gain": 0.1615008156606851
+            },
+            "graphsage_sum": {
+                "loss": 1.9027574062347412,
+                "val_acc": 0.738,
+                "val_f1": 0.738,
+                "test_acc": 0.715,
+                "test_f1": 0.715,
+                "train_time": 2.4531257152557373,
+                "test_time": 9.614280223846436,
+                "percentage_f1_gain": 0.166394779771615
+            },
+            "graphsage_mean_pool": {
+                "loss": 1.6282339096069336,
+                "val_acc": 0.688,
+                "val_f1": 0.688,
+                "test_acc": 0.682,
+                "test_f1": 0.682,
+                "train_time": 2.5406947135925293,
+                "test_time": 9.969488382339478,
+                "percentage_f1_gain": 0.11256117455138673
+            }
+        }
+    },
+    "citeseer": {
+        "unsupervised": {
+            "graphsage_gcn": {
+                "loss": 1.3308746814727783,
+                "val_acc": 0.556,
+                "test_acc": 0.548,
+                "test_f1": 0.548,
+                "val_f1": 0.556,
+                "train_time": 2.5921268463134766,
+                "test_time": 7.462178707122803,
+                "percentage_f1_gain": 0.06201550387596905
+            },
+            "graphsage_mean": {
+                "loss": 1.324393391609192,
+                "val_acc": 0.454,
+                "test_acc": 0.468,
+                "test_f1": 0.468,
+                "val_f1": 0.454,
+                "train_time": 2.5922279357910156,
+                "test_time": 7.0158727169036865,
+                "percentage_f1_gain": -0.09302325581395346
+            },
+            "graphsage_max_pool": {
+                "loss": 1.340684175491333,
+                "val_acc": 0.468,
+                "test_acc": 0.426,
+                "test_f1": 0.426,
+                "val_f1": 0.468,
+                "train_time": 2.5461416244506836,
+                "test_time": 7.4514734745025635,
+                "percentage_f1_gain": -0.17441860465116282
+            },
+            "graphsage_max": {
+                "loss": 1.3260859251022339,
+                "val_acc": 0.41,
+                "test_acc": 0.392,
+                "test_f1": 0.39200000000000007,
+                "val_f1": 0.41,
+                "train_time": 2.563952684402466,
+                "test_time": 7.4648778438568115,
+                "percentage_f1_gain": -0.24031007751937972
+            },
+            "graphsage_sum": {
+                "loss": 1.3423928022384644,
+                "val_acc": 0.486,
+                "test_acc": 0.475,
+                "test_f1": 0.47500000000000003,
+                "val_f1": 0.486,
+                "train_time": 2.5546653270721436,
+                "test_time": 7.352845668792725,
+                "percentage_f1_gain": -0.07945736434108523
+            },
+            "graphsage_mean_pool": {
+                "loss": 1.327822208404541,
+                "val_acc": 0.392,
+                "test_acc": 0.339,
+                "test_f1": 0.339,
+                "val_f1": 0.39200000000000007,
+                "train_time": 2.4660000801086426,
+                "test_time": 7.1121931076049805,
+                "percentage_f1_gain": -0.3430232558139535
+            },
+            "raw_features": {
+                "test_f1": 0.516,
+                "percentage_f1_gain": 0.0
+            },
+            "random": {
+                "test_f1": 0.13,
+                "percentage_f1_gain": -0.748062015503876
+            }
+        },
+        "supervised": {
+            "random": {
+                "test_f1": 0.13,
+                "percentage_f1_gain": -0.748062015503876
+            },
+            "raw_features": {
+                "test_f1": 0.516,
+                "percentage_f1_gain": 0.0
+            },
+            "graphsage_gcn": {
+                "loss": 2.151303291320801,
+                "val_acc": 0.67,
+                "val_f1": 0.67,
+                "test_acc": 0.663,
+                "test_f1": 0.663,
+                "train_time": 2.5177829265594482,
+                "test_time": 9.858616828918457,
+                "percentage_f1_gain": 0.28488372093023256
+            },
+            "graphsage_mean": {
+                "loss": 2.1015892028808594,
+                "val_acc": 0.586,
+                "val_f1": 0.586,
+                "test_acc": 0.561,
+                "test_f1": 0.561,
+                "train_time": 2.5623271465301514,
+                "test_time": 9.890884399414062,
+                "percentage_f1_gain": 0.08720930232558147
+            },
+            "graphsage_max_pool": {
+                "loss": 2.12424898147583,
+                "val_acc": 0.65,
+                "val_f1": 0.65,
+                "test_acc": 0.621,
+                "test_f1": 0.621,
+                "train_time": 2.5357680320739746,
+                "test_time": 9.644443035125732,
+                "percentage_f1_gain": 0.20348837209302323
+            },
+            "graphsage_max": {
+                "loss": 2.104586601257324,
+                "val_acc": 0.572,
+                "val_f1": 0.572,
+                "test_acc": 0.575,
+                "test_f1": 0.575,
+                "train_time": 2.570326805114746,
+                "test_time": 9.453927993774414,
+                "percentage_f1_gain": 0.11434108527131771
+            },
+            "graphsage_sum": {
+                "loss": 2.0339999198913574,
+                "val_acc": 0.602,
+                "val_f1": 0.602,
+                "test_acc": 0.587,
+                "test_f1": 0.587,
+                "train_time": 2.376366376876831,
+                "test_time": 9.376336812973022,
+                "percentage_f1_gain": 0.1375968992248061
+            },
+            "graphsage_mean_pool": {
+                "loss": 2.0505034923553467,
+                "val_acc": 0.626,
+                "val_f1": 0.626,
+                "test_acc": 0.605,
+                "test_f1": 0.605,
+                "train_time": 3.3097386360168457,
+                "test_time": 9.331908941268921,
+                "percentage_f1_gain": 0.1724806201550387
+            }
+        }
+    },
+    "reddit": {
+        "unsupervised": {
+            "graphsage_gcn": {
+                "loss": 1.0693632326202178,
+                "val_acc": 0.9069699131383492,
+                "test_acc": 0.90662980449886,
+                "test_f1": 0.90662980449886,
+                "val_f1": 0.9069699131383492,
+                "train_time": 83.42585468292236,
+                "test_time": 81.55153775215149
+            },
+            "graphsage_mean": {
+                "loss": 1.0858174844054518,
+                "val_acc": 0.8345432419957198,
+                "test_acc": 0.8323609141338887,
+                "test_f1": 0.8323609141338887,
+                "val_f1": 0.8345432419957198,
+                "train_time": 83.94308257102966,
+                "test_time": 80.23878169059753
+            },
+            "graphsage_max_pool": {
+                "loss": 1.1021430892774835,
+                "val_acc": 0.7376945994712769,
+                "test_acc": 0.7326355851569933,
+                "test_f1": 0.7326355851569935,
+                "val_f1": 0.7376945994712769,
+                "train_time": 90.92000961303711,
+                "test_time": 79.4251651763916
+            },
+            "graphsage_max": {
+                "loss": 1.080078729915412,
+                "val_acc": 0.7214972095170157,
+                "test_acc": 0.7184173204315746,
+                "test_f1": 0.7184173204315747,
+                "val_f1": 0.7214972095170157,
+                "train_time": 92.62016797065735,
+                "test_time": 80.4721155166626
+            },
+            "graphsage_sum": {
+                "loss": 1.0772400821476111,
+                "val_acc": 0.9001720448155763,
+                "test_acc": 0.8987666732491967,
+                "test_f1": 0.8987666732491967,
+                "val_f1": 0.9001720448155764,
+                "train_time": 82.63283348083496,
+                "test_time": 83.46844959259033
+            },
+            "graphsage_mean_pool": {
+                "loss": 1.059594733001298,
+                "val_acc": 0.8292140489278671,
+                "test_acc": 0.8227743568569018,
+                "test_f1": 0.8227743568569018,
+                "val_f1": 0.829214048927867,
+                "train_time": 85.48651170730591,
+                "test_time": 84.44338870048523
+            }
+        },
+        "supervised": {
+            "random": {
+                "test_f1": 0.1483223524765273
+            },
+            "raw_features": {
+                "test_f1": 0.553201802416387
+            },
+            "graphsage_gcn": {
+                "loss": 3.6822838330562395,
+                "val_acc": 0.9325248625739583,
+                "val_f1": 0.9325248625739583,
+                "test_acc": 0.932086243110784,
+                "test_f1": 0.932086243110784,
+                "train_time": 79.85442900657654,
+                "test_time": 48.10351538658142
+            },
+            "graphsage_mean": {
+                "loss": 3.6569205505156703,
+                "val_acc": 0.9534220133439637,
+                "val_f1": 0.9534220133439637,
+                "test_acc": 0.9541496867314149,
+                "test_f1": 0.9541496867314149,
+                "train_time": 79.65274143218994,
+                "test_time": 41.23031806945801
+            },
+            "graphsage_max_pool": {
+                "loss": 3.690550055024214,
+                "val_acc": 0.9316436574210063,
+                "val_f1": 0.9316436574210063,
+                "test_acc": 0.9289086763729063,
+                "test_f1": 0.9289086763729063,
+                "train_time": 89.10279202461243,
+                "test_time": 42.14045524597168
+            },
+            "graphsage_max": {
+                "loss": 3.6863535081435628,
+                "val_acc": 0.9308044144181948,
+                "val_f1": 0.9308044144181948,
+                "test_acc": 0.932337576073102,
+                "test_f1": 0.932337576073102,
+                "train_time": 88.7553505897522,
+                "test_time": 41.52792811393738
+            },
+            "graphsage_sum": {
+                "loss": 3.667869245427723,
+                "val_acc": 0.9438126809617725,
+                "val_f1": 0.9438126809617725,
+                "test_acc": 0.9442758917832074,
+                "test_f1": 0.9442758917832074,
+                "train_time": 77.34045124053955,
+                "test_time": 40.86400008201599
+            },
+            "graphsage_mean_pool": {
+                "loss": 3.6625452777621805,
+                "val_acc": 0.9533800511938232,
+                "val_f1": 0.9533800511938232,
+                "test_acc": 0.9526057842486042,
+                "test_f1": 0.9526057842486042,
+                "train_time": 79.08795833587646,
+                "test_time": 41.47302508354187
+            }
+        }
+    }
+}

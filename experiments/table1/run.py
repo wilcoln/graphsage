@@ -7,10 +7,13 @@ from datetime import datetime as dt
 from experiments.table1 import runners
 from experiments.table1 import settings as table1_settings
 from experiments.table1.latex import generate_latex_table
-from graphsage import settings as graphsage_settings
+from graphsage import settings
 
 # Initialize the results dictionary
 results = defaultdict(lambda: defaultdict(dict))
+
+# Evaluate only on validation and test set
+settings.NO_EVAL_TRAIN = True
 
 # Run experiments
 for dataset in table1_settings.DATASETS:
@@ -26,9 +29,12 @@ for dataset in table1_settings.DATASETS:
 
 # Post process results
 for dataset in table1_settings.DATASETS:
-    # Repeat performance across training mode for graph-oblivious models (as in the original paper)
-    for model in table1_settings.GRAPH_OBLIVIOUS_MODELS:
-        results[dataset]['unsupervised'][model] = results[dataset]['supervised'][model]
+    # Repeat performance across training mode for training mode oblivious models (as in the original paper)
+    for model in set(table1_settings.TRAINING_MODE_OBLIVIOUS_MODELS) & set(table1_settings.MODELS):
+        try:
+            results[dataset]['unsupervised'][model] = results[dataset]['supervised'][model]
+        except KeyError:
+            pass
     # Add percentage f1 gain relative to raw features baseline
     for training_mode in table1_settings.TRAINING_MODES:
         for model in table1_settings.MODELS:
@@ -37,14 +43,14 @@ for dataset in table1_settings.DATASETS:
                     (results[dataset][training_mode][model]['test_f1'] -
                      results[dataset][training_mode]['raw_features']['test_f1']) / \
                     results[dataset][training_mode]['raw_features']['test_f1']
-            except:
+            except KeyError:
                 pass
 
 # Create a timestamped and args-explicit named for the results folder
 date = str(dt.now()).replace(' ', '_').replace(':', '-').replace('.', '_')
-folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(graphsage_settings.args).items() if v and not 
+folder_name = '_'.join([date] + [f'{k}={v}' for k, v in vars(settings.args).items() if v and not 
 isinstance(v, list)])
-results_path = osp.join(graphsage_settings.RESULTS_DIR, 'table1', folder_name)
+results_path = osp.join(settings.RESULTS_DIR, 'table1', folder_name)
 
 # Create the results folder
 os.makedirs(results_path)

@@ -24,15 +24,15 @@ def _models_section(results, gains_acc):
 
     for i, model in enumerate(MODELS):
         section += f"\t{'-'.join(w.upper() for w in model.split('_'))} & "
-        for dataset in DATASETS:
-            for training_mode in TRAINING_MODES:
+        for j, dataset in enumerate(DATASETS):
+            for k, training_mode in enumerate(TRAINING_MODES):
                 try:
                     current_f1 = results[dataset][training_mode][model]['test_f1']
                     sub_results_dict = results[dataset][training_mode]
                     all_f1s = [sub_results_dict[model]['test_f1'] for model in sub_results_dict]
                     if current_f1 == max(all_f1s):
-                        gains_acc.append(sub_results_dict[model]['percentage_f1_gain'])
                         section += f'$\\underline{{\\mathbf{{{current_f1:.3f}}}}}$ & '
+                        gains_acc[k + j*len(TRAINING_MODES)] = sub_results_dict[model]['percentage_f1_gain'] * 100
                     else:
                         section += f'${current_f1:.3f}$ & '
                 except KeyError as e:
@@ -45,9 +45,8 @@ def _models_section(results, gains_acc):
 
 def generate_latex_table(results: dict):
 
-    gains_acc = []
-
-    num_cols = 1 + 2 * len(DATASETS)
+    num_cols = 1 + len(TRAINING_MODES) * len(DATASETS)
+    gains_acc = [0] * (num_cols - 1)
 
     backslash = '\\'
 
@@ -63,7 +62,7 @@ def generate_latex_table(results: dict):
     {_models_section(results, gains_acc)}
     
     \\hline
-    \\% Gain over Raw Features & {' & '.join(f'{gain:.2f}{backslash}%' for gain in gains_acc)} \\\\
+    \\% Gain over Raw Features & {' & '.join(f'{gain:.0f}{backslash}%' for gain in gains_acc)} \\\\
     \\hline
     \\end{{tabular}}'''
 

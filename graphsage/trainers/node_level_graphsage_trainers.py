@@ -4,6 +4,7 @@ from sklearn.metrics import f1_score
 from tqdm import tqdm
 
 from .base_trainers import SupervisedGraphSageBaseTrainer, GraphSageBaseTrainer, dataloader_kwargs
+from .. import settings
 
 
 class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer):
@@ -58,7 +59,7 @@ class SupervisedGraphSageTrainerForNodeLevelTask(SupervisedGraphSageBaseTrainer)
 
     @torch.no_grad()
     def test(self):
-        train_acc, train_f1 = self.eval(self.train_loader)
+        train_acc, train_f1 = self.eval(self.train_loader) if not settings.NO_EVAL_TRAIN else (None, None)
         val_acc, val_f1 = self.eval(self.val_loader)
         test_acc, test_f1 = self.eval(self.test_loader)
 
@@ -124,8 +125,11 @@ class UnsupervisedGraphSageTrainerForNodeLevelTask(GraphSageBaseTrainer):
         clf.fit(train_out, self.data.y[self.data.train_mask])
 
         # compute f1 and accuracy on train split
-        train_acc = clf.score(train_out, self.data.y[self.data.train_mask])
-        train_f1 = f1_score(self.data.y[self.data.train_mask],  clf.predict(train_out), average='micro')
+        if not settings.NO_EVAL_TRAIN:
+            train_acc = clf.score(train_out, self.data.y[self.data.train_mask])
+            train_f1 = f1_score(self.data.y[self.data.train_mask],  clf.predict(train_out), average='micro')
+        else:
+            train_acc, train_f1 = None, None
 
         # compute f1 and accuracy on val split
         val_out = self.model.inference(self.val_loader).cpu()
