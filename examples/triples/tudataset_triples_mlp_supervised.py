@@ -73,7 +73,7 @@ model = GraphLevelTriplesMLP(
     hidden_channels=256,
     out_channels=num_classes,
     num_layers=2,
-    rni=True).to(device)
+    rni=False).to(device)
 
 GraphLevelTriplesTorchModuleTrainer(
     dataset_name='REDDIT-BINARY',
