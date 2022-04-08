@@ -21,31 +21,6 @@ class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):
         self.val_loader = DataLoader(Subset(data, mask2index(data.val_mask)), shuffle=True, **dataloader_kwargs)
         self.test_loader = DataLoader(Subset(data, mask2index(data.test_mask)), shuffle=True, **dataloader_kwargs)
 
-    def unsup_loss(self, out, data, batch_index, use_triple_loss=True):
-        loss = 0
-
-        # TODO: Get positive samples
-        # batch_offset = batch_index * self.triple_train_loader.batch_size
-        # triple_indices = list(range(batch_offset, batch_offset + data.shape[0]))
-        # pos_data = ...
-        # Compute positive loss
-        # pos_out = self.model(pos_data)
-        # pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
-        # loss -= pos_loss
-
-        # Get negative samples
-        neg_data_indices = torch.randint(0, self.data.x.shape[0], (data.shape[0],))
-        neg_data = self.data.x.index_select(0, neg_data_indices).to(self.device)
-        # Compute negative loss
-        neg_out = self.model(neg_data)
-        neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
-        loss -= neg_loss
-
-        # if use_triple_loss:
-        #     return F.triple_margin_loss(out, pos_out, neg_out)
-
-        return loss
-
     def train(self, epoch) -> float:
         # train for one epoch
         pbar = tqdm(total=len(self.triple_train_loader.dataset))
