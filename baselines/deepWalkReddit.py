@@ -2,9 +2,9 @@ import json
 import os.path as osp
 
 import torch
-from graphsage.datasets import Reddit
 
 from deepWalkModel import Deepwalk
+from graphsage.datasets import Reddit
 
 
 def main():

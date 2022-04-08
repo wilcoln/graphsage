@@ -2,6 +2,7 @@ import os.path as osp
 
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import f1_score
+
 from graphsage.datasets import Planetoid
 
 

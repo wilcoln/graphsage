@@ -2,9 +2,9 @@ import json
 import os.path as osp
 
 import torch
-from graphsage.datasets import Planetoid
 
 from deepWalkModel import Deepwalk
+from graphsage.datasets import Planetoid
 
 
 def main():

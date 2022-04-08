@@ -1,13 +1,12 @@
 import torch
 import torch.nn.functional as F
-from icecream import ic
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
 from graphsage import settings
-from graphsage.trainers.base_trainers import SupervisedTorchModuleBaseTrainer, dataloader_kwargs
 from graphsage.datasets.triples import mask2index
+from graphsage.trainers.base_trainers import SupervisedTorchModuleBaseTrainer, dataloader_kwargs
 
 
 class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):

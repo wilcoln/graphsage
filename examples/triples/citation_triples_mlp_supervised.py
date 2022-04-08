@@ -4,8 +4,8 @@ import torch
 
 from graphsage import settings
 from graphsage.datasets import Planetoid
-from graphsage.trainers.triples_models_trainers import TriplesTorchModuleTrainer
 from graphsage.datasets.triples import pyg_graph_to_triples
+from graphsage.trainers.triples_models_trainers import TriplesTorchModuleTrainer
 from models.triples import TriplesMLP
 
 device = settings.DEVICE

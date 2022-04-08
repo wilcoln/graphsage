@@ -3,6 +3,7 @@ import os.path as osp
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
 from sklearn.multioutput import MultiOutputClassifier
+
 from graphsage.datasets import PPI
 
 
