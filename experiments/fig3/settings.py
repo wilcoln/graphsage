@@ -8,21 +8,20 @@ DATASET = 'citation'
 
 MODELS = [
     'graphsage_gcn',
-    'graphsage_mean',
-    'graphsage_lstm',
     'graphsage_max_pool',
     'raw_features',
 ]
 
 extensions = SimpleNamespace(
     MODELS=[
+        'graphsage_mean',
+        'graphsage_lstm',
         'graphsage_max',
         'graphsage_sum',
         'graphsage_bilstm',
         'graphsage_mean_pool',
         'triples_logreg',
         'triples_mlp',
-        'triples_invariant',
     ]
 )
 

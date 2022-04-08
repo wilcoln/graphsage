@@ -18,7 +18,6 @@ extensions = SimpleNamespace(
         'graphsage_mean_pool',
         'triples_logreg',
         'triples_mlp',
-        'triples_invariant',
     ]
 )
 LEARNING_RATE = 1e-3

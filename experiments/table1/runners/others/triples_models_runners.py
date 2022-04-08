@@ -17,8 +17,6 @@ def get(dataset_name, training_mode, model_name):
     if training_mode == 'supervised':
         if 'mlp' in model_name:
             return TriplesMultiLayerPerceptronRunner(2, dataset_name)
-        elif 'invariant' in model_name:
-            return TriplesInvariantModelRunner(dataset_name)
         elif 'logreg' in model_name:
             return TriplesLogisticRegressionRunner(dataset_name)
     else:
@@ -39,11 +37,12 @@ class TriplesModelRunner:
 
         self.dataset_name = dataset_name
         self.td = pyg_graph_to_triples(dataset)
-        self.td.y = self.td.y[:, 0]
 
 
 class TriplesLogisticRegressionRunner(TriplesModelRunner):
     def run(self):
+        self.td.y = self.td.y[:, 0]
+
         # Train a simple model on the dataset
         clf = SGDClassifier(loss='log', max_iter=5, tol=None)
         clf.fit(self.td.x[self.td.triple_train_mask], self.td.y[self.td.triple_train_mask])
@@ -64,39 +63,12 @@ class TriplesMultiLayerPerceptronRunner(TriplesModelRunner):
 
     def run(self):
         # Train an mlp on the dataset
-        model = graphsage.models.triples.MLP(
+        model = graphsage.models.triples.TriplesMLP(
             in_channels=self.td.x.shape[1],
             num_layers=self.num_layers,
             hidden_channels=fig3_settings.HIDDEN_CHANNELS,
             out_channels=self.td.num_classes,
         ).to(settings.DEVICE)
-
-        return TriplesTorchModuleTrainer(
-            dataset_name=self.dataset_name,
-            model=model,
-            data=self.td,
-            num_epochs=settings.NUM_EPOCHS,
-            loss_fn=torch.nn.CrossEntropyLoss(),
-            optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE),
-            device=settings.DEVICE,
-        ).run()
-
-
-class TriplesInvariantModelRunner(TriplesModelRunner):
-    def run(self):
-        # Train an mlp on the dataset
-        phi = graphsage.models.triples.MLP(
-            in_channels=self.td.x.shape[1]//2,
-            hidden_channels=fig3_settings.HIDDEN_CHANNELS,
-        ).to(settings.DEVICE)
-
-        rho = graphsage.models.triples.MLP(
-            in_channels=fig3_settings.HIDDEN_CHANNELS,
-            num_layers=1,
-            hidden_channels=self.td.num_classes,
-        ).to(settings.DEVICE)
-
-        model = graphsage.models.triples.InvariantModel(phi=phi, rho=rho).to(settings.DEVICE)
 
         return TriplesTorchModuleTrainer(
             dataset_name=self.dataset_name,

@@ -13,7 +13,5 @@ def get(model, noise_prop):
         return triples_models_runners.logreg.get(noise_prop)
     if model == 'triples_mlp':
         return triples_models_runners.mlp2.get(noise_prop)
-    if model == 'triples_invariant':
-        return triples_models_runners.invariant.get(noise_prop)
     else:
         raise NotImplementedError

@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from icecream import ic
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
@@ -15,7 +16,7 @@ class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):
         self.data = data
 
         # Create loader objects
-        self.triple_train_loader = DataLoader(Subset(data, mask2index(data.triple_train_mask)), shuffle=False,
+        self.triple_train_loader = DataLoader(Subset(data, mask2index(data.triple_train_mask)), shuffle=True,
                                                **dataloader_kwargs)
         self.train_loader = DataLoader(Subset(data, mask2index(data.train_mask)), shuffle=True, **dataloader_kwargs)
         self.val_loader = DataLoader(Subset(data, mask2index(data.val_mask)), shuffle=True, **dataloader_kwargs)
@@ -59,7 +60,22 @@ class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):
 
             self.optimizer.zero_grad()
             output = self.model(data)
-            loss = self.loss_fn(output, target)  # + self.unsup_loss(output, data, batch_index)
+            u_output, v_output = torch.split(output, output.shape[1] // 2, dim=1)
+            u_target, v_target = torch.split(target, target.shape[1] // 2, dim=1)
+            # squeeze targets
+            u_target = u_target.squeeze(1)
+            v_target = v_target.squeeze(1)
+
+            # compute loss
+            loss = self.loss_fn(u_output, u_target) + self.loss_fn(v_output, v_target)
+            # Unsup positive loss
+            loss -= F.logsigmoid((u_output * v_output).sum(-1)).mean()
+            # Unsup negative loss
+            u_perm = torch.randperm(u_output.shape[0])
+            v_perm = torch.randperm(v_output.shape[0])
+            loss -= F.logsigmoid(-(u_output[u_perm] * v_output[v_perm]).sum(-1)).mean()
+
+            # Back propagate
             loss.backward()
             self.optimizer.step()
 
@@ -76,8 +92,17 @@ class TriplesTorchModuleTrainer(SupervisedTorchModuleBaseTrainer):
         for data, target in loader:
             data, target = data.to(self.device), target.to(self.device)
             output = self.model(data)
-            y_true.extend(target.cpu().numpy())
-            y_pred.extend(torch.argmax(output, dim=1).cpu().numpy())
+            u_output, v_output = torch.split(output, output.shape[1] // 2, dim=1)
+            u_target, v_target = torch.split(target, target.shape[1] // 2, dim=1)
+            # squeeze targets
+            u_target = u_target.squeeze(1)
+            v_target = v_target.squeeze(1)
+
+            y_true.extend(u_target.cpu().numpy())
+            y_pred.extend(torch.argmax(u_output, dim=1).cpu().numpy())
+
+            y_true.extend(v_target.cpu().numpy())
+            y_pred.extend(torch.argmax(v_output, dim=1).cpu().numpy())
 
         return f1_score(y_true, y_pred, average='micro')
 

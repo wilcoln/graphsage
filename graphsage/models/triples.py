@@ -4,10 +4,10 @@ import torch.nn.functional as F
 
 
 class MLP(nn.Module):
-    """ Single Layer Perceptron for regression. """
+    """ Multi-layer perceptron. """
 
     def __init__(self, in_channels, hidden_channels=100, out_channels=None, num_layers=2):
-        assert num_layers >= 2, "MLP must have at least 2 layers"
+        assert num_layers >= 1, "num_layers must be at least 1"
         super(MLP, self).__init__()
 
         self.name = f'{num_layers}-MLP'
@@ -43,27 +43,20 @@ class MLP(nn.Module):
             layer.reset_parameters()
 
 
-class InvariantModel(nn.Module):
-    def __init__(self, phi: nn.Module, rho: nn.Module):
+class TriplesMLP(nn.Module):
+    """ Multi-layer perceptron for triples. """
+
+    def __init__(self, in_channels, hidden_channels=100, out_channels=None, num_layers=2):
         super().__init__()
-        self.phi = phi
-        self.rho = rho
+        self.phi = MLP(in_channels//2, hidden_channels, out_channels, num_layers)  # node encoder
 
     def forward(self, x):
         # compute the representation for each data point
         u, v = torch.split(x, x.shape[1] // 2, dim=1)
-        phi_u = self.phi(u)  # representation of source node u
-        phi_v = self.phi(v)  # representation of target node v
+        u_phi = self.phi(u)  # representation of source node u
+        v_phi = self.phi(v)  # representation of target node v
 
-        # sum up the representations of the source and target nodes
-        e = phi_u + phi_v
-
-        # compute the output
-        out = self.rho.forward(e)
-
-        return out
+        return torch.cat([u_phi, v_phi], dim=1)
 
     def reset_parameters(self):
         self.phi.reset_parameters()
-        self.rho.reset_parameters()
-

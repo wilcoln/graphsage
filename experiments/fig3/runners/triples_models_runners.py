@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import torch
 from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import f1_score
+from sklearn.multioutput import MultiOutputClassifier
 
 import experiments.fig3.settings as fig3_settings
 import graphsage.models.triples
@@ -64,10 +65,9 @@ class TriplesMultiLayerPerceptronRunner:
     def run(self):
         # Create the noised triples dataset
         td = add_noise_and_convert_to_triples(dataset, self.noise_prop)
-        td.y = td.y[:, 0]
 
         # Train an mlp on the dataset
-        model = graphsage.models.triples.MLP(
+        model = graphsage.models.triples.TriplesMLP(
             in_channels=td.x.shape[1],
             num_layers=self.num_layers,
             hidden_channels=fig3_settings.HIDDEN_CHANNELS,
@@ -85,40 +85,5 @@ class TriplesMultiLayerPerceptronRunner:
         ).run()
 
 
-class TriplesInvariantModelRunner:
-    def __init__(self, noise_prop):
-        self.noise_prop = noise_prop
-
-    def run(self):
-        # Create the noised triples dataset
-        td = add_noise_and_convert_to_triples(dataset, self.noise_prop)
-        td.y = td.y[:, 0]
-
-        # Train an mlp on the dataset
-        phi = graphsage.models.triples.MLP(
-            in_channels=td.x.shape[1]//2,
-            hidden_channels=fig3_settings.HIDDEN_CHANNELS,
-        ).to(settings.DEVICE)
-
-        rho = graphsage.models.triples.MLP(
-            in_channels=fig3_settings.HIDDEN_CHANNELS,
-            num_layers=1,
-            hidden_channels=td.num_classes,
-        ).to(settings.DEVICE)
-
-        model = graphsage.models.triples.InvariantModel(phi=phi, rho=rho).to(settings.DEVICE)
-
-        return TriplesTorchModuleTrainer(
-            dataset_name=dataset_name,
-            model=model,
-            data=td,
-            num_epochs=settings.NUM_EPOCHS,
-            loss_fn=torch.nn.CrossEntropyLoss(),
-            optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE),
-            device=settings.DEVICE,
-        ).run()
-
-
 logreg = SimpleNamespace(get=lambda noise_prop: TriplesLogisticRegressionRunner(noise_prop))
 mlp2 = SimpleNamespace(get=lambda noise_prop: TriplesMultiLayerPerceptronRunner(2, noise_prop))
-invariant = SimpleNamespace(get=lambda noise_prop: TriplesInvariantModelRunner(noise_prop))

@@ -8,7 +8,7 @@ from graphsage.datasets import Planetoid
 from graphsage.datasets.triples import pyg_graph_to_triples
 
 device = settings.DEVICE
-dataset_name = 'Cora'
+dataset_name = settings.args.dataset if settings.args.dataset is not None else 'cora'
 path = osp.join(settings.DATA_DIR, dataset_name)
 dataset = Planetoid(path, dataset_name)
 
