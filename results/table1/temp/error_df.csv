@@ -1,0 +1,61 @@
+,0,1
+0,reddit-unsupervised-random,
+1,reddit-unsupervised-raw_features,
+2,reddit-unsupervised-deep_walk,
+3,reddit-unsupervised-deep_walk_plus_features,
+4,reddit-unsupervised-triples_logreg,
+5,reddit-unsupervised-triples_mlp,
+6,reddit-unsupervised-triples_invariant,
+7,reddit-supervised-deep_walk,
+8,reddit-supervised-deep_walk_plus_features,
+9,reddit-supervised-triples_logreg,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\reddit'
+10,reddit-supervised-triples_mlp,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\reddit'
+11,reddit-supervised-triples_invariant,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\reddit'
+12,cora-unsupervised-random,
+13,cora-unsupervised-raw_features,
+14,cora-unsupervised-deep_walk,
+15,cora-unsupervised-deep_walk_plus_features,
+16,cora-unsupervised-triples_logreg,
+17,cora-unsupervised-triples_mlp,
+18,cora-unsupervised-triples_invariant,
+19,cora-supervised-deep_walk,
+20,cora-supervised-deep_walk_plus_features,
+21,cora-supervised-triples_logreg,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\Cora'
+22,cora-supervised-triples_mlp,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\Cora'
+23,cora-supervised-triples_invariant,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\Cora'
+24,ppi-unsupervised-random,
+25,ppi-unsupervised-raw_features,
+26,ppi-unsupervised-deep_walk,
+27,ppi-unsupervised-deep_walk_plus_features,
+28,ppi-unsupervised-triples_logreg,
+29,ppi-unsupervised-triples_mlp,
+30,ppi-unsupervised-triples_invariant,
+31,ppi-supervised-deep_walk,
+32,ppi-supervised-deep_walk_plus_features,
+33,ppi-supervised-triples_logreg,
+34,ppi-supervised-triples_mlp,
+35,ppi-supervised-triples_invariant,
+36,pubmed-unsupervised-random,
+37,pubmed-unsupervised-raw_features,
+38,pubmed-unsupervised-deep_walk,
+39,pubmed-unsupervised-deep_walk_plus_features,
+40,pubmed-unsupervised-triples_logreg,
+41,pubmed-unsupervised-triples_mlp,
+42,pubmed-unsupervised-triples_invariant,
+43,pubmed-supervised-deep_walk,
+44,pubmed-supervised-deep_walk_plus_features,
+45,pubmed-supervised-triples_logreg,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\Pubmed'
+46,pubmed-supervised-triples_mlp,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\Pubmed'
+47,pubmed-supervised-triples_invariant,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\Pubmed'
+48,citeseer-unsupervised-random,
+49,citeseer-unsupervised-raw_features,
+50,citeseer-unsupervised-deep_walk,
+51,citeseer-unsupervised-deep_walk_plus_features,
+52,citeseer-unsupervised-triples_logreg,
+53,citeseer-unsupervised-triples_mlp,
+54,citeseer-unsupervised-triples_invariant,
+55,citeseer-supervised-deep_walk,
+56,citeseer-supervised-deep_walk_plus_features,
+57,citeseer-supervised-triples_logreg,"expected Tensor as element 0 in argument 0, but got builtin_function_or_method"
+58,citeseer-supervised-triples_mlp,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\Citeseer'
+59,citeseer-supervised-triples_invariant,[WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\lucas\\OneDrive\\PhD\\Oxford\\ATML\\Project\\0604\\graphsage\\graphsage\\..\\data\\triples\\Citeseer'
