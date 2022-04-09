@@ -70,7 +70,7 @@ class SAGE(MessagePassing):
             self.lstm = LSTMCell(self.lstm_n_inputs * in_channels[0], in_channels[0])
 
         if self.aggregator == 'bilstm':
-            self.bilstm = LSTMCell(in_channels[0], in_channels[0], bidirectional=True, batch_first=True)
+            self.bilstm = torch.nn.LSTM(in_channels[0], in_channels[0], bidirectional=True, batch_first=True)
             self.att = Linear(2 * in_channels[0], 1)
 
         if self.aggregator in {'max_pool', 'mean_pool'}:
@@ -108,9 +108,9 @@ class SAGE(MessagePassing):
         # propagate internally calls message_and_aggregate()
         # if edge_index is a SparseTensor and message_and_aggregate() is implemented,
         # otherwise it calls message(), aggregate() separately
-        # if self.aggregator in {'bilstm', 'lstm'} and isinstance(edge_index, Tensor):
-        #     num_nodes = int(edge_index.max()) + 1
-        #     edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
+        if self.aggregator in {'bilstm'} and isinstance(edge_index, Tensor):
+            num_nodes = int(edge_index.max()) + 1
+            edge_index = SparseTensor(row=edge_index[0], col=edge_index[1], sparse_sizes=(num_nodes, num_nodes))
 
         if self.aggregator == 'gcn':
             root_indices = torch.unique(edge_index[1])
