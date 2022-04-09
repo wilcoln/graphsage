@@ -10,7 +10,8 @@ from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.datasets import Reddit
 from graphsage.datasets.triples import pyg_graph_to_triples
-from graphsage.trainers.node_level_triples_models_trainers import TriplesTorchModuleTrainer
+from graphsage.trainers.node_level_triples_models_trainers import UnsupervisedTriplesTorchModuleTrainer, \
+    SupervisedTriplesTorchModuleTrainer
 
 
 def get(dataset_name, training_mode, model_name):
@@ -20,6 +21,8 @@ def get(dataset_name, training_mode, model_name):
         elif 'logreg' in model_name:
             return TriplesLogisticRegressionRunner(dataset_name)
     else:
+        if 'mlp' in model_name:
+            return UnsupervisedTriplesMultiLayerPerceptronRunner(2, dataset_name)
         raise NotImplementedError
 
 
@@ -70,12 +73,34 @@ class TriplesMultiLayerPerceptronRunner(TriplesModelRunner):
             out_channels=self.td.num_classes,
         ).to(settings.DEVICE)
 
-        return TriplesTorchModuleTrainer(
+        return SupervisedTriplesTorchModuleTrainer(
             dataset_name=self.dataset_name,
             model=model,
             data=self.td,
             num_epochs=settings.NUM_EPOCHS,
             loss_fn=torch.nn.CrossEntropyLoss(),
+            optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE),
+            device=settings.DEVICE,
+        ).run()
+
+class UnsupervisedTriplesMultiLayerPerceptronRunner(TriplesModelRunner):
+    def __init__(self, num_layers, dataset_name):
+        super().__init__(dataset_name)
+        self.num_layers = num_layers
+
+    def run(self):
+        # Train an mlp on the dataset
+        model = graphsage.models.triples.TriplesMLP(
+            in_channels=self.td.x.shape[1],
+            num_layers=self.num_layers,
+            hidden_channels=fig3_settings.HIDDEN_CHANNELS,
+        ).to(settings.DEVICE)
+
+        return UnsupervisedTriplesTorchModuleTrainer(
+            dataset_name=self.dataset_name,
+            model=model,
+            data=self.td,
+            num_epochs=settings.NUM_EPOCHS,
             optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE),
             device=settings.DEVICE,
         ).run()

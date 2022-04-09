@@ -11,7 +11,7 @@ from graphsage import settings
 from graphsage.datasets import Planetoid
 from graphsage.datasets import Reddit
 from graphsage.datasets.triples import pyg_graph_to_triples, singles_to_triples
-from graphsage.trainers.node_level_triples_models_trainers import TriplesTorchModuleTrainer
+from graphsage.trainers.node_level_triples_models_trainers import SupervisedTriplesTorchModuleTrainer
 
 if fig3_settings.DATASET == 'reddit':
     path = osp.join(settings.DATA_DIR, fig3_settings.DATASET.capitalize())
@@ -73,7 +73,7 @@ class TriplesMultiLayerPerceptronRunner:
             out_channels=td.num_classes,
         ).to(settings.DEVICE)
 
-        return TriplesTorchModuleTrainer(
+        return SupervisedTriplesTorchModuleTrainer(
             dataset_name=dataset_name,
             model=model,
             data=td,
