@@ -23,6 +23,7 @@ parser.add_argument('--no_eval_train', action='store_true', help="whether to eva
                     default=False)
 parser.add_argument('--no_extensions', action='store_true', help="whether to include extension in the experiments",
                     default=False)
+parser.add_argument('--std', action='store_true', help='Include standard deviation in table output', default=False)
 args = parser.parse_args()
 
 DATA_DIR = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data')

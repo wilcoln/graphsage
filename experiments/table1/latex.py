@@ -1,5 +1,8 @@
+import copy
 import json
+import math
 import os.path as osp
+from collections import defaultdict
 
 from experiments.table1.settings import TRAINING_MODES, DATASETS, MODELS, TRAINING_MODE_OBLIVIOUS_MODELS
 from graphsage.settings import args
@@ -7,6 +10,7 @@ from graphsage.settings import args
 
 # region helper subroutines
 def _post_process(results):
+
     for dataset in DATASETS:
         # Repeat performance across training mode for training mode oblivious models (as in the original paper)
         for model in set(TRAINING_MODE_OBLIVIOUS_MODELS) & set(MODELS):
@@ -42,7 +46,7 @@ def _datasets_section():
     return section
 
 
-def _models_section(results, gains_acc):
+def _models_section(mean_results, std_results, gains_acc):
     section = ''
 
     for i, model in enumerate(MODELS):
@@ -50,14 +54,16 @@ def _models_section(results, gains_acc):
         for j, dataset in enumerate(DATASETS):
             for k, training_mode in enumerate(TRAINING_MODES):
                 try:
-                    current_f1 = results[dataset][training_mode][model]['test_f1']
-                    sub_results_dict = {k: v for k, v in results[dataset][training_mode].items() if k in MODELS}
+                    current_mean_f1 = mean_results[dataset][training_mode][model]['test_f1']
+                    current_std_f1 = std_results[dataset][training_mode][model]['test_f1']
+                    current_f1_str = f'{current_mean_f1:.3f}' + f'\pm {current_std_f1:.3f}' if args.std else ''
+                    sub_results_dict = {k: v for k, v in mean_results[dataset][training_mode].items() if k in MODELS}
                     all_f1s = [sub_results_dict[model]['test_f1'] for model in sub_results_dict]
-                    if current_f1 == max(all_f1s):
-                        section += f'$\\underline{{\\mathbf{{{current_f1:.3f}}}}}$ & '
+                    if current_mean_f1 == max(all_f1s):
+                        section += f'$\\underline{{\\mathbf{{{current_f1_str}}}}}$ & '
                         gains_acc[k + j * len(TRAINING_MODES)] = sub_results_dict[model]['percentage_f1_gain'] * 100
                     else:
-                        section += f'${current_f1:.3f}$ & '
+                        section += f'${current_f1_str}$ & '
                 except KeyError as e:
                     section += '--' + ' & '
 
@@ -68,8 +74,55 @@ def _models_section(results, gains_acc):
 
 # endregion
 
+def compute_mean_std(results_list):
+    N = len(results_list)
+
+    mean_results = copy.deepcopy(results_list[0])
+    std_results = copy.deepcopy(results_list[0])
+
+    # Initialize mean and std results
+    for dataset in mean_results.keys():
+        for training_mode in mean_results[dataset].keys():
+            for model in mean_results[dataset][training_mode].keys():
+                for k, v in mean_results[dataset][training_mode][model].items():
+                    mean_results[dataset][training_mode][model][k] = 0
+                    std_results[dataset][training_mode][model][k] = 0
+
+    # Compute mean results
+    for result in results_list:
+        for dataset in mean_results.keys():
+            for training_mode in mean_results[dataset].keys():
+                for model in mean_results[dataset][training_mode].keys():
+                    for k, v in mean_results[dataset][training_mode][model].items():
+                        mean_results[dataset][training_mode][model][k] += result[dataset][training_mode][model][k]
+
+    for dataset in mean_results.keys():
+        for training_mode in mean_results[dataset].keys():
+            for model in mean_results[dataset][training_mode].keys():
+                for k, v in mean_results[dataset][training_mode][model].items():
+                    mean_results[dataset][training_mode][model][k] /= N
+
+    # Compute std results
+    for result in results_list:
+        for dataset in std_results.keys():
+            for training_mode in std_results[dataset].keys():
+                for model in std_results[dataset][training_mode].keys():
+                    for k, v in std_results[dataset][training_mode][model].items():
+                        std_results[dataset][training_mode][model][k] += (result[dataset][training_mode][model][k] - mean_results[dataset][training_mode][model][k]) ** 2
+
+    for dataset in std_results.keys():
+        for training_mode in std_results[dataset].keys():
+            for model in std_results[dataset][training_mode].keys():
+                for k, v in std_results[dataset][training_mode][model].items():
+                    std_results[dataset][training_mode][model][k] = math.sqrt(std_results[dataset][training_mode][model][k] / N)
+
+    return mean_results, std_results
+
+
 def generate_latex_table(results):
-    results = _post_process(results)
+    results_list = [_post_process(result) for result in results]
+
+    mean_results, std_results = compute_mean_std(results_list)
 
     num_cols = 1 + len(TRAINING_MODES) * len(DATASETS)
     gains_acc = [0] * (num_cols - 1)
@@ -85,7 +138,7 @@ def generate_latex_table(results):
         {(' Unsup. F1 & Sup. F1 & ' * ((num_cols - 1) // 2))[:-2]} \\\\
     
     \\hline
-    {_models_section(results, gains_acc)}
+    {_models_section(mean_results, std_results, gains_acc)}
     
     \\hline
     \\% Gain over Raw Features & {' & '.join(f'{gain:.0f}{backslash}%' for gain in gains_acc)} \\\\
@@ -97,4 +150,4 @@ if __name__ == '__main__':
     results_dir = args.results_dir
     assert osp.exists(results_dir), f'{results_dir} does not exist'
     results = json.load(open(osp.join(results_dir, 'table1.json'), 'r'))
-    print(generate_latex_table(results))
+    print(generate_latex_table([results]*3))
