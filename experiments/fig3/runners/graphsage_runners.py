@@ -46,7 +46,7 @@ def get(aggregator, noise_prop):
         loader=UniformLoader,
         num_epochs=settings.NUM_EPOCHS,
         loss_fn=torch.nn.CrossEntropyLoss(),
-        optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE),
+        optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE, weight_decay=1e-1),
         device=device,
     )
 
