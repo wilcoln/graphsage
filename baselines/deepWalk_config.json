@@ -1,11 +1,12 @@
 {
   "embedding_dim": 128,
-  "walk_length": 50,
-  "context_size": 10,
-  "walks_per_node": 10,
+  "walk_length": 5,
+  "context_size": 5,
+  "walks_per_node": 5,
+  "newnode_walks_per_node": 50,
   "num_negative_samples": 20,
-  "num_epochs": 1,
+  "num_epochs": 10,
   "batch_size": 128,
-  "learning_rate": 0.8,
+  "learning_rate": 100,
   "num_workers": 2
 }

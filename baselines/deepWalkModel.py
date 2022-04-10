@@ -51,7 +51,7 @@ class Deepwalk(torch.nn.Module):
             weight matrix will be sparse. (default: :obj:`False`)
     """
 
-    def __init__(self, edge_index, embedding_dim, walk_length, context_size,
+    def __init__(self, trainmask, testmask, edge_index, embedding_dim, walk_length, context_size,
                  walks_per_node=1, p=1, q=1, num_negative_samples=1,
                  num_nodes=None, sparse=False):
         super().__init__()
@@ -77,6 +77,8 @@ class Deepwalk(torch.nn.Module):
         self.embedding = Embedding(N, embedding_dim, sparse=sparse)
 
         self.reset_parameters()
+        self.train_list = np.where(trainmask.cpu().detach().numpy() == True)[0].tolist()
+        self.test_list = np.where(testmask.cpu().detach().numpy() == True)[0].tolist()
 
     def reset_parameters(self):
         self.embedding.reset_parameters()
@@ -87,9 +89,11 @@ class Deepwalk(torch.nn.Module):
         return emb if batch is None else emb.index_select(0, batch)
 
     def loader(self, **kwargs):
-        return DataLoader(range(self.adj.sparse_size(0)),
+        data_train = DataLoader(self.train_list,
                           collate_fn=self.sample, **kwargs)
-
+        data_test = DataLoader(self.test_list,
+                          collate_fn=self.sample, **kwargs)
+        return data_train, data_test
     def pos_sample(self, batch):
         batch = batch.repeat(self.walks_per_node)
         rowptr, col, _ = self.adj.csr()

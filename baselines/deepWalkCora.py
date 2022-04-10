@@ -1,4 +1,4 @@
-import json
+import json, time
 import os.path as osp
 
 import torch
@@ -21,25 +21,25 @@ def main():
     with open('./deepWalk_config.json', 'r') as config_file:
         config = json.load(config_file)
 
-    model = Deepwalk(edge_index=data.edge_index, embedding_dim=config['embedding_dim'],
+    model = Deepwalk(data.train_mask, data.test_mask, edge_index=data.edge_index, embedding_dim=config['embedding_dim'],
                      walk_length=config['walk_length'], context_size=config['context_size'],
                      walks_per_node=config['walks_per_node'], p=1, q=1,
                      num_negative_samples=config['num_negative_samples'], sparse=False)
 
-    loader = model.loader(batch_size=config['batch_size'], shuffle=True, num_workers=config['num_workers'])
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
+    loader_train, loader_test = model.loader(batch_size=config['batch_size'], shuffle=True, num_workers=config['num_workers'])
+    optimizer = torch.optim.SGD(model.parameters(), lr=config['learning_rate'])
 
     def train():
 
+        model.walks_per_node = config['walks_per_node']
         model.train()
         total_loss = 0
-        for pos_rw, neg_rw in loader:
+        for pos_rw, neg_rw in loader_train:
             optimizer.zero_grad()
             loss = model.loss(pos_rw.to(device), neg_rw.to(device))
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        return total_loss / len(loader)
 
     @torch.no_grad()
     def test_no_features():
@@ -59,13 +59,26 @@ def main():
         return acc
 
     for epoch in range(1, config['num_epochs'] + 1):
-        loss = train()
-        F1_no_features = test_no_features()
-        F1_features = test_features()
-        if epoch % 1 == 0:
-            print(f'Cora: Epoch: {epoch:02d}, Loss: {loss:.4f}')
-            print(f'        No Features F1: {F1_no_features:.4f}')
-            print(f'        With Features F1: {F1_features:.4f}')
+        print('epoch', epoch)
+        train()
+    print('Optimization Finished')
+    e = time.time()
+    model.walks_per_node = config['newnode_walks_per_node']
+    for pos_rw, neg_rw in loader_test:
+        optimizer.zero_grad()
+        loss = model.loss(pos_rw.to(device), neg_rw.to(device))
+        loss.backward()
+        optimizer.step()
+    f0 = time.time()
+    F1_no_features = test_no_features()
+    f1 = time.time()
+    F1_features = test_features()
+    f2 = time.time()
+    print(f'Epoch: {epoch:02d}, F1: {F1_no_features:.4f}')
+    print(f'Epoch: {epoch:02d}, F1: {F1_features:.4f}')
+    print('Inference Time', f0-e)
+    print('SGD No Features', f1-f0)
+    print('SGD Features', f2-f1)
 
 
 if __name__ == '__main__':
