@@ -1,3 +1,4 @@
+import copy
 import json
 import math
 import os.path as osp
@@ -61,7 +62,10 @@ def _models_section(mean_results, std_results, gains_acc):
                     all_f1s = [sub_results_dict[model]['test_f1'] for model in sub_results_dict]
                     if current_mean_f1 == max(all_f1s):
                         section += f'\\underline{{\\textbf{{{current_f1_str}}}}} & '
-                        gains_acc[k + j * len(TRAINING_MODES)] = sub_results_dict[model]['percentage_f1_gain'] * 100
+                        if 'percentage_f1_gain' in mean_results[dataset][training_mode][model]:
+                            gains_acc[k + j * len(TRAINING_MODES)] = sub_results_dict[model]['percentage_f1_gain'] * 100
+                        else:
+                            gains_acc[k + j * len(TRAINING_MODES)] = 0
                     else:
                         section += f'{current_f1_str} & '
                 except KeyError:
@@ -74,22 +78,22 @@ def _models_section(mean_results, std_results, gains_acc):
 
 # endregion
 
-def _initialize_dict(result):
-    return {
-        dataset: {
-            training_mode: {
-                model: {k: 0 for k in result[dataset][training_mode][model].keys()}
-                for model in result[dataset][training_mode]
-            } for training_mode in result[dataset].keys()
-        } for dataset in result.keys()
-    }
+# def _initialize_dict(result):
+#     return {
+#         dataset: {
+#             training_mode: {
+#                 model: {k: 0 for k in result[dataset][training_mode][model].keys()}
+#                 for model in result[dataset][training_mode]
+#             } for training_mode in result[dataset].keys()
+#         } for dataset in result.keys()
+#     }
 
 
 def compute_mean_std(results_list):
     N = len(results_list)
 
-    mean_results = _initialize_dict(results_list[0])
-    std_results = _initialize_dict(results_list[0])
+    mean_results = copy.deepcopy(results_list[0])
+    std_results = copy.deepcopy(results_list[0])
 
     # Initialize mean and std results
     for dataset in mean_results.keys():

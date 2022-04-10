@@ -7,8 +7,7 @@ from sklearn.metrics import f1_score
 import experiments.fig3.settings as fig3_settings
 import graphsage.models.triples
 from graphsage import settings
-from graphsage.datasets import Planetoid
-from graphsage.datasets import Reddit
+from graphsage.datasets import Planetoid  # , Reddit, Flickr
 from graphsage.datasets.triples import pyg_graph_to_triples
 from graphsage.trainers.node_level_triples_models_trainers import UnsupervisedTriplesTorchModuleTrainer, \
     SupervisedTriplesTorchModuleTrainer
@@ -28,13 +27,18 @@ def get(dataset_name, training_mode, model_name):
 
 class TriplesModelRunner:
     def __init__(self, dataset_name):
-        if dataset_name == 'reddit':
-            path = osp.join(settings.DATA_DIR, dataset_name.capitalize())
-            dataset = Reddit(path)
-        elif dataset_name in {'cora', 'citeseer', 'pubmed'}:
+
+        if dataset_name in {'cora', 'citeseer', 'pubmed'}:
             dataset_name = dataset_name.capitalize()
             path = osp.join(settings.DATA_DIR, dataset_name)
             dataset = Planetoid(path, dataset_name)
+        # elif dataset_name == 'reddit':
+        #     path = osp.join(settings.DATA_DIR, dataset_name.capitalize())
+        #     dataset = Reddit(path)
+        # elif dataset_name == 'flickr':
+        #     dataset_name = dataset_name.capitalize()
+        #     path = osp.join(settings.DATA_DIR, dataset_name)
+        #     dataset = Flickr(path)
         else:
             raise NotImplementedError
 
@@ -79,9 +83,10 @@ class TriplesMultiLayerPerceptronRunner(TriplesModelRunner):
             data=self.td,
             num_epochs=settings.NUM_EPOCHS,
             loss_fn=torch.nn.CrossEntropyLoss(),
-            optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE),
+            optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE, weight_decay=1e-1),
             device=settings.DEVICE,
         ).run()
+
 
 class UnsupervisedTriplesMultiLayerPerceptronRunner(TriplesModelRunner):
     def __init__(self, num_layers, dataset_name):
@@ -101,6 +106,6 @@ class UnsupervisedTriplesMultiLayerPerceptronRunner(TriplesModelRunner):
             model=model,
             data=self.td,
             num_epochs=settings.NUM_EPOCHS,
-            optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE),
+            optimizer=torch.optim.Adam(model.parameters(), lr=fig3_settings.LEARNING_RATE, weight_decay=1e-1),
             device=settings.DEVICE,
         ).run()
