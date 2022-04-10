@@ -3,6 +3,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class WeightedSumOfLosses(nn.Module):
+    def __init__(self, num_losses):
+        super(WeightedSumOfLosses, self).__init__()
+        self.sigma = nn.Parameter(torch.ones(num_losses))
+
+    def forward(self, *losses):
+        assert len(losses) == len(self.sigma), 'Number of losses must match number of weights'
+        l = 0.5 * torch.Tensor(losses) / self.sigma**2
+        l = l.sum() + torch.log(self.sigma.prod())
+        return l
+
+
 class MLP(nn.Module):
     """ Multi-layer perceptron. """
 
