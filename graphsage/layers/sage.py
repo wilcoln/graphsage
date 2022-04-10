@@ -3,7 +3,6 @@ from typing import Tuple, Union, Optional
 
 import torch
 import torch.nn.functional as F
-from icecream import ic
 from torch import Tensor
 from torch.nn import LSTMCell
 from torch_geometric.nn.conv import MessagePassing

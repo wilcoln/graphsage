@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
-from icecream import ic
 
 from graphsage import settings
 from graphsage.datasets.triples import mask2index

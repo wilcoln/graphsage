@@ -122,7 +122,7 @@ class TorchModuleBaseTrainer(BaseTrainer):
             epoch_results = {k: v for k, v in epoch_results.items() if v is not None}
 
             # print epoch and results
-            if epoch % (self.num_epochs // self.num_prints) == 0:
+            if epoch % (self.num_epochs // min(self.num_epochs, self.num_prints)) == 0:
                 self.print_epoch_with_results(epoch, epoch_results)
 
             # Save epoch results to list

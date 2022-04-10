@@ -6,7 +6,7 @@ import torch
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_epochs', help='Number of epochs', type=int)
 parser.add_argument('--batch_size', help='Batch size', type=int)
-parser.add_argument('--num_runs', help='Number of runs', type=int)
+parser.add_argument('--num_runs', help='Number of runs', type=int, default=1)
 parser.add_argument('--colab', action='store_true', help="whether we are running on google colab", default=False)
 parser.add_argument('--dataset', help='Dataset to use', type=str)
 parser.add_argument('--aggregator', help='Aggregator to use', type=str, default='mean')
@@ -58,3 +58,5 @@ if args.lstm_num_inputs is not None:
 PERSISTENT_WORKERS = args.persistent_workers
 
 NO_EVAL_TRAIN = args.no_eval_train
+
+NUM_RUNS = args.num_runs

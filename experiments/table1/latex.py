@@ -1,8 +1,7 @@
-import copy
 import json
 import math
 import os.path as osp
-from collections import defaultdict
+
 
 from experiments.table1.settings import TRAINING_MODES, DATASETS, MODELS, TRAINING_MODE_OBLIVIOUS_MODELS
 from graphsage.settings import args
@@ -56,15 +55,16 @@ def _models_section(mean_results, std_results, gains_acc):
                 try:
                     current_mean_f1 = mean_results[dataset][training_mode][model]['test_f1']
                     current_std_f1 = std_results[dataset][training_mode][model]['test_f1']
-                    current_f1_str = f'{current_mean_f1:.3f}' + f'\pm {current_std_f1:.3f}' if args.std else ''
+                    current_f1_str = f'{current_mean_f1:.3f}' + (f'\\tiny{{$\\pm {current_std_f1:.3f}$}}' if
+                                                                 args.std else '')
                     sub_results_dict = {k: v for k, v in mean_results[dataset][training_mode].items() if k in MODELS}
                     all_f1s = [sub_results_dict[model]['test_f1'] for model in sub_results_dict]
                     if current_mean_f1 == max(all_f1s):
-                        section += f'$\\underline{{\\mathbf{{{current_f1_str}}}}}$ & '
+                        section += f'\\underline{{\\textbf{{{current_f1_str}}}}} & '
                         gains_acc[k + j * len(TRAINING_MODES)] = sub_results_dict[model]['percentage_f1_gain'] * 100
                     else:
-                        section += f'${current_f1_str}$ & '
-                except KeyError as e:
+                        section += f'{current_f1_str} & '
+                except KeyError:
                     section += '--' + ' & '
 
         section = section[:-2] + '\\\\' + '\n'
@@ -74,17 +74,28 @@ def _models_section(mean_results, std_results, gains_acc):
 
 # endregion
 
+def _initialize_dict(result):
+    return {
+        dataset: {
+            training_mode: {
+                model: {k: 0 for k in result[dataset][training_mode][model].keys()}
+                for model in result[dataset][training_mode]
+            } for training_mode in result[dataset].keys()
+        } for dataset in result.keys()
+    }
+
+
 def compute_mean_std(results_list):
     N = len(results_list)
 
-    mean_results = copy.deepcopy(results_list[0])
-    std_results = copy.deepcopy(results_list[0])
+    mean_results = _initialize_dict(results_list[0])
+    std_results = _initialize_dict(results_list[0])
 
     # Initialize mean and std results
     for dataset in mean_results.keys():
         for training_mode in mean_results[dataset].keys():
             for model in mean_results[dataset][training_mode].keys():
-                for k, v in mean_results[dataset][training_mode][model].items():
+                for k in mean_results[dataset][training_mode][model].keys():
                     mean_results[dataset][training_mode][model][k] = 0
                     std_results[dataset][training_mode][model][k] = 0
 
@@ -96,10 +107,11 @@ def compute_mean_std(results_list):
                     for k, v in mean_results[dataset][training_mode][model].items():
                         mean_results[dataset][training_mode][model][k] += result[dataset][training_mode][model][k]
 
+    # Normalize mean results
     for dataset in mean_results.keys():
         for training_mode in mean_results[dataset].keys():
             for model in mean_results[dataset][training_mode].keys():
-                for k, v in mean_results[dataset][training_mode][model].items():
+                for k in mean_results[dataset][training_mode][model].keys():
                     mean_results[dataset][training_mode][model][k] /= N
 
     # Compute std results
@@ -107,21 +119,21 @@ def compute_mean_std(results_list):
         for dataset in std_results.keys():
             for training_mode in std_results[dataset].keys():
                 for model in std_results[dataset][training_mode].keys():
-                    for k, v in std_results[dataset][training_mode][model].items():
+                    for k in std_results[dataset][training_mode][model].keys():
                         std_results[dataset][training_mode][model][k] += (result[dataset][training_mode][model][k] - mean_results[dataset][training_mode][model][k]) ** 2
 
+    # Normalize std results
     for dataset in std_results.keys():
         for training_mode in std_results[dataset].keys():
             for model in std_results[dataset][training_mode].keys():
                 for k, v in std_results[dataset][training_mode][model].items():
-                    std_results[dataset][training_mode][model][k] = math.sqrt(std_results[dataset][training_mode][model][k] / N)
+                    std_results[dataset][training_mode][model][k] = math.sqrt(v / N)
 
     return mean_results, std_results
 
 
 def generate_latex_table(results):
     results_list = [_post_process(result) for result in results]
-
     mean_results, std_results = compute_mean_std(results_list)
 
     num_cols = 1 + len(TRAINING_MODES) * len(DATASETS)
@@ -131,7 +143,7 @@ def generate_latex_table(results):
 
     return f'''\\begin{{tabular}}{{{'l' + 'c' * (num_cols - 1)}}}
     \\hline
-    \\multirow{{2}}{{*}}{{ Models }} &
+    \\multirow{{2}}{{*}}{{ Models (Ours) }} &
     {_datasets_section()}
     
     \\cline {{ 2 - {num_cols} }} &
@@ -150,4 +162,6 @@ if __name__ == '__main__':
     results_dir = args.results_dir
     assert osp.exists(results_dir), f'{results_dir} does not exist'
     results = json.load(open(osp.join(results_dir, 'table1.json'), 'r'))
-    print(generate_latex_table([results]*3))
+    if not isinstance(results, list):
+        results = [results]
+    print(generate_latex_table(results))

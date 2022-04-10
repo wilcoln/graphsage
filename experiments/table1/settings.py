@@ -23,6 +23,8 @@ extensions = SimpleNamespace(
     DATASETS=[
         'pubmed',
         'citeseer',
+        'flickr',
+        'mutag',
     ],
     MODELS=[
         'graphsage_max',
@@ -31,6 +33,12 @@ extensions = SimpleNamespace(
         'graphsage_mean_pool',
         'triples_logreg',
         'triples_mlp',
+        'graphsaint_gcn',
+        'graphsaint_mean',
+        'graphsaint_max_pool',
+        'shadow_gcn',
+        'shadow_mean',
+        'shadow_max_pool',
     ]
 )
 

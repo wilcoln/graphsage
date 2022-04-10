@@ -24,7 +24,7 @@ class SampleSizeRunner:
     def run(self):
         test_times = []
         test_f1s = []
-        for _ in range(fig2b_settings.NUM_RUNS):
+        for _ in range(settings.NUM_RUNS):
 
             model = GraphSAGE(
                 in_channels=dataset.num_features,
