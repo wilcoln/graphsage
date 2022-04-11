@@ -174,7 +174,7 @@ class GraphSageBaseTrainer(TorchModuleBaseTrainer):
         neg_out = self.model(neg_batch.x, neg_batch.edge_index)[:batch.batch_size]
 
         if use_triple_loss:
-            return F.triple_margin_loss(out, pos_out, neg_out)
+            return F.triplet_margin_loss(out, pos_out, neg_out)
 
         pos_loss = F.logsigmoid((out * pos_out).sum(-1)).mean()
         neg_loss = F.logsigmoid(-(out * neg_out).sum(-1)).mean()
