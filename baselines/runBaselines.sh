@@ -8,6 +8,7 @@ python3 rawFeaturesPPI.py
 python3 rawFeaturesCora.py
 python3 rawFeaturesCiteseer.py
 python3 rawFeaturesPubmed.py
+python3 rawFeaturesFlickr.py
 python3 deepWalkReddit.py
 python3 deepWalkCora.py
 python3 deepWalkCiteseer.py
